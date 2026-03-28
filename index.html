@@ -1154,10 +1154,16 @@ async function sbDelete(table, id) {
 // ══════════════════════════════════════════════════════════════════════════════
 let gerCategorieën = ['Amuse','Voorgerecht','Tussengerecht','Hoofdgerecht','Dessert','Drank','Ontbijt','Lunch','Warme lunch','Soep','Salades','Snack','Eitje','Zoet'];
 
-function loadGerCats() {
-  const opgeslagen = localStorage.getItem('ger_categorieen');
-  if (opgeslagen) {
-    try { gerCategorieën = JSON.parse(opgeslagen); } catch(e) {}
+async function loadGerCats() {
+  try {
+    const data = await sbFetch('instellingen', 'GET', null, '?sleutel=eq.ger_categorieen');
+    if (data && data[0]?.waarde) {
+      gerCategorieën = data[0].waarde;
+    }
+  } catch(e) {
+    // Fallback naar localStorage als Supabase niet bereikbaar is
+    const opgeslagen = localStorage.getItem('ger_categorieen');
+    if (opgeslagen) { try { gerCategorieën = JSON.parse(opgeslagen); } catch(e2) {} }
   }
   // Voeg categorieën toe die al in gebruik zijn maar niet in de lijst staan
   gerechten.forEach(g => {
@@ -1165,11 +1171,26 @@ function loadGerCats() {
       gerCategorieën.push(g.categorie);
     }
   });
-  saveGerCats();
+  await saveGerCats();
 }
 
-function saveGerCats() {
-  localStorage.setItem('ger_categorieen', JSON.stringify(gerCategorieën));
+async function saveGerCats() {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/instellingen?on_conflict=sleutel`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates'
+      },
+      body: JSON.stringify({ sleutel: 'ger_categorieen', waarde: gerCategorieën })
+    });
+    if (!res.ok) throw new Error(await res.text());
+  } catch(e) {
+    // Fallback naar localStorage
+    localStorage.setItem('ger_categorieen', JSON.stringify(gerCategorieën));
+  }
 }
 
 function fillGerCatSelect(selectedVal) {
@@ -1199,20 +1220,20 @@ function renderGerCatsList() {
   }).join('') || '<div style="color:var(--muted);font-style:italic;padding:12px 0">Geen categorieën</div>';
 }
 
-function addGerCat() {
+async function addGerCat() {
   const input = document.getElementById('ger-cat-nieuw');
   const naam = input.value.trim();
   if (!naam) return;
   if (gerCategorieën.includes(naam)) { toast('Categorie bestaat al'); return; }
   gerCategorieën.push(naam);
-  saveGerCats();
+  await saveGerCats();
   fillGerCatSelect(naam);
   renderGerCatsList();
   input.value = '';
   toast('Categorie toegevoegd');
 }
 
-function hernoemGerCat(i) {
+async function hernoemGerCat(i) {
   const oudNaam = gerCategorieën[i];
   const nieuwNaam = prompt('Nieuwe naam voor "' + oudNaam + '":', oudNaam);
   if (!nieuwNaam || nieuwNaam.trim() === oudNaam) return;
@@ -1221,21 +1242,21 @@ function hernoemGerCat(i) {
   // Update alle gerechten die deze categorie hebben
   gerechten.forEach(g => { if (g.categorie === oudNaam) { g.categorie = n; sbSaveGer(g); } });
   gerCategorieën[i] = n;
-  saveGerCats();
+  await saveGerCats();
   fillGerCatSelect();
   renderGerCatsList();
   renderGerCards();
   toast('Categorie hernoemd');
 }
 
-function verwijderGerCat(i) {
+async function verwijderGerCat(i) {
   const naam = gerCategorieën[i];
   const inGebruik = gerechten.filter(g => g.categorie === naam).length;
   if (inGebruik > 0) {
     if (!confirm(`"${naam}" wordt gebruikt door ${inGebruik} gerecht(en). Toch verwijderen?`)) return;
   }
   gerCategorieën.splice(i, 1);
-  saveGerCats();
+  await saveGerCats();
   fillGerCatSelect();
   renderGerCatsList();
   toast('Categorie verwijderd');
@@ -2359,7 +2380,7 @@ async function saveIng(silent=false) {
   if (editIngIdx >= 0) {
     const oudePrijs = ingredienten[editIngIdx].prijs;
     if (oudePrijs !== nieuwePrijs) {
-      savePrijsHistorie(ing.id, naam, oudePrijs, nieuwePrijs);
+      await savePrijsHistorie(ing.id, naam, oudePrijs, nieuwePrijs);
     }
   }
 
@@ -3123,9 +3144,6 @@ async function slaInkooplijstOp(silent = false) {
     datum: new Date().toISOString(), items
   };
 
-  // Altijd lokaal opslaan als backup (werkt ook offline)
-  try { localStorage.setItem('inkoop_' + mkId + '_' + forUserId, JSON.stringify(data)); } catch(e) {}
-
   const label = document.getElementById('inkoop-autosave-label');
   const inlinePrint = document.getElementById('inkoop-print-inline');
   const inlineOpslaan = document.getElementById('inkoop-opslaan-inline');
@@ -3342,22 +3360,44 @@ ${paginas}
 }
 
 
-function savePrijsHistorie(ingId, naam, oudePrijs, nieuwePrijs) {
-  const key = 'prijshist_' + ingId;
-  let hist = [];
-  try { hist = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
-  hist.push({ datum: new Date().toISOString(), oud: oudePrijs, nieuw: nieuwePrijs });
-  if (hist.length > 50) hist = hist.slice(-50);
-  localStorage.setItem(key, JSON.stringify(hist));
+async function savePrijsHistorie(ingId, naam, oudePrijs, nieuwePrijs) {
+  try {
+    await sbFetch('prijshistorie', 'POST', {
+      ingredient_id: ingId,
+      ingredient_naam: naam,
+      oud_prijs: oudePrijs,
+      nieuw_prijs: nieuwePrijs
+    });
+  } catch(e) {
+    // Fallback naar localStorage
+    const key = 'prijshist_' + ingId;
+    let hist = [];
+    try { hist = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e2) {}
+    hist.push({ datum: new Date().toISOString(), oud: oudePrijs, nieuw: nieuwePrijs });
+    if (hist.length > 50) hist = hist.slice(-50);
+    localStorage.setItem(key, JSON.stringify(hist));
+  }
 }
 
-function getPrijsHistorie(ingId) {
-  try { return JSON.parse(localStorage.getItem('prijshist_' + ingId) || '[]'); } catch(e) { return []; }
+async function getPrijsHistorie(ingId) {
+  try {
+    const data = await sbFetch('prijshistorie', 'GET', null,
+      `?ingredient_id=eq.${ingId}&order=datum.desc&limit=50`
+    );
+    return (data || []).map(r => ({
+      datum: r.datum,
+      oud: r.oud_prijs,
+      nieuw: r.nieuw_prijs
+    }));
+  } catch(e) {
+    // Fallback naar localStorage
+    try { return JSON.parse(localStorage.getItem('prijshist_' + ingId) || '[]'); } catch(e2) { return []; }
+  }
 }
 
-function openPrijsHistorie(idx) {
+async function openPrijsHistorie(idx) {
   const ing = ingredienten[idx];
-  const hist = getPrijsHistorie(ing.id);
+  const hist = await getPrijsHistorie(ing.id);
   if (!hist.length) { toast('Nog geen prijswijzigingen geregistreerd'); return; }
   const rows = hist.slice().reverse().map(h => {
     const datum = new Date(h.datum).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -5266,7 +5306,7 @@ window.addEventListener('popstate', e => {
 // INIT — laad data vanuit Supabase, dan render
 (async () => {
   await loadAllData();
-  loadGerCats();
+  await loadGerCats();
   await loadInkooplijsten();
   checkSession();
   renderIngredienten();
