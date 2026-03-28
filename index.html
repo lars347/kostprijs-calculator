@@ -717,7 +717,7 @@
     <!-- Zoekbalk -->
     <div style="position:relative;margin-bottom:16px">
       <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px">🔍</span>
-      <input type="text" id="users-search" placeholder="Zoek op naam of gebruikersnaam…" oninput="filterUsers()" style="padding-left:36px;width:100%;height:38px">
+      <input type="text" id="users-search" placeholder="Zoek op gebruikersnaam…" oninput="filterUsers()" style="padding-left:36px;width:100%;height:38px">
     </div>
 
     <div id="users-list" style="max-height:280px;overflow-y:auto;border:1px solid var(--border);border-radius:2px;padding:0 12px"></div>
@@ -1308,7 +1308,7 @@ async function doLogin() {
     document.getElementById('auth-overlay').classList.remove('open');
     applyRole(user.role);
     updateNavUser(user);
-    toast(`Welkom, ${user.naam || user.username}!`, false);
+    toast(`Welkom, ${user.username}!`, false);
   } catch(e) {
     showError('Verbindingsfout. Probeer opnieuw.');
   }
@@ -1324,7 +1324,7 @@ function doLogout() {
 }
 
 function updateNavUser(user) {
-  document.getElementById('nav-username').textContent = user.naam || user.username;
+  document.getElementById('nav-username').textContent = user.username;
   const badge = document.getElementById('nav-role-badge');
   const labels = { admin: 'Admin', chef: 'Chef', medewerker: 'Medewerker' };
   badge.textContent = labels[user.role] || user.role;
@@ -1384,7 +1384,7 @@ function renderUsers(filter='') {
   const list = document.getElementById('users-list');
   const q = filter.toLowerCase();
   const visible = users.filter(u =>
-    !q || (u.naam||u.username).toLowerCase().includes(q) || u.username.toLowerCase().includes(q)
+    !q || u.username.toLowerCase().includes(q)
   );
 
   list.innerHTML = `
@@ -1401,8 +1401,7 @@ function renderUsers(filter='') {
       const kanVerwijderen = currentUser?.role === 'admin' && u.username !== 'admin' && !isZelf;
       return `<div style="display:grid;grid-template-columns:1fr 90px 80px 80px 32px;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid #ede8df">
         <div>
-          <div style="font-weight:600;color:#1a1a1a">${u.naam||u.username}${isZelf ? ' <span style="font-size:10px;color:var(--muted)">(jij)</span>' : ''}</div>
-          <div style="font-size:11px;color:var(--muted)">${u.naam ? u.username : ''}</div>
+          <div style="font-weight:600;color:#1a1a1a">${u.username}${isZelf ? ' <span style="font-size:10px;color:var(--muted)">(jij)</span>' : ''}</div>
         </div>
         <span><span class="badge ${rolBadge}">${rolLabel}</span></span>
         <span style="font-size:12px;color:var(--muted);font-weight:600">${locatie || '—'}</span>
@@ -1456,8 +1455,9 @@ function openEditCredentials(idx) {
   if (!isAdmin && !isZelf) { toast('Je kunt alleen je eigen gegevens bewerken'); return; }
 
   const rolLabel = u.role === 'admin' ? 'Admin' : u.role === 'chef' ? 'Chef' : 'Medewerker';
-  document.getElementById('edit-cred-title').textContent = isZelf ? '👤 Mijn account' : '👤 Account — ' + (u.naam||u.username);
-  document.getElementById('edit-cred-naam').textContent = u.naam || u.username;
+  document.getElementById('edit-cred-title').textContent = isZelf ? '👤 Mijn account' : '👤 Account — ' + u.username;
+  document.getElementById('edit-cred-naam').textContent = u.username;
+  document.getElementById('edit-cred-naam').textContent = u.username;
   document.getElementById('edit-cred-rolbadge').textContent = rolLabel;
   document.getElementById('edit-cred-idx').value = idx;
   document.getElementById('edit-cred-username').value = '';
@@ -2924,7 +2924,7 @@ function toonAdminInkoopOverzicht() {
     const totaal = lijst ? (lijst.items||[]).length : 0;
     return `<div style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);gap:10px">
       <div style="flex:1">
-        <div style="font-weight:600;font-size:14px;color:#1a1a1a">${chef.naam || chef.username}</div>
+        <div style="font-weight:600;font-size:14px;color:#1a1a1a">${chef.username}</div>
         <div style="font-size:12px;color:var(--muted);margin-top:2px">
           ${lijst
             ? `${lijst.naam} &nbsp;·&nbsp; ${ingevuld}/${totaal} ingevuld &nbsp;·&nbsp; <span style="color:var(--text)">Laatst aangepast: <strong>${datum} om ${tijd}</strong></span>`
