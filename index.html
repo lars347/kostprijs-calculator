@@ -969,15 +969,15 @@
           </div>
           <div style="display:flex;gap:12px;align-items:flex-start">
             <span style="min-width:22px;height:22px;border-radius:50%;background:var(--red);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">2</span>
-            <div style="font-size:13px">Klik op <strong>"VHC openen"</strong> hieronder — de bestellijst opent in een nieuw venster</div>
+            <div style="font-size:13px">Klik op <strong>"VHC openen"</strong> — de bestellijst opent in een nieuw venster</div>
           </div>
           <div style="display:flex;gap:12px;align-items:flex-start">
             <span style="min-width:22px;height:22px;border-radius:50%;background:var(--red);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">3</span>
-            <div style="font-size:13px">Schakel op de VHC pagina naar <strong>Regelweergave</strong> <span style="font-size:11px;color:var(--muted)">(knop rechtsboven)</span></div>
+            <div style="font-size:13px">Klik op de bladwijzer <strong>"🔄 VHC → Kostprijs"</strong> — je krijgt een melding</div>
           </div>
           <div style="display:flex;gap:12px;align-items:flex-start">
             <span style="min-width:22px;height:22px;border-radius:50%;background:var(--red);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">4</span>
-            <div style="font-size:13px">Klik op de bladwijzer <strong>"🔄 VHC → Kostprijs"</strong> in je bladwijzerbalk</div>
+            <div style="font-size:13px">Scroll door de lijst zodat alle producten laden, klik dan de bladwijzer <strong>opnieuw</strong></div>
           </div>
           <div style="display:flex;gap:12px;align-items:flex-start">
             <span style="min-width:22px;height:22px;border-radius:50%;background:#27ae60;color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">✓</span>
@@ -1120,7 +1120,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // SUPABASE CONFIG
 // ══════════════════════════════════════════════════════════════════════════════
-const APP_VERSION = 'v1.1.1';
+const APP_VERSION = 'v1.2.0';
 const SUPABASE_URL = 'https://mfexgibreooozqozzcow.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mZXhnaWJyZW9vb3pxb3p6Y293Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NzI2NjIsImV4cCI6MjA5MDA0ODY2Mn0.ufKbZhtfakH7TqA8SYAmw4NPnVLR96WjS5FmLmZn528';
 
@@ -3606,28 +3606,50 @@ function vhcTerug() {
 
 // ── Bookmarklet ───────────────────────────────────────────────────────────────
 function vhcUpdateBookmarklet() {
-  // De bookmarklet gebruikt window.opener — werkt alleen als VHC is geopend VANUIT de app
+  // Nieuwe aanpak: onderschep XHR calls van VHC zelf — werkt in elke weergave, geen DOM scraping
   const code = '(function(){'
-    + 'var items=document.querySelectorAll(".amwishlist-item");'
-    + 'if(!items.length){alert("Geen producten gevonden.\\nSchakel naar REGELWEERGAVE (knop rechtsboven) en probeer opnieuw.");return;}'
-    + 'var data=[];'
-    + 'items.forEach(function(item){'
-    + '  var naamEl=item.querySelector(".amwishlist-name")||item.querySelector("[class*=\"name\"] a")||item.querySelector("[class*=\"name\"]");'
-    + '  var prijs=item.querySelector(".price-box .price");'
-    + '  var sku=item.querySelector(".sku")||item.querySelector("[class*=\"sku\"]");'
-    + '  var naam=naamEl?naamEl.textContent.trim():"";'
-    + '  if(naam&&naam.length>1&&prijs){'
-    + '    var p=parseFloat(prijs.textContent.replace(/[^0-9,]/g,"").replace(",","."));'
-    + '    if(!isNaN(p)&&p>0)data.push({naam:naam,prijs:p,sku:sku?sku.textContent.trim():""});'
-    + '  }'
+    // Stap 1: kijk of er al onderschepte data is van eerder op deze pagina
+    + 'var alleData=window.__vhcGevangen||[];'
+    // Stap 2: verzamel unieke producten
+    + 'var gezieneSkus=new Set();'
+    + 'var producten=[];'
+    + 'alleData.forEach(function(items){'
+    + '  if(!Array.isArray(items))return;'
+    + '  items.forEach(function(item){'
+    + '    if(!gezieneSkus.has(item.sku)&&item.name&&item.price){'
+    + '      gezieneSkus.add(item.sku);'
+    + '      var p=parseFloat((item.price||"").replace(/[^0-9,]/g,"").replace(",","."));'
+    + '      if(!isNaN(p)&&p>0)producten.push({naam:item.name,prijs:p,sku:item.sku||""});'
+    + '    }'
+    + '  });'
     + '});'
-    + 'if(!data.length){alert("Geen producten met naam gevonden.\\nSchakel naar REGELWEERGAVE en probeer opnieuw.");return;}'
+    // Stap 3: als nog geen data, installeer interceptor en wacht
+    + 'if(!producten.length){'
+    + '  if(!window.__vhcXhrGeinstalleerd){'
+    + '    window.__vhcGevangen=[];'
+    + '    var origSend=XMLHttpRequest.prototype.send;'
+    + '    var origOpen=XMLHttpRequest.prototype.open;'
+    + '    XMLHttpRequest.prototype.open=function(m,u){this.__url=u;return origOpen.apply(this,arguments);};'
+    + '    XMLHttpRequest.prototype.send=function(b){'
+    + '      if(this.__url&&this.__url.indexOf("getProducts")>-1){'
+    + '        this.addEventListener("load",function(){'
+    + '          try{var d=JSON.parse(this.responseText);if(Array.isArray(d))window.__vhcGevangen.push(d);}catch(e){}'
+    + '        });'
+    + '      }'
+    + '      return origSend.apply(this,arguments);'
+    + '    };'
+    + '    window.__vhcXhrGeinstalleerd=true;'
+    + '  }'
+    + '  alert("Interceptor geinstalleerd!\n\nScroll nu door de bestellijst zodat alle producten laden, en klik daarna de bladwijzer opnieuw.");'
+    + '  return;'
+    + '}'
+    // Stap 4: stuur naar app
     + 'if(window.opener&&window.opener.vhcOntvangData){'
-    + '  window.opener.vhcOntvangData(data);'
+    + '  window.opener.vhcOntvangData(producten);'
     + '  window.opener.focus();'
     + '  window.close();'
-    + '} else {'
-    + '  alert("Verbinding met app verloren.\\nOpen VHC via de \'VHC Sync\' knop in de app (niet rechtstreeks).\\n\\n" + data.length + " producten gevonden.");'
+    + '}else{'
+    + '  alert("Verbinding met app verloren.\n\nOpen VHC via de VHC Sync knop in de app.");'
     + '}'
     + '})();';
   const link = document.getElementById('vhc-bookmarklet-link');
