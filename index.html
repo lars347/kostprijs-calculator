@@ -301,7 +301,7 @@
       </div>
     </div>
     <div style="display:flex;gap:8px">
-      ${isAdmin() ? `<button class="btn btn-ghost" onclick="openModal('modal-vhc-sync')" title="VHC prijzen synchroniseren">🔄 VHC Sync</button>` : ''}
+      <button class="btn btn-ghost" id="vhc-sync-btn" onclick="openModal('modal-vhc-sync');vhcUpdateBookmarklet();vhcTerug()" style="display:none">🔄 VHC Sync</button>
       <button class="btn btn-primary" onclick="openIngModal()">+ Toevoegen</button>
     </div>
   </div>
@@ -927,15 +927,12 @@
 
 <!-- VHC PRIJSSYNC MODAL -->
 <div class="modal-overlay" id="modal-vhc-sync">
-  <div class="modal" style="width:600px;max-height:85vh;display:flex;flex-direction:column">
+  <div class="modal" style="width:640px;max-height:90vh;display:flex;flex-direction:column">
     <div class="modal-title">🔄 VHC Prijzen synchroniseren</div>
 
+    <!-- Stap 1: Kies lijst + uitleg bookmarklet -->
     <div id="vhc-stap-1">
-      <div style="font-size:13px;color:var(--muted);margin-bottom:16px">
-        Selecteer de bestellijst die je wil synchroniseren. Zorg dat je ingelogd bent op het VHC portaal.
-      </div>
-
-      <div class="input-group">
+      <div class="input-group" style="margin-bottom:12px">
         <label>VHC Bestellijst</label>
         <select id="vhc-lijst-select">
           <option value="24103">Lente 2026</option>
@@ -948,15 +945,29 @@
         </select>
       </div>
 
-      <div style="background:var(--surface2);border-radius:2px;padding:12px 14px;font-size:12px;color:var(--muted);margin-top:8px">
-        ℹ️ De app opent de VHC bestellijst, leest de prijzen en vergelijkt ze met de huidige prijzen in de app.
+      <div style="background:#fdf6ec;border:1px solid #e8d5b0;border-radius:4px;padding:14px;margin-bottom:12px">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#8b6914;margin-bottom:8px">📌 Hoe werkt het?</div>
+        <ol style="margin:0;padding-left:18px;font-size:13px;color:var(--text);line-height:1.8">
+          <li>Sleep de knop hieronder naar je bladwijzerbalk</li>
+          <li>Klik op <strong>VHC openen</strong> — je gaat naar de bestellijst</li>
+          <li>Klik op de <strong>bladwijzer</strong> op die pagina</li>
+          <li>De prijzen worden automatisch teruggestuurd</li>
+        </ol>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--surface2);border-radius:4px">
+        <span style="font-size:12px;color:var(--muted);white-space:nowrap">Sleep naar bladwijzerbalk:</span>
+        <a id="vhc-bookmarklet-link" href="#" style="display:inline-block;padding:8px 16px;background:var(--red);color:white;border-radius:3px;font-size:12px;font-weight:700;text-decoration:none;cursor:grab">
+          🔄 VHC → Kostprijs
+        </a>
+        <span style="font-size:11px;color:var(--muted)">← sleep dit naar je bladwijzerbalk</span>
       </div>
     </div>
 
-    <!-- Resultaten -->
+    <!-- Stap 2: Resultaten -->
     <div id="vhc-stap-2" style="display:none;flex:1;min-height:0;flex-direction:column">
       <div id="vhc-sync-status" style="font-size:13px;color:var(--muted);margin-bottom:12px;flex-shrink:0"></div>
-      <div id="vhc-sync-resultaten" style="flex:1;overflow-y:auto;border:1px solid var(--border);border-radius:2px"></div>
+      <div id="vhc-sync-resultaten" style="flex:1;overflow-y:auto;border:1px solid var(--border);border-radius:2px;max-height:340px"></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;flex-shrink:0">
         <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
           <input type="checkbox" id="vhc-alleen-wijzigingen" checked onchange="renderVhcResultaten()">
@@ -969,8 +980,8 @@
     <div class="modal-actions">
       <button class="btn btn-ghost" id="vhc-terug-btn" onclick="vhcTerug()" style="display:none">← Terug</button>
       <button class="btn btn-ghost" onclick="closeModal('modal-vhc-sync')">Sluiten</button>
-      <button class="btn btn-ghost" id="vhc-ophalen-btn" onclick="vhcOphalen()">🔍 Prijzen ophalen</button>
-      <button class="btn btn-primary" id="vhc-opslaan-btn" onclick="vhcOpslaanAlles()" style="display:none">💾 Alle wijzigingen opslaan</button>
+      <button class="btn btn-primary" id="vhc-naar-vhc-btn" onclick="vhcNaarVhc()">🌐 VHC openen</button>
+      <button class="btn btn-primary" id="vhc-opslaan-btn" onclick="vhcOpslaanAlles()" style="display:none">💾 Wijzigingen opslaan</button>
     </div>
   </div>
 </div>
@@ -1437,13 +1448,16 @@ function updateNavUser(user) {
 
 function applyRole(role) {
   const ingTab = document.getElementById('nav-tab-ingredienten');
+  const vhcBtn = document.getElementById('vhc-sync-btn');
   if (role === 'medewerker' || role === 'chef') {
     document.body.setAttribute('data-role', role);
     if (ingTab) ingTab.style.display = 'none';
+    if (vhcBtn) vhcBtn.style.display = 'none';
     applyChefRestrictions();
   } else {
     document.body.setAttribute('data-role', 'admin');
     if (ingTab) ingTab.style.display = '';
+    if (vhcBtn) vhcBtn.style.display = '';
   }
 }
 
@@ -3422,72 +3436,73 @@ function vhcTerug() {
   document.getElementById('vhc-stap-1').style.display = '';
   document.getElementById('vhc-stap-2').style.display = 'none';
   document.getElementById('vhc-terug-btn').style.display = 'none';
-  document.getElementById('vhc-ophalen-btn').style.display = '';
+  document.getElementById('vhc-naar-vhc-btn').style.display = '';
   document.getElementById('vhc-opslaan-btn').style.display = 'none';
 }
 
-async function vhcOphalen() {
+function vhcUpdateBookmarklet() {
+  // Bouw de bookmarklet code die op VHC wordt uitgevoerd
+  const appUrl = location.origin + location.pathname;
+  const code = `(function(){
+    var items=document.querySelectorAll('.amwishlist-item');
+    if(!items.length){alert('Geen producten gevonden. Zorg dat de bestellijst geopend is in regelweergave.');return;}
+    var data=[];
+    items.forEach(function(item){
+      var naam=item.querySelector('[class*="name"] a')||item.querySelector('[class*="name"]');
+      var prijs=item.querySelector('.price-box .price');
+      var sku=item.querySelector('[class*="sku"]');
+      if(naam&&prijs){
+        var p=parseFloat(prijs.textContent.replace(/[^0-9,]/g,'').replace(',','.'));
+        if(!isNaN(p)&&p>0) data.push({naam:naam.textContent.trim(),prijs:p,sku:sku?sku.textContent.trim():''});
+      }
+    });
+    if(!data.length){alert('Geen prijzen gevonden op deze pagina.');return;}
+    var win=window.open('${appUrl}#vhc-sync','_kostprijs');
+    var interval=setInterval(function(){
+      try{
+        if(win&&win.vhcOntvangData){clearInterval(interval);win.vhcOntvangData(data);win.focus();}
+      }catch(e){}
+    },300);
+    setTimeout(function(){clearInterval(interval);},15000);
+    alert(data.length+' producten gevonden! De app wordt nu bijgewerkt.');
+  })();`;
+  const link = document.getElementById('vhc-bookmarklet-link');
+  if (link) link.href = 'javascript:' + encodeURIComponent(code);
+}
+
+function vhcNaarVhc() {
   const lijstId = document.getElementById('vhc-lijst-select').value;
-  const url = 'https://vhcjongensalmere.nl/mwishlist/wishlist/index/wishlist_id/' + lijstId + '/';
-  document.getElementById('vhc-sync-status').textContent = '\u23f3 Bestellijst ophalen...';
+  vhcUpdateBookmarklet();
+  window.open('https://vhcjongensalmere.nl/mwishlist/wishlist/index/wishlist_id/' + lijstId + '/', '_vhc');
+  // Toon wacht-status
   document.getElementById('vhc-stap-1').style.display = 'none';
   document.getElementById('vhc-stap-2').style.display = 'flex';
   document.getElementById('vhc-terug-btn').style.display = '';
-  document.getElementById('vhc-ophalen-btn').style.display = 'none';
+  document.getElementById('vhc-naar-vhc-btn').style.display = 'none';
+  document.getElementById('vhc-sync-status').textContent = '⏳ Wachten op data van VHC... Klik de bladwijzer op de VHC pagina.';
   document.getElementById('vhc-sync-resultaten').innerHTML = '';
+}
 
-  const win = window.open(url, '_vhc_sync', 'width=1200,height=800');
-  if (!win) {
-    document.getElementById('vhc-sync-status').innerHTML = '\u274c Pop-up geblokkeerd \u2014 sta pop-ups toe voor deze site en probeer opnieuw';
-    return;
-  }
-
-  let pogingen = 0;
-  const interval = setInterval(() => {
-    pogingen++;
-    try {
-      if (win.closed) { clearInterval(interval); document.getElementById('vhc-sync-status').textContent = '\u274c Venster gesloten voor het laden klaar was'; return; }
-      const items = win.document.querySelectorAll('.amwishlist-item');
-      if (items.length > 0) {
-        clearInterval(interval);
-        const producten = [];
-        items.forEach(item => {
-          const naam = item.querySelector('[class*="name"] a, [class*="name"]')?.textContent?.trim();
-          const prijsTekst = item.querySelector('.price-box .price')?.textContent?.trim();
-          const sku = item.querySelector('[class*="sku"]')?.textContent?.trim();
-          if (naam && prijsTekst) {
-            const prijs = parseFloat(prijsTekst.replace('\u20ac', '').replace(',', '.').replace(/\s/g, ''));
-            if (!isNaN(prijs) && prijs > 0) producten.push({ naam, prijs, sku });
-          }
-        });
-        win.close();
-        vhcVergelijk(producten);
-      } else if (pogingen > 30) {
-        clearInterval(interval);
-        win.close();
-        document.getElementById('vhc-sync-status').innerHTML = '\u274c Pagina laden duurde te lang. Zorg dat je ingelogd bent op VHC.';
-      }
-    } catch(e) {
-      if (pogingen > 30) {
-        clearInterval(interval);
-        win.close();
-        document.getElementById('vhc-sync-status').innerHTML = '\u274c Kon de pagina niet lezen. Zorg dat je <a href="https://vhcjongensalmere.nl" target="_blank">ingelogd bent op VHC</a>.';
-      }
-    }
-  }, 500);
+// Wordt aangeroepen vanuit de bookmarklet
+function vhcOntvangData(producten) {
+  document.getElementById('vhc-sync-status').textContent = '✅ Data ontvangen — bezig met vergelijken...';
+  // Korte delay zodat de UI kan updaten
+  setTimeout(() => vhcVergelijk(producten), 100);
 }
 
 function vhcVergelijk(producten) {
   const resultaten = [];
   producten.forEach(vhcProd => {
-    const match = ingredienten.find(ing =>
-      ing.naam.toLowerCase() === vhcProd.naam.toLowerCase() ||
-      ing.naam.toLowerCase().includes(vhcProd.naam.toLowerCase()) ||
-      vhcProd.naam.toLowerCase().includes(ing.naam.toLowerCase())
-    );
+    const vhcNaamLc = vhcProd.naam.toLowerCase();
+    const match = ingredienten.find(ing => {
+      const ingNaamLc = ing.naam.toLowerCase();
+      return ingNaamLc === vhcNaamLc ||
+        ingNaamLc.includes(vhcNaamLc) ||
+        vhcNaamLc.includes(ingNaamLc);
+    });
     if (match) {
-      const verschil = vhcProd.prijs - match.prijs;
-      const pct = match.prijs > 0 ? ((verschil / match.prijs) * 100).toFixed(1) : 0;
+      const verschil = Math.round((vhcProd.prijs - match.prijs) * 100) / 100;
+      const pct = match.prijs > 0 ? ((verschil / match.prijs) * 100).toFixed(1) : '0';
       resultaten.push({
         ingId: match.id, ingIdx: ingredienten.indexOf(match), ingNaam: match.naam,
         vhcNaam: vhcProd.naam, oudePrijs: match.prijs, nieuwePrijs: vhcProd.prijs,
@@ -3497,9 +3512,9 @@ function vhcVergelijk(producten) {
   });
   _vhcGescrapedData = resultaten;
   const aantalGewijzigd = resultaten.filter(r => r.gewijzigd).length;
-  const lijstNaam = document.getElementById('vhc-lijst-select').selectedOptions[0]?.text;
-  document.getElementById('vhc-sync-status').textContent =
-    '\u2705 ' + producten.length + ' producten gelezen uit "' + lijstNaam + '" \u2014 ' + aantalGewijzigd + ' prijswijzigingen gevonden, ' + resultaten.length + ' gekoppeld';
+  const lijstNaam = document.getElementById('vhc-lijst-select')?.selectedOptions[0]?.text || '';
+  document.getElementById('vhc-sync-status').innerHTML =
+    `✅ <strong>${producten.length}</strong> producten gelezen — <strong>${aantalGewijzigd}</strong> prijswijzigingen gevonden (${resultaten.length} gekoppeld aan ingrediënten)`;
   document.getElementById('vhc-opslaan-btn').style.display = aantalGewijzigd > 0 ? '' : 'none';
   renderVhcResultaten();
 }
@@ -3510,20 +3525,23 @@ function renderVhcResultaten() {
   const container = document.getElementById('vhc-sync-resultaten');
   if (!zichtbaar.length) {
     container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-style:italic">Geen ' + (alleenWijzigingen ? 'prijswijzigingen' : 'gekoppelde producten') + ' gevonden</div>';
-    document.getElementById('vhc-sync-teller').textContent = ''; return;
+    document.getElementById('vhc-sync-teller').textContent = '';
+    return;
   }
   const geselecteerd = _vhcGescrapedData.filter(r => r.geselecteerd).length;
-  document.getElementById('vhc-sync-teller').textContent = geselecteerd + ' geselecteerd om op te slaan';
-  let html = '<div style="display:grid;grid-template-columns:28px 1fr 90px 90px 80px;gap:8px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:8px 14px;border-bottom:2px solid var(--border)"><span></span><span>Ingre\u00ebnt</span><span>Huidige prijs</span><span>VHC prijs</span><span>Verschil</span></div>';
+  document.getElementById('vhc-sync-teller').textContent = geselecteerd + ' geselecteerd';
+  let html = '<div style="display:grid;grid-template-columns:28px 1fr 90px 90px 90px;gap:8px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:8px 14px;border-bottom:2px solid var(--border);position:sticky;top:0;background:white">'
+    + '<span></span><span>Ingrediënt</span><span>Huidig</span><span>VHC prijs</span><span>Verschil</span></div>';
   html += zichtbaar.map(r => {
     const kleur = r.verschil > 0 ? '#c0392b' : r.verschil < 0 ? '#27ae60' : 'var(--muted)';
-    const pijl = r.verschil > 0 ? '\u2191' : r.verschil < 0 ? '\u2193' : '=';
-    const globalIdx = _vhcGescrapedData.indexOf(r);
-    return '<div style="display:grid;grid-template-columns:28px 1fr 90px 90px 80px;gap:8px;align-items:center;padding:7px 14px;border-bottom:1px solid #ede8df;' + (r.gewijzigd ? '' : 'opacity:0.5') + '">'
-      + '<input type="checkbox" ' + (r.geselecteerd ? 'checked' : '') + ' onchange="_vhcGescrapedData[' + globalIdx + '].geselecteerd=this.checked;renderVhcResultaten()">'
-      + '<div><div style="font-size:13px;color:#1a1a1a">' + r.ingNaam + '</div>' + (r.ingNaam !== r.vhcNaam ? '<div style="font-size:10px;color:var(--muted)">VHC: ' + r.vhcNaam + '</div>' : '') + '</div>'
-      + '<div style="font-size:12px;font-family:monospace">\u20ac ' + r.oudePrijs.toFixed(2).replace('.', ',') + '</div>'
-      + '<div style="font-size:12px;font-family:monospace;font-weight:700">\u20ac ' + r.nieuwePrijs.toFixed(2).replace('.', ',') + '</div>'
+    const pijl = r.verschil > 0 ? '↑' : r.verschil < 0 ? '↓' : '=';
+    const gi = _vhcGescrapedData.indexOf(r);
+    return '<div style="display:grid;grid-template-columns:28px 1fr 90px 90px 90px;gap:8px;align-items:center;padding:7px 14px;border-bottom:1px solid #ede8df;' + (r.gewijzigd ? '' : 'opacity:0.45') + '">'
+      + '<input type="checkbox" ' + (r.geselecteerd ? 'checked' : '') + ' onchange="_vhcGescrapedData[' + gi + '].geselecteerd=this.checked;renderVhcResultaten()">'
+      + '<div><div style="font-size:12px;font-weight:600">' + r.ingNaam + '</div>'
+      + (r.ingNaam !== r.vhcNaam ? '<div style="font-size:10px;color:var(--muted)">VHC: ' + r.vhcNaam + '</div>' : '') + '</div>'
+      + '<div style="font-size:12px;font-family:monospace">€ ' + r.oudePrijs.toFixed(2).replace('.', ',') + '</div>'
+      + '<div style="font-size:12px;font-family:monospace;font-weight:700">€ ' + r.nieuwePrijs.toFixed(2).replace('.', ',') + '</div>'
       + '<div style="font-size:12px;font-weight:700;color:' + kleur + '">' + pijl + ' ' + Math.abs(r.verschil).toFixed(2).replace('.', ',') + ' (' + r.pct + '%)</div>'
       + '</div>';
   }).join('');
@@ -3534,7 +3552,9 @@ async function vhcOpslaanAlles() {
   const teOpslaan = _vhcGescrapedData.filter(r => r.geselecteerd && r.gewijzigd);
   if (!teOpslaan.length) { toast('Geen wijzigingen geselecteerd'); return; }
   if (!confirm(teOpslaan.length + ' prijzen bijwerken?')) return;
-  document.getElementById('vhc-opslaan-btn').textContent = '\u23f3 Opslaan...';
+  const btn = document.getElementById('vhc-opslaan-btn');
+  btn.textContent = '⏳ Opslaan...';
+  btn.disabled = true;
   let opgeslagen = 0;
   for (const r of teOpslaan) {
     const ing = ingredienten[r.ingIdx];
@@ -3545,10 +3565,18 @@ async function vhcOpslaanAlles() {
     opgeslagen++;
   }
   renderIngredienten();
-  document.getElementById('vhc-opslaan-btn').textContent = '\ud83d\udcbe Alle wijzigingen opslaan';
+  btn.textContent = '💾 Wijzigingen opslaan';
+  btn.disabled = false;
   closeModal('modal-vhc-sync');
-  toast('\u2705 ' + opgeslagen + ' prijzen bijgewerkt');
+  toast('✅ ' + opgeslagen + ' prijzen bijgewerkt');
 }
+
+// Zet bookmarklet klaar zodra modal opent
+document.getElementById('modal-vhc-sync').addEventListener('click', function(e) {
+  if (e.target === this) return;
+  vhcUpdateBookmarklet();
+}, { once: false });
+
 
 
 async function savePrijsHistorie(ingId, naam, oudePrijs, nieuwePrijs) {
