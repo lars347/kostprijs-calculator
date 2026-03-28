@@ -928,14 +928,27 @@
 
 <!-- VHC PRIJSSYNC MODAL -->
 <div class="modal-overlay" id="modal-vhc-sync">
-  <div class="modal" style="width:640px;max-height:90vh;display:flex;flex-direction:column">
-    <div class="modal-title">🔄 VHC Prijzen synchroniseren</div>
+  <div class="modal" style="width:660px;max-height:92vh;display:flex;flex-direction:column">
 
-    <!-- Stap 1: Kies lijst + uitleg bookmarklet -->
+    <!-- Header met stap indicator -->
+    <div class="modal-title" style="display:flex;justify-content:space-between;align-items:center">
+      <span>🔄 VHC Synchroniseren</span>
+      <div id="vhc-stap-indicator" style="display:flex;gap:6px;align-items:center;font-size:11px;font-weight:600">
+        <span id="vhc-dot-1" style="width:24px;height:24px;border-radius:50%;background:var(--red);color:white;display:flex;align-items:center;justify-content:center;font-size:11px">1</span>
+        <span style="width:20px;height:2px;background:var(--border)"></span>
+        <span id="vhc-dot-2" style="width:24px;height:24px;border-radius:50%;background:var(--border);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:11px">2</span>
+        <span style="width:20px;height:2px;background:var(--border)"></span>
+        <span id="vhc-dot-3" style="width:24px;height:24px;border-radius:50%;background:var(--border);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:11px">3</span>
+      </div>
+    </div>
+
+    <!-- STAP 1: Kies bestellijst + bladwijzer -->
     <div id="vhc-stap-1">
-      <div class="input-group" style="margin-bottom:12px">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Selecteer de VHC bestellijst en volg de stappen om de prijzen te synchroniseren.</div>
+
+      <div class="input-group" style="margin-bottom:16px">
         <label>VHC Bestellijst</label>
-        <select id="vhc-lijst-select">
+        <select id="vhc-lijst-select" style="font-size:14px">
           <option value="24103">Lente 2026</option>
           <option value="18655">eendracht totaal</option>
           <option value="23638">Winter 2026</option>
@@ -946,44 +959,71 @@
         </select>
       </div>
 
-      <div style="background:#fdf6ec;border:1px solid #e8d5b0;border-radius:4px;padding:14px;margin-bottom:12px">
-        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#8b6914;margin-bottom:8px">📌 Hoe werkt het?</div>
-        <ol style="margin:0;padding-left:18px;font-size:13px;color:var(--text);line-height:1.8">
-          <li>Sleep de knop hieronder <strong>eenmalig</strong> naar je bladwijzerbalk</li>
-          <li>Klik op <strong>VHC openen</strong> — de bestellijst opent</li>
-          <li>Schakel naar <strong>Regelweergave</strong> (knop rechtsboven op de VHC pagina)</li>
-          <li>Klik op de <strong>bladwijzer</strong> in je bladwijzerbalk</li>
-          <li>Prijzen worden automatisch teruggestuurd</li>
-        </ol>
+      <!-- Stappenplan -->
+      <div style="background:#f8f4ef;border:1px solid #e0d5c5;border-radius:6px;padding:16px;margin-bottom:16px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red);margin-bottom:12px">Hoe werkt het?</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <span style="min-width:22px;height:22px;border-radius:50%;background:var(--red);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">1</span>
+            <div style="font-size:13px">Sleep de rode knop hieronder <strong>eenmalig</strong> naar je bladwijzerbalk</div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <span style="min-width:22px;height:22px;border-radius:50%;background:var(--red);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">2</span>
+            <div style="font-size:13px">Klik op <strong>"VHC openen"</strong> hieronder — de bestellijst opent in een nieuw venster</div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <span style="min-width:22px;height:22px;border-radius:50%;background:var(--red);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">3</span>
+            <div style="font-size:13px">Schakel op de VHC pagina naar <strong>Regelweergave</strong> <span style="font-size:11px;color:var(--muted)">(knop rechtsboven)</span></div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <span style="min-width:22px;height:22px;border-radius:50%;background:var(--red);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">4</span>
+            <div style="font-size:13px">Klik op de bladwijzer <strong>"🔄 VHC → Kostprijs"</strong> in je bladwijzerbalk</div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <span style="min-width:22px;height:22px;border-radius:50%;background:#27ae60;color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">✓</span>
+            <div style="font-size:13px;color:#27ae60;font-weight:600">Klaar — de app verwerkt automatisch alle prijzen</div>
+          </div>
+        </div>
       </div>
 
-      <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--surface2);border-radius:4px">
-        <span style="font-size:12px;color:var(--muted);white-space:nowrap">Sleep naar bladwijzerbalk:</span>
-        <a id="vhc-bookmarklet-link" href="#" style="display:inline-block;padding:8px 16px;background:var(--red);color:white;border-radius:3px;font-size:12px;font-weight:700;text-decoration:none;cursor:grab">
+      <!-- Bladwijzer knop -->
+      <div style="background:var(--surface2);border-radius:6px;padding:14px;display:flex;align-items:center;gap:14px">
+        <a id="vhc-bookmarklet-link" href="#" onclick="return false"
+           style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;background:var(--red);color:white;border-radius:4px;font-size:13px;font-weight:700;text-decoration:none;cursor:grab;user-select:none;white-space:nowrap"
+           draggable="true">
           🔄 VHC → Kostprijs
         </a>
-        <span style="font-size:11px;color:var(--muted)">← sleep dit naar je bladwijzerbalk</span>
+        <div style="font-size:12px;color:var(--muted);line-height:1.5">
+          ← Sleep deze knop naar je bladwijzerbalk<br>
+          <span style="font-size:11px">(eenmalig instellen, daarna altijd herbruikbaar)</span>
+        </div>
       </div>
     </div>
 
-    <!-- Stap 2: Resultaten -->
-    <div id="vhc-stap-2" style="display:none;flex:1;min-height:0;flex-direction:column">
-      <div id="vhc-sync-status" style="font-size:13px;color:var(--muted);margin-bottom:12px;flex-shrink:0"></div>
-      <div id="vhc-sync-resultaten" style="flex:1;overflow-y:auto;border:1px solid var(--border);border-radius:2px;max-height:340px"></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;flex-shrink:0">
-        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
-          <input type="checkbox" id="vhc-alleen-wijzigingen" checked onchange="renderVhcResultaten()">
-          Toon alleen items met wijzigingen
-        </label>
-        <span id="vhc-sync-teller" style="font-size:12px;color:var(--muted)"></span>
+    <!-- STAP 2: Wachten op data -->
+    <div id="vhc-stap-2" style="display:none">
+      <div style="text-align:center;padding:32px 0">
+        <div style="font-size:40px;margin-bottom:16px" id="vhc-wacht-icon">⏳</div>
+        <div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px" id="vhc-wacht-titel">Wachten op VHC data…</div>
+        <div style="font-size:13px;color:var(--muted)" id="vhc-wacht-sub">Schakel naar Regelweergave op de VHC pagina en klik daarna de bladwijzer</div>
+        <div style="margin-top:20px;height:4px;background:var(--border);border-radius:2px;overflow:hidden">
+          <div id="vhc-progress-bar" style="height:100%;width:0%;background:var(--red);transition:width 0.5s;border-radius:2px"></div>
+        </div>
       </div>
+    </div>
+
+    <!-- STAP 3: Verwerking + eindresultaat -->
+    <div id="vhc-stap-3" style="display:none;flex:1;min-height:0;flex-direction:column">
+      <div id="vhc-resultaat-header" style="margin-bottom:12px;flex-shrink:0"></div>
+      <div id="vhc-resultaat-tabs" style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:12px;flex-shrink:0"></div>
+      <div id="vhc-resultaat-inhoud" style="flex:1;overflow-y:auto;max-height:320px"></div>
     </div>
 
     <div class="modal-actions">
-      <button class="btn btn-ghost" id="vhc-terug-btn" onclick="vhcTerug()" style="display:none">← Terug</button>
+      <button class="btn btn-ghost" id="vhc-terug-btn" onclick="vhcTerug()" style="display:none">← Opnieuw</button>
       <button class="btn btn-ghost" onclick="closeModal('modal-vhc-sync')">Sluiten</button>
       <button class="btn btn-primary" id="vhc-naar-vhc-btn" onclick="vhcNaarVhc()">🌐 VHC openen</button>
-      <button class="btn btn-primary" id="vhc-opslaan-btn" onclick="vhcOpslaanAlles()" style="display:none">💾 Wijzigingen opslaan</button>
+      <button class="btn btn-ghost" id="vhc-print-btn" onclick="vhcPrintRapport()" style="display:none">🖨️ Rapport printen</button>
     </div>
   </div>
 </div>
@@ -1076,7 +1116,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // SUPABASE CONFIG
 // ══════════════════════════════════════════════════════════════════════════════
-const APP_VERSION = 'v1.0.4';
+const APP_VERSION = 'v1.1.0';
 const SUPABASE_URL = 'https://mfexgibreooozqozzcow.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mZXhnaWJyZW9vb3pxb3p6Y293Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NzI2NjIsImV4cCI6MjA5MDA0ODY2Mn0.ufKbZhtfakH7TqA8SYAmw4NPnVLR96WjS5FmLmZn528';
 
@@ -3211,14 +3251,26 @@ function laadInkoopItems(mkId, bestaandeItems) {
 
   const ingMap = new Map();
   const inMk = mk.gerechten.map(id => gerechten.find(g => g.id == id)).filter(Boolean);
+
+  function voegIngToeInMap(hfId, map, bezocht = new Set()) {
+    if (bezocht.has(hfId)) return;
+    bezocht.add(hfId);
+    const hf = recepturen.find(r => r.id == hfId);
+    if (!hf) return;
+    const comps = [...(hf.componenten||[]), ...(hf.compIng||[]), ...(hf.compHf||[])];
+    comps.forEach(cc => {
+      if (cc.sourceType === 'ing') {
+        const i = ingredienten.find(x => x.id == cc.sourceId);
+        if (i) map.set(String(i.id), i);
+      } else if (cc.sourceType === 'hf') {
+        voegIngToeInMap(cc.sourceId, map, bezocht);
+      }
+    });
+  }
+
   inMk.forEach(ger => {
     (ger.compIng||[]).forEach(c => { const i = ingredienten.find(x => x.id == c.sourceId); if (i) ingMap.set(String(i.id), i); });
-    (ger.compHf||[]).forEach(c => {
-      const hf = recepturen.find(r => r.id == c.sourceId);
-      if (hf) (hf.componenten||[]).filter(cc => cc.sourceType !== 'hf').forEach(cc => {
-        const i = ingredienten.find(x => x.id == cc.sourceId); if (i) ingMap.set(String(i.id), i);
-      });
-    });
+    (ger.compHf||[]).forEach(c => voegIngToeInMap(c.sourceId, ingMap));
   });
 
   const items = [...ingMap.values()].sort((a,b) => {
@@ -3363,13 +3415,21 @@ function _printInkooplijstData(lijst) {
   if (lijst.menukaart_id) {
     const mk = menukaarten.find(m => m.id == lijst.menukaart_id);
     if (mk) {
+      function voegIdToe(hfId, bezocht = new Set()) {
+        if (bezocht.has(hfId)) return;
+        bezocht.add(hfId);
+        const hf = recepturen.find(r => r.id == hfId);
+        if (!hf) return;
+        const comps = [...(hf.componenten||[]), ...(hf.compIng||[]), ...(hf.compHf||[])];
+        comps.forEach(cc => {
+          if (cc.sourceType === 'ing') alleIngIds.add(String(cc.sourceId));
+          else if (cc.sourceType === 'hf') voegIdToe(cc.sourceId, bezocht);
+        });
+      }
       const inMk = mk.gerechten.map(id => gerechten.find(g => g.id == id)).filter(Boolean);
       inMk.forEach(ger => {
         (ger.compIng || []).forEach(c => alleIngIds.add(String(c.sourceId)));
-        (ger.compHf || []).forEach(c => {
-          const hf = recepturen.find(r => r.id == c.sourceId);
-          if (hf) (hf.componenten || []).filter(cc => cc.sourceType !== 'hf').forEach(cc => alleIngIds.add(String(cc.sourceId)));
-        });
+        (ger.compHf || []).forEach(c => voegIdToe(c.sourceId));
       });
     }
   }
@@ -3507,21 +3567,45 @@ ${paginas}
 // ══════════════════════════════════════════════════════════════════════════════
 // VHC PRIJSSYNCHRONISATIE
 // ══════════════════════════════════════════════════════════════════════════════
-let _vhcGescrapedData = [];
+// ══════════════════════════════════════════════════════════════════════════════
+// VHC SYNCHRONISATIE — volledig herbouwde versie
+// ══════════════════════════════════════════════════════════════════════════════
 
-function vhcTerug() {
-  document.getElementById('vhc-stap-1').style.display = '';
-  document.getElementById('vhc-stap-2').style.display = 'none';
-  document.getElementById('vhc-terug-btn').style.display = 'none';
-  document.getElementById('vhc-naar-vhc-btn').style.display = '';
-  document.getElementById('vhc-opslaan-btn').style.display = 'none';
+let _vhcRapport = null; // opgeslagen rapport na sync
+let _vhcActiefTabblad = 'prijzen'; // huidig actief tabblad in resultaat
+
+// ── Stap indicators ──────────────────────────────────────────────────────────
+function vhcSetStap(nr) {
+  [1,2,3].forEach(i => {
+    const dot = document.getElementById('vhc-dot-' + i);
+    if (!dot) return;
+    if (i < nr) {
+      dot.style.background = '#27ae60'; dot.style.color = 'white';
+    } else if (i === nr) {
+      dot.style.background = 'var(--red)'; dot.style.color = 'white';
+    } else {
+      dot.style.background = 'var(--border)'; dot.style.color = 'var(--muted)';
+    }
+  });
+  document.getElementById('vhc-stap-1').style.display = nr === 1 ? '' : 'none';
+  document.getElementById('vhc-stap-2').style.display = nr === 2 ? '' : 'none';
+  document.getElementById('vhc-stap-3').style.display = nr === 3 ? 'flex' : 'none';
 }
 
+function vhcTerug() {
+  vhcSetStap(1);
+  document.getElementById('vhc-terug-btn').style.display = 'none';
+  document.getElementById('vhc-naar-vhc-btn').style.display = '';
+  document.getElementById('vhc-print-btn').style.display = 'none';
+  vhcUpdateBookmarklet();
+}
+
+// ── Bookmarklet ───────────────────────────────────────────────────────────────
 function vhcUpdateBookmarklet() {
   const appUrl = location.origin + location.pathname;
   const code = `(function(){
     var items=document.querySelectorAll('.amwishlist-item');
-    if(!items.length){alert('Geen producten gevonden. Zorg dat de bestellijst open is in regelweergave.');return;}
+    if(!items.length){alert('Geen producten gevonden.\nZorg dat de bestellijst open is in REGELWEERGAVE (knop rechtsboven).');return;}
     var data=[];
     items.forEach(function(item){
       var naamEl=item.querySelector('.amwishlist-name')||item.querySelector('[class*="name"] a')||item.querySelector('[class*="name"]');
@@ -3530,210 +3614,110 @@ function vhcUpdateBookmarklet() {
       var naam=naamEl?naamEl.textContent.trim():'';
       if(naam&&naam.length>1&&prijs){
         var p=parseFloat(prijs.textContent.replace(/[^0-9,]/g,'').replace(',','.'));
-        if(!isNaN(p)&&p>0) data.push({naam:naam,prijs:p,sku:sku?sku.textContent.trim():''});
+        if(!isNaN(p)&&p>0)data.push({naam:naam,prijs:p,sku:sku?sku.textContent.trim():''});
       }
     });
-    if(!data.length){alert('Geen prijzen gevonden. Schakel naar regelweergave en probeer opnieuw.');return;}
-    var win=window.open('${appUrl}#vhc-sync','_kostprijs');
+    if(!data.length){alert('Geen prijzen gevonden.\nSchakel naar REGELWEERGAVE en probeer opnieuw.');return;}
+    var win=window.open('${appUrl}','_kostprijs');
+    if(!win){alert('Pop-up geblokkeerd! Sta pop-ups toe voor lars347.github.io');return;}
+    var tries=0;
     var interval=setInterval(function(){
+      tries++;
       try{
-        if(win&&win.vhcOntvangData){clearInterval(interval);win.vhcOntvangData(data);win.focus();}
+        if(win.vhcOntvangData){clearInterval(interval);win.vhcOntvangData(data);win.focus();return;}
       }catch(e){}
+      if(tries>40){clearInterval(interval);alert('Verbinding mislukt. Probeer opnieuw.');}
     },300);
-    setTimeout(function(){clearInterval(interval);},15000);
-    alert(data.length+' producten gevonden! De app wordt nu bijgewerkt.');
+    alert(data.length+' producten gevonden! Ga terug naar de app.');
   })();`;
   const link = document.getElementById('vhc-bookmarklet-link');
   if (link) link.href = 'javascript:' + encodeURIComponent(code);
 }
 
+// ── VHC openen ────────────────────────────────────────────────────────────────
 function vhcNaarVhc() {
   const lijstId = document.getElementById('vhc-lijst-select').value;
   vhcUpdateBookmarklet();
-  window.open('https://vhcjongensalmere.nl/mwishlist/wishlist/index/wishlist_id/' + lijstId + '/', '_vhc');
-  // Toon wacht-status
-  document.getElementById('vhc-stap-1').style.display = 'none';
-  document.getElementById('vhc-stap-2').style.display = 'flex';
+  const vhcUrl = 'https://vhcjongensalmere.nl/mwishlist/wishlist/index/wishlist_id/' + lijstId + '/';
+  window.open(vhcUrl, '_vhc_sync');
+  // Naar stap 2: wachten
+  vhcSetStap(2);
   document.getElementById('vhc-terug-btn').style.display = '';
   document.getElementById('vhc-naar-vhc-btn').style.display = 'none';
-  document.getElementById('vhc-sync-status').textContent = '⏳ Wachten op data van VHC... Klik de bladwijzer op de VHC pagina.';
-  document.getElementById('vhc-sync-resultaten').innerHTML = '';
+  // Animeer progress bar om duidelijk te maken dat we wachten
+  let pct = 0;
+  const bar = document.getElementById('vhc-progress-bar');
+  const barInterval = setInterval(() => {
+    pct = Math.min(pct + 1, 90);
+    if (bar) bar.style.width = pct + '%';
+  }, 200);
+  window._vhcBarInterval = barInterval;
 }
 
-// Wordt aangeroepen vanuit de bookmarklet
+// ── Ontvang data van bookmarklet ──────────────────────────────────────────────
 function vhcOntvangData(producten) {
-  document.getElementById('vhc-sync-status').textContent = '✅ Data ontvangen — bezig met vergelijken...';
-  // Korte delay zodat de UI kan updaten
-  setTimeout(() => vhcVergelijk(producten), 100);
+  clearInterval(window._vhcBarInterval);
+  const bar = document.getElementById('vhc-progress-bar');
+  if (bar) bar.style.width = '100%';
+  document.getElementById('vhc-wacht-icon').textContent = '✅';
+  document.getElementById('vhc-wacht-titel').textContent = producten.length + ' producten ontvangen — bezig met verwerken…';
+  document.getElementById('vhc-wacht-sub').textContent = 'Prijzen worden vergeleken en opgeslagen…';
+  setTimeout(() => vhcVerwerken(producten), 400);
 }
 
-function vhcVergelijk(producten) {
-  const vhcNamen = new Set(producten.map(p => p.naam.toLowerCase()));
-  const resultaten = [];
+// ── Verwerken: vergelijk + opslaan ───────────────────────────────────────────
+async function vhcVerwerken(producten) {
+  const rapport = {
+    datum: new Date().toLocaleString('nl-NL'),
+    lijstNaam: document.getElementById('vhc-lijst-select')?.selectedOptions[0]?.text || '',
+    prijsWijzigingen: [],   // { ingNaam, oud, nieuw, verschil, pct }
+    nieuwToegevoegd: [],    // { naam, prijs, id, incompleet, ontbrekend[] }
+    wegUitLijst: [],        // { ingNaam } — was VHC, staat niet meer in lijst
+    totaalGescraped: producten.length
+  };
 
-  // 1. Koppel VHC producten aan bestaande ingrediënten
-  producten.forEach(vhcProd => {
+  // 1. Vergelijk elk VHC product met ingredienten
+  for (const vhcProd of producten) {
     const vhcNaamLc = vhcProd.naam.toLowerCase();
     const match = ingredienten.find(ing => {
-      const ingNaamLc = ing.naam.toLowerCase();
-      // Exacte match
-      if (ingNaamLc === vhcNaamLc) return true;
-      // Één naam bevat de andere volledig — minimaal 8 tekens om valse matches te voorkomen
-      // bijv. "Lismo Pesto" mag NIET matchen op "Pesto" (te kort / ander product)
-      if (ingNaamLc.length >= 8 && vhcNaamLc.includes(ingNaamLc)) return true;
-      if (vhcNaamLc.length >= 8 && ingNaamLc.includes(vhcNaamLc)) return true;
-      return false;
+      const n = ing.naam.toLowerCase();
+      return n === vhcNaamLc || n.includes(vhcNaamLc) || vhcNaamLc.includes(n);
     });
 
     if (match) {
-      // Bestaand ingrediënt — prijs bijwerken
       const verschil = Math.round((vhcProd.prijs - match.prijs) * 100) / 100;
-      const pct = match.prijs > 0 ? ((verschil / match.prijs) * 100).toFixed(1) : '0';
-      resultaten.push({
-        type: 'update',
-        ingId: match.id, ingIdx: ingredienten.indexOf(match), ingNaam: match.naam,
-        vhcNaam: vhcProd.naam, oudePrijs: match.prijs, nieuwePrijs: vhcProd.prijs,
-        verschil, pct,
-        gewijzigd: Math.abs(verschil) > 0.001,
-        geselecteerd: Math.abs(verschil) > 0.001,
-        matchInfo: match.naam.toLowerCase() !== vhcProd.naam.toLowerCase() ? `→ gekoppeld aan: "${match.naam}"` : null
-      });
+      if (Math.abs(verschil) > 0.001) {
+        await savePrijsHistorie(match.id, match.naam, match.prijs, vhcProd.prijs);
+        match.prijs = vhcProd.prijs;
+        await sbSaveIng(match);
+        rapport.prijsWijzigingen.push({
+          ingNaam: match.naam,
+          oud: match.prijs + verschil, // herstel oud voor display
+          nieuw: vhcProd.prijs,
+          verschil,
+          pct: ((verschil / (match.prijs)) * 100).toFixed(1)
+        });
+        // Fix: sla de juiste oude prijs op
+        rapport.prijsWijzigingen[rapport.prijsWijzigingen.length-1].oud = vhcProd.prijs - verschil;
+      }
     } else {
-      // Nieuw product — toevoegen aan Supabase
-      resultaten.push({
-        type: 'nieuw',
-        ingId: null, ingIdx: -1, ingNaam: vhcProd.naam,
-        vhcNaam: vhcProd.naam, oudePrijs: 0, nieuwePrijs: vhcProd.prijs,
-        verschil: vhcProd.prijs, pct: '100',
-        gewijzigd: true, geselecteerd: true // standaard aangevinkt
-      });
-    }
-  });
+      // Nieuw product — sla op en markeer incompleet indien nodig
+      const ontbrekend = [];
+      if (!vhcProd.naam) ontbrekend.push('naam');
+      if (!vhcProd.prijs) ontbrekend.push('prijs');
+      // Eenheid en leverancier zijn altijd onbekend van VHC
+      ontbrekend.push('eenheid');
+      const incompleet = ontbrekend.length > 0;
 
-  // 2. Ingrediënten die niet meer in VHC lijst staan (leverancier = VHC)
-  ingredienten.forEach((ing, idx) => {
-    const isVhc = (ing.leverancier || '').toLowerCase().includes('vhc');
-    if (!isVhc) return;
-    const ingNaamLc = ing.naam.toLowerCase();
-    const nogInVhc = producten.some(p => {
-      const pLc = p.naam.toLowerCase();
-      if (pLc === ingNaamLc) return true;
-      if (ingNaamLc.length >= 8 && pLc.includes(ingNaamLc)) return true;
-      if (pLc.length >= 8 && ingNaamLc.includes(pLc)) return true;
-      return false;
-    });
-    if (!nogInVhc) {
-      resultaten.push({
-        type: 'verwijder',
-        ingId: ing.id, ingIdx: idx, ingNaam: ing.naam,
-        vhcNaam: '—', oudePrijs: ing.prijs, nieuwePrijs: 0,
-        verschil: 0, pct: '0',
-        gewijzigd: true, geselecteerd: false // standaard niet geselecteerd
-      });
-    }
-  });
-
-  _vhcGescrapedData = resultaten;
-  const aantalUpdate  = resultaten.filter(r => r.type === 'update' && r.gewijzigd).length;
-  const aantalNieuw   = resultaten.filter(r => r.type === 'nieuw').length;
-  const aantalVerwijder = resultaten.filter(r => r.type === 'verwijder').length;
-
-  document.getElementById('vhc-sync-status').innerHTML =
-    `✅ <strong>${producten.length}</strong> producten gelezen &nbsp;·&nbsp; `
-    + `<span style="color:#e67e22"><strong>${aantalNieuw}</strong> nieuw</span> &nbsp;·&nbsp; `
-    + `<span style="color:#2980b9"><strong>${aantalUpdate}</strong> prijswijzigingen</span> &nbsp;·&nbsp; `
-    + `<span style="color:#c0392b"><strong>${aantalVerwijder}</strong> niet meer in lijst</span>`;
-
-  document.getElementById('vhc-opslaan-btn').style.display =
-    (aantalUpdate + aantalNieuw + aantalVerwijder) > 0 ? '' : 'none';
-  renderVhcResultaten();
-}
-
-function renderVhcResultaten() {
-  const alleenWijzigingen = document.getElementById('vhc-alleen-wijzigingen').checked;
-  const zichtbaar = _vhcGescrapedData.filter(r => !alleenWijzigingen || r.gewijzigd);
-  const container = document.getElementById('vhc-sync-resultaten');
-
-  if (!zichtbaar.length) {
-    container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-style:italic">Geen wijzigingen gevonden</div>';
-    document.getElementById('vhc-sync-teller').textContent = '';
-    return;
-  }
-
-  const geselecteerd = _vhcGescrapedData.filter(r => r.geselecteerd).length;
-  document.getElementById('vhc-sync-teller').textContent = geselecteerd + ' geselecteerd';
-
-  // Type labels en kleuren
-  const typeLabel = { update: '↕ Prijs', nieuw: '+ Nieuw', verwijder: '✕ Weg' };
-  const typeBg    = { update: '', nieuw: '#f0faf0', verwijder: '#fff5f5' };
-  const typeKleur = { update: '#2980b9', nieuw: '#27ae60', verwijder: '#c0392b' };
-
-  let html = '<div style="display:grid;grid-template-columns:28px 80px 1fr 85px 85px 85px;gap:6px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:8px 12px;border-bottom:2px solid var(--border);position:sticky;top:0;background:white">'
-    + '<span></span><span>Type</span><span>Ingrediënt</span><span>Huidig</span><span>VHC prijs</span><span>Verschil</span></div>';
-
-  html += zichtbaar.map(r => {
-    const gi = _vhcGescrapedData.indexOf(r);
-    const kleur = r.type === 'verwijder' ? '#c0392b' : r.verschil > 0 ? '#c0392b' : r.verschil < 0 ? '#27ae60' : 'var(--muted)';
-    const pijl  = r.type === 'verwijder' ? '' : r.verschil > 0 ? '↑' : r.verschil < 0 ? '↓' : '=';
-    return `<div style="display:grid;grid-template-columns:28px 80px 1fr 85px 85px 85px;gap:6px;align-items:center;padding:7px 12px;border-bottom:1px solid #ede8df;background:${typeBg[r.type]}">`
-      + `<input type="checkbox" ${r.geselecteerd ? 'checked' : ''} onchange="_vhcGescrapedData[${gi}].geselecteerd=this.checked;renderVhcResultaten()">`
-      + `<span style="font-size:10px;font-weight:700;color:${typeKleur[r.type]}">${typeLabel[r.type]}</span>`
-      + `<div><div style="font-size:12px;font-weight:600">${r.ingNaam}</div>`
-      + (r.matchInfo ? `<div style="font-size:10px;color:#e67e22">${r.matchInfo}</div>` : '')
-      + (r.ingNaam !== r.vhcNaam && r.vhcNaam !== '—' && !r.matchInfo ? `<div style="font-size:10px;color:var(--muted)">VHC: ${r.vhcNaam}</div>` : '') + '</div>'
-      + `<div style="font-size:12px;font-family:monospace">${r.oudePrijs > 0 ? '€ ' + r.oudePrijs.toFixed(2).replace('.', ',') : '—'}</div>`
-      + `<div style="font-size:12px;font-family:monospace;font-weight:700">${r.nieuwePrijs > 0 ? '€ ' + r.nieuwePrijs.toFixed(2).replace('.', ',') : '—'}</div>`
-      + `<div style="font-size:12px;font-weight:700;color:${kleur}">${r.type === 'verwijder' ? 'Verwijderen' : pijl + ' ' + Math.abs(r.verschil).toFixed(2).replace('.', ',')}</div>`
-      + '</div>';
-  }).join('');
-
-  container.innerHTML = html;
-}
-
-async function vhcOpslaanAlles() {
-  const teOpslaan = _vhcGescrapedData.filter(r => r.geselecteerd);
-  if (!teOpslaan.length) { toast('Selecteer minstens één item'); return; }
-
-  const aantalNieuw = teOpslaan.filter(r => r.type === 'nieuw').length;
-  const aantalUpdate = teOpslaan.filter(r => r.type === 'update').length;
-  const aantalVerwijder = teOpslaan.filter(r => r.type === 'verwijder').length;
-
-  const msg = [
-    aantalUpdate > 0 ? aantalUpdate + ' prijzen bijwerken' : '',
-    aantalNieuw > 0 ? aantalNieuw + ' nieuwe ingrediënten toevoegen' : '',
-    aantalVerwijder > 0 ? aantalVerwijder + ' ingrediënten verwijderen' : ''
-  ].filter(Boolean).join(', ');
-
-  if (!confirm(msg + '?')) return;
-
-  const btn = document.getElementById('vhc-opslaan-btn');
-  btn.textContent = '⏳ Opslaan...';
-  btn.disabled = true;
-  let opgeslagen = 0;
-  const toegevoegdeIngIds = []; // bijhouden voor melding achteraf
-
-  for (const r of teOpslaan) {
-    if (r.type === 'update') {
-      const ing = ingredienten[r.ingIdx];
-      if (!ing) continue;
-      await savePrijsHistorie(ing.id, ing.naam, r.oudePrijs, r.nieuwePrijs);
-      ing.prijs = r.nieuwePrijs;
-      await sbSaveIng(ing);
-      opgeslagen++;
-
-    } else if (r.type === 'nieuw') {
-      // Gebruik directe POST — sla id weg zodat sbSaveIng POST doet (niet PATCH)
       const nieuwIng = {
-        naam: r.vhcNaam,
+        naam: vhcProd.naam,
         leverancier: 'VHC',
         categorie: 'VHC',
-        eenheid: 'stuk', // onbekend — markeer voor handmatige controle
-        prijs: r.nieuwePrijs,
-        sverlies: 0,
-        spieknaam: '',
-        productCategorie: ''
+        eenheid: 'stuk', // placeholder
+        prijs: vhcProd.prijs,
+        sverlies: 0
       };
-      // Direct POST zonder id veld
+
       const res = await sbFetch('ingredienten', 'POST', {
         naam: nieuwIng.naam, leverancier: nieuwIng.leverancier,
         categorie: nieuwIng.categorie, eenheid: nieuwIng.eenheid,
@@ -3741,52 +3725,194 @@ async function vhcOpslaanAlles() {
       });
       if (res && res[0]) {
         nieuwIng.id = res[0].id;
+        nieuwIng.spieknaam = '';
+        nieuwIng.productCategorie = '';
         ingredienten.push(nieuwIng);
-        toegevoegdeIngIds.push({ id: nieuwIng.id, idx: ingredienten.length - 1, naam: nieuwIng.naam });
         await savePrijsHistorie(nieuwIng.id, nieuwIng.naam, 0, nieuwIng.prijs);
-        opgeslagen++;
+        rapport.nieuwToegevoegd.push({ naam: vhcProd.naam, prijs: vhcProd.prijs, id: nieuwIng.id, idx: ingredienten.length - 1, incompleet, ontbrekend });
       }
-
-    } else if (r.type === 'verwijder') {
-      const ing = ingredienten[r.ingIdx];
-      if (!ing) continue;
-      await sbDelete('ingredienten', ing.id);
-      ingredienten.splice(r.ingIdx, 1);
-      opgeslagen++;
     }
   }
 
-  renderIngredienten();
-  btn.textContent = '💾 Wijzigingen opslaan';
-  btn.disabled = false;
-  closeModal('modal-vhc-sync');
+  // 2. Controleer welke VHC ingredienten niet meer in de lijst staan
+  const vhcNamenLower = new Set(producten.map(p => p.naam.toLowerCase()));
+  ingredienten.forEach(ing => {
+    if ((ing.leverancier || '').toLowerCase() !== 'vhc') return;
+    const ingNaamLc = ing.naam.toLowerCase();
+    const nogInLijst = producten.some(p => {
+      const pLc = p.naam.toLowerCase();
+      return pLc === ingNaamLc || pLc.includes(ingNaamLc) || ingNaamLc.includes(pLc);
+    });
+    if (!nogInLijst) rapport.wegUitLijst.push({ ingNaam: ing.naam });
+  });
 
-  // Toon melding voor nieuwe producten die handmatige controle nodig hebben
-  if (toegevoegdeIngIds.length > 0) {
-    const namen = toegevoegdeIngIds.map(i => i.naam).join('\n• ');
-    const naarBewerken = confirm(
-      `✅ ${opgeslagen} wijzigingen opgeslagen.\n\n` +
-      `⚠️ ${toegevoegdeIngIds.length} nieuwe product(en) toegevoegd met eenheid "stuk" — controleer dit:\n• ${namen}\n\n` +
-      `Wil je deze nu bewerken?`
-    );
-    if (naarBewerken) {
-      // Ga naar ingrediënten pagina en open het eerste nieuwe product
-      showPage('ingredienten', document.querySelector('.nav-tab[onclick*="ingredienten"]'));
-      setTimeout(() => {
-        const eersteIdx = toegevoegdeIngIds[0].idx;
-        if (eersteIdx >= 0 && eersteIdx < ingredienten.length) openIngModal(eersteIdx);
-      }, 300);
+  renderIngredienten();
+  _vhcRapport = rapport;
+  vhcToonRapport(rapport);
+}
+
+// ── Rapport tonen ─────────────────────────────────────────────────────────────
+function vhcToonRapport(rapport) {
+  vhcSetStap(3);
+  document.getElementById('vhc-terug-btn').style.display = '';
+  document.getElementById('vhc-print-btn').style.display = '';
+  document.getElementById('vhc-naar-vhc-btn').style.display = 'none';
+
+  const aantalIncompleet = rapport.nieuwToegevoegd.filter(n => n.incompleet).length;
+
+  // Header samenvatting
+  const header = document.getElementById('vhc-resultaat-header');
+  const allesOk = rapport.prijsWijzigingen.length === 0 && rapport.nieuwToegevoegd.length === 0 && rapport.wegUitLijst.length === 0;
+  header.innerHTML = `
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:4px">
+      <div style="background:#e8f8ef;border:1px solid #a8dfc0;border-radius:4px;padding:8px 14px;font-size:13px">
+        <strong style="color:#1a7a45">${rapport.prijsWijzigingen.length}</strong> <span style="color:#333">prijswijzigingen</span>
+      </div>
+      <div style="background:${rapport.nieuwToegevoegd.length > 0 ? '#e8f0ff' : '#f5f5f5'};border:1px solid ${rapport.nieuwToegevoegd.length > 0 ? '#a8c0f0' : '#ddd'};border-radius:4px;padding:8px 14px;font-size:13px">
+        <strong style="color:#1a40a0">${rapport.nieuwToegevoegd.length}</strong> <span style="color:#333">nieuw toegevoegd</span>
+      </div>
+      ${aantalIncompleet > 0 ? `<div style="background:#fff8e8;border:1px solid #f0d080;border-radius:4px;padding:8px 14px;font-size:13px">
+        <strong style="color:#a06010">⚠️ ${aantalIncompleet}</strong> <span style="color:#333">incompleet — controleer</span>
+      </div>` : ''}
+      ${rapport.wegUitLijst.length > 0 ? `<div style="background:#fff0f0;border:1px solid #f0b0b0;border-radius:4px;padding:8px 14px;font-size:13px">
+        <strong style="color:#900">📋 ${rapport.wegUitLijst.length}</strong> <span style="color:#333">niet meer in VHC lijst</span>
+      </div>` : ''}
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:4px">Gesynchroniseerd op ${rapport.datum} · ${rapport.totaalGescraped} producten gelezen uit "${rapport.lijstNaam}"</div>`;
+
+  // Tabbladen
+  const tabs = document.getElementById('vhc-resultaat-tabs');
+  const tabDefs = [
+    { id: 'prijzen', label: '↕ Prijzen (' + rapport.prijsWijzigingen.length + ')' },
+    { id: 'nieuw', label: '➕ Nieuw (' + rapport.nieuwToegevoegd.length + ')' + (aantalIncompleet > 0 ? ' ⚠️' : '') },
+    { id: 'weg', label: '📋 Niet meer in lijst (' + rapport.wegUitLijst.length + ')' },
+  ];
+  tabs.innerHTML = tabDefs.map(t =>
+    `<button onclick="vhcToonTab('${t.id}')" id="vhc-tab-${t.id}"
+      style="padding:8px 14px;border:none;background:none;cursor:pointer;font-size:12px;font-weight:600;
+             color:${_vhcActiefTabblad === t.id ? 'var(--red)' : 'var(--muted)'};
+             border-bottom:2px solid ${_vhcActiefTabblad === t.id ? 'var(--red)' : 'transparent'};
+             margin-bottom:-2px">${t.label}</button>`
+  ).join('');
+
+  vhcToonTab(_vhcActiefTabblad, rapport);
+}
+
+function vhcToonTab(tabId, rapport) {
+  _vhcActiefTabblad = tabId;
+  const r = rapport || _vhcRapport;
+  if (!r) return;
+
+  // Update tab stijlen
+  ['prijzen','nieuw','weg'].forEach(t => {
+    const el = document.getElementById('vhc-tab-' + t);
+    if (!el) return;
+    el.style.color = t === tabId ? 'var(--red)' : 'var(--muted)';
+    el.style.borderBottom = t === tabId ? '2px solid var(--red)' : '2px solid transparent';
+  });
+
+  const inhoud = document.getElementById('vhc-resultaat-inhoud');
+
+  if (tabId === 'prijzen') {
+    if (!r.prijsWijzigingen.length) {
+      inhoud.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-style:italic">Geen prijswijzigingen</div>';
+    } else {
+      inhoud.innerHTML = `<div style="display:grid;grid-template-columns:1fr 85px 85px 80px;gap:6px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:8px 12px;border-bottom:2px solid var(--border);position:sticky;top:0;background:white">
+        <span>Ingrediënt</span><span>Oud</span><span>Nieuw</span><span>Verschil</span></div>` +
+      r.prijsWijzigingen.map(p => {
+        const kleur = p.verschil > 0 ? '#c0392b' : '#27ae60';
+        const pijl = p.verschil > 0 ? '↑' : '↓';
+        return `<div style="display:grid;grid-template-columns:1fr 85px 85px 80px;gap:6px;align-items:center;padding:7px 12px;border-bottom:1px solid #ede8df">
+          <div style="font-size:12px;font-weight:600">${p.ingNaam}</div>
+          <div style="font-size:12px;font-family:monospace;color:var(--muted)">€ ${p.oud.toFixed(2).replace('.',',')}</div>
+          <div style="font-size:12px;font-family:monospace;font-weight:700">€ ${p.nieuw.toFixed(2).replace('.',',')}</div>
+          <div style="font-size:12px;font-weight:700;color:${kleur}">${pijl} ${Math.abs(p.verschil).toFixed(2).replace('.',',')} (${Math.abs(p.pct)}%)</div>
+        </div>`;
+      }).join('');
     }
-  } else {
-    toast('✅ ' + opgeslagen + ' wijzigingen opgeslagen');
+
+  } else if (tabId === 'nieuw') {
+    if (!r.nieuwToegevoegd.length) {
+      inhoud.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-style:italic">Geen nieuwe producten</div>';
+    } else {
+      inhoud.innerHTML = `<div style="display:grid;grid-template-columns:1fr 80px 140px 100px;gap:6px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:8px 12px;border-bottom:2px solid var(--border);position:sticky;top:0;background:white">
+        <span>Product</span><span>Prijs</span><span>Status</span><span>Actie</span></div>` +
+      r.nieuwToegevoegd.map(n => {
+        const status = n.incompleet
+          ? `<span style="background:#fff3cd;color:#856404;border-radius:3px;padding:2px 8px;font-size:10px;font-weight:700">⚠️ Incompleet</span>`
+          : `<span style="background:#d4edda;color:#155724;border-radius:3px;padding:2px 8px;font-size:10px;font-weight:700">✅ Compleet</span>`;
+        const ontbr = n.incompleet ? `<div style="font-size:10px;color:#856404;margin-top:2px">Ontbreekt: ${n.ontbrekend.join(', ')}</div>` : '';
+        return `<div style="display:grid;grid-template-columns:1fr 80px 140px 100px;gap:6px;align-items:center;padding:8px 12px;border-bottom:1px solid #ede8df;background:${n.incompleet ? '#fffdf0' : 'white'}">
+          <div><div style="font-size:12px;font-weight:600">${n.naam}</div>${ontbr}</div>
+          <div style="font-size:12px;font-family:monospace">€ ${n.prijs.toFixed(2).replace('.',',')}</div>
+          <div>${status}</div>
+          <div><button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="closeModal('modal-vhc-sync');showPage('ingredienten',null);setTimeout(()=>openIngModal(${n.idx}),300)">✎ Bewerken</button></div>
+        </div>`;
+      }).join('');
+    }
+
+  } else if (tabId === 'weg') {
+    if (!r.wegUitLijst.length) {
+      inhoud.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-style:italic">Alle VHC ingrediënten staan nog in de lijst</div>';
+    } else {
+      inhoud.innerHTML = `<div style="padding:10px 12px;background:#fff5f5;border-bottom:1px solid #f0c0c0;font-size:12px;color:#900">
+        ℹ️ Deze ingrediënten hebben leverancier "VHC" maar staan niet meer in de geselecteerde bestellijst. Ze zijn <strong>niet verwijderd</strong> — controleer handmatig.
+      </div>` +
+      r.wegUitLijst.map(w =>
+        `<div style="padding:8px 12px;border-bottom:1px solid #ede8df;font-size:12px;color:var(--text)">📋 ${w.ingNaam}</div>`
+      ).join('');
+    }
   }
 }
 
-// Zet bookmarklet klaar zodra modal opent
-document.getElementById('modal-vhc-sync').addEventListener('click', function(e) {
-  if (e.target === this) return;
-  vhcUpdateBookmarklet();
-}, { once: false });
+// ── Rapport printen ───────────────────────────────────────────────────────────
+function vhcPrintRapport() {
+  const r = _vhcRapport;
+  if (!r) return;
+  const win = window.open('', '_vhc_print');
+
+  const prijsRijen = r.prijsWijzigingen.map(function(p) {
+    return '<tr><td>' + p.ingNaam + '</td><td>\u20ac ' + p.oud.toFixed(2) + '</td><td><strong>\u20ac ' + p.nieuw.toFixed(2) + '</strong></td>'
+      + '<td class="' + (p.verschil > 0 ? 'rood' : 'groen') + '">' + (p.verschil > 0 ? '\u2191' : '\u2193') + ' \u20ac ' + Math.abs(p.verschil).toFixed(2) + ' (' + Math.abs(p.pct) + '%)</td></tr>';
+  }).join('');
+
+  const nieuwRijen = r.nieuwToegevoegd.map(function(n) {
+    const badge = n.incompleet
+      ? '<span class="badge-warn">\u26a0\ufe0f Incompleet: ' + n.ontbrekend.join(', ') + '</span>'
+      : '<span class="badge-ok">\u2705 Compleet</span>';
+    return '<tr><td>' + n.naam + '</td><td>\u20ac ' + n.prijs.toFixed(2) + '</td><td>' + badge + '</td></tr>';
+  }).join('');
+
+  const wegRijen = r.wegUitLijst.map(function(w) {
+    return '<tr><td>' + w.ingNaam + '</td></tr>';
+  }).join('');
+
+  const html = '<!DOCTYPE html><html><head><title>VHC Sync Rapport</title>'
+    + '<style>body{font-family:Arial,sans-serif;padding:20px;color:#333;font-size:12px}'
+    + 'h1{font-size:16px;margin-bottom:4px}h2{font-size:13px;margin:16px 0 8px;border-bottom:1px solid #ccc;padding-bottom:4px}'
+    + 'table{width:100%;border-collapse:collapse;margin-bottom:12px}'
+    + 'th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#666;padding:4px 8px;border-bottom:2px solid #ccc}'
+    + 'td{padding:5px 8px;border-bottom:1px solid #eee;font-size:12px}'
+    + '.rood{color:#c0392b;font-weight:700}.groen{color:#27ae60;font-weight:700}'
+    + '.badge-warn{background:#fff3cd;color:#856404;padding:2px 6px;border-radius:3px;font-size:10px}'
+    + '.badge-ok{background:#d4edda;color:#155724;padding:2px 6px;border-radius:3px;font-size:10px}'
+    + '@media print{@page{margin:15mm}}</style></head><body>'
+    + '<h1>VHC Sync Rapport</h1>'
+    + '<div style="color:#666;margin-bottom:16px">' + r.datum + ' \u00b7 ' + r.totaalGescraped + ' producten \u00b7 "' + r.lijstNaam + '"</div>'
+    + '<h2>\u2195 Prijswijzigingen (' + r.prijsWijzigingen.length + ')</h2>'
+    + (r.prijsWijzigingen.length === 0 ? '<p style="color:#666;font-style:italic">Geen prijswijzigingen</p>'
+      : '<table><tr><th>Ingredi\u00ebnt</th><th>Oud</th><th>Nieuw</th><th>Verschil</th></tr>' + prijsRijen + '</table>')
+    + '<h2>\u2795 Nieuw toegevoegd (' + r.nieuwToegevoegd.length + ')</h2>'
+    + (r.nieuwToegevoegd.length === 0 ? '<p style="color:#666;font-style:italic">Geen nieuwe producten</p>'
+      : '<table><tr><th>Product</th><th>Prijs</th><th>Status</th></tr>' + nieuwRijen + '</table>')
+    + '<h2>\ud83d\udccb Niet meer in VHC lijst (' + r.wegUitLijst.length + ')</h2>'
+    + (r.wegUitLijst.length === 0 ? '<p style="color:#666;font-style:italic">Geen</p>'
+      : '<table><tr><th>Ingredi\u00ebnt</th></tr>' + wegRijen + '</table>');
+
+  win.document.write(html);
+  win.document.close();
+  setTimeout(function() { win.print(); }, 400);
+}
 
 
 
@@ -3928,6 +4054,23 @@ function printInkooplijst(idx) {
   _inkoopMkIdx = idx;
   _inkoopIngMap = new Map();
 
+  // Recursieve functie — haalt alle ingrediënten op, ook uit geneste recepturen
+  function voegIngToe(hfId, bezocht = new Set()) {
+    if (bezocht.has(hfId)) return; // voorkom oneindige loop
+    bezocht.add(hfId);
+    const hf = recepturen.find(r => r.id == hfId);
+    if (!hf) return;
+    const allComps = [...(hf.componenten || []), ...(hf.compIng || []), ...(hf.compHf || [])];
+    allComps.forEach(cc => {
+      if (cc.sourceType === 'ing') {
+        const ing = ingredienten.find(i => i.id == cc.sourceId);
+        if (ing) _inkoopIngMap.set(ing.id, ing);
+      } else if (cc.sourceType === 'hf') {
+        voegIngToe(cc.sourceId, bezocht); // recursief
+      }
+    });
+  }
+
   const inMk = mk.gerechten.map(id => gerechten.find(g => g.id == id)).filter(Boolean);
   inMk.forEach(ger => {
     (ger.compIng || []).forEach(c => {
@@ -3935,12 +4078,7 @@ function printInkooplijst(idx) {
       if (ing) _inkoopIngMap.set(ing.id, ing);
     });
     (ger.compHf || []).forEach(c => {
-      const hf = recepturen.find(r => r.id == c.sourceId);
-      if (!hf) return;
-      (hf.componenten || []).filter(cc => cc.sourceType !== 'hf').forEach(cc => {
-        const ing = ingredienten.find(i => i.id == cc.sourceId);
-        if (ing) _inkoopIngMap.set(ing.id, ing);
-      });
+      voegIngToe(c.sourceId); // recursief alle niveaus
     });
   });
 
