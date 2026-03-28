@@ -275,6 +275,7 @@
     <button class="nav-tab" id="nav-tab-ingredienten" onclick="showPage('ingredienten',this)">Ingrediënten</button>
   </div>
   <div class="nav-user">
+    <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:var(--muted);opacity:0.6;margin-right:4px" id="nav-version">v1.0.0</span>
     <span class="nav-user-name" id="nav-username"></span>
     <span class="nav-role-badge" id="nav-role-badge"></span>
     <button class="nav-logout" id="nav-account-btn" onclick="openEigenCredentials()">👤 Mijn account</button>
@@ -1074,6 +1075,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // SUPABASE CONFIG
 // ══════════════════════════════════════════════════════════════════════════════
+const APP_VERSION = 'v1.0.0';
 const SUPABASE_URL = 'https://mfexgibreooozqozzcow.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mZXhnaWJyZW9vb3pxb3p6Y293Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NzI2NjIsImV4cCI6MjA5MDA0ODY2Mn0.ufKbZhtfakH7TqA8SYAmw4NPnVLR96WjS5FmLmZn528';
 
@@ -1120,7 +1122,11 @@ async function loadAllData() {
       sbFetch('menukaarten', 'GET', null, '?order=id'),
     ]);
 
-    ingredienten = ing || [];
+    ingredienten = (ing || []).map(r => ({
+      ...r,
+      productCategorie: r.productCategorie || r.productcategorie || '',
+      spieknaam: r.spieknaam || ''
+    }));
     recepturen   = (hf || []).map(r => ({
       ...r,
       componenten: r.componenten || [],
@@ -1437,7 +1443,8 @@ function doLogout() {
 }
 
 function updateNavUser(user) {
-  document.getElementById('nav-username').textContent = user.username;
+  document.getElementById('nav-version').textContent = APP_VERSION;
+  document.getElementById('nav-username').textContent = user.naam || user.username;
   const badge = document.getElementById('nav-role-badge');
   const labels = { admin: 'Admin', chef: 'Chef', medewerker: 'Medewerker' };
   badge.textContent = labels[user.role] || user.role;
@@ -1907,8 +1914,19 @@ function save() {
 // Helper: sla één ingrediënt op
 async function sbSaveIng(ing) {
   try {
-    const {id, ...data} = ing;
-    if (id && String(id).length < 13) {
+    // Map camelCase app velden naar DB kolomnamen
+    const data = {
+      naam: ing.naam,
+      categorie: ing.categorie,
+      leverancier: ing.leverancier,
+      eenheid: ing.eenheid,
+      prijs: ing.prijs,
+      sverlies: ing.sverlies,
+      spieknaam: ing.spieknaam || '',
+      productcategorie: ing.productCategorie || ing.productcategorie || ''
+    };
+    const id = ing.id;
+    if (id && id !== null && String(id).length < 13) {
       await sbFetch('ingredienten', 'PATCH', data, `?id=eq.${id}`);
     } else {
       const res = await sbFetch('ingredienten', 'POST', data);
@@ -3331,8 +3349,28 @@ function _printInkooplijstData(lijst) {
     'Zuivel & Kaas','Aardappels & Granen','Sauzen & Soepen','Bakkerij & Brood',
     'Kruiden & Specerijen','Borrelhappen & Snacks','Patisserie & Dessert','Overig'];
 
-  // Verrijk items met ingrediëntinfo
-  const ingevuld = (lijst.items||[]).filter(i => i.ijzervoorraad).map(item => {
+  // Verrijk items met ingrediëntinfo — ook zonder ingevulde ijzervoorraad
+  // Haal alle ingrediënten op die bij deze menukaart horen
+  const alleIngIds = new Set();
+  if (lijst.menukaart_id) {
+    const mk = menukaarten.find(m => m.id == lijst.menukaart_id);
+    if (mk) {
+      const inMk = mk.gerechten.map(id => gerechten.find(g => g.id == id)).filter(Boolean);
+      inMk.forEach(ger => {
+        (ger.compIng || []).forEach(c => alleIngIds.add(String(c.sourceId)));
+        (ger.compHf || []).forEach(c => {
+          const hf = recepturen.find(r => r.id == c.sourceId);
+          if (hf) (hf.componenten || []).filter(cc => cc.sourceType !== 'hf').forEach(cc => alleIngIds.add(String(cc.sourceId)));
+        });
+      });
+    }
+  }
+
+  // Bouw itemsMap: bestaande opgeslagen waarden + ontbrekende ingrediënten zonder waarde
+  const itemsMap = new Map((lijst.items || []).map(i => [String(i.id), i]));
+  alleIngIds.forEach(id => { if (!itemsMap.has(id)) itemsMap.set(id, { id }); });
+
+  const ingevuld = [...itemsMap.values()].map(item => {
     const ing = ingredienten.find(i => String(i.id) === String(item.id));
     return {
       ...item,
@@ -3343,7 +3381,7 @@ function _printInkooplijstData(lijst) {
     };
   });
 
-  if (!ingevuld.length) { toast('Geen ingevulde ijzervoorraden om te printen'); return; }
+  if (!ingevuld.length) { toast('Geen ingrediënten om te printen'); return; }
 
   // Splits in VHC en de rest
   const vhcItems = ingevuld
@@ -3554,7 +3592,7 @@ function vhcVergelijk(producten) {
         ingId: null, ingIdx: -1, ingNaam: vhcProd.naam,
         vhcNaam: vhcProd.naam, oudePrijs: 0, nieuwePrijs: vhcProd.prijs,
         verschil: vhcProd.prijs, pct: '100',
-        gewijzigd: true, geselecteerd: false // standaard niet geselecteerd, admin kiest
+        gewijzigd: true, geselecteerd: true // standaard aangevinkt
       });
     }
   });
@@ -3666,8 +3704,9 @@ async function vhcOpslaanAlles() {
       opgeslagen++;
 
     } else if (r.type === 'nieuw') {
-      // Nieuw ingrediënt toevoegen
+      // Nieuw ingrediënt toevoegen via sbSaveIng zodat kolomnamen kloppen
       const nieuwIng = {
+        id: null, // geen bestaand id → POST
         naam: r.vhcNaam,
         leverancier: 'VHC',
         categorie: 'VHC',
@@ -3677,13 +3716,12 @@ async function vhcOpslaanAlles() {
         spieknaam: '',
         productCategorie: ''
       };
-      const res = await sbFetch('ingredienten', 'POST', nieuwIng);
-      if (res && res[0]) {
-        nieuwIng.id = res[0].id;
+      await sbSaveIng(nieuwIng); // zet nieuwIng.id na POST
+      if (nieuwIng.id) {
         ingredienten.push(nieuwIng);
         await savePrijsHistorie(nieuwIng.id, nieuwIng.naam, 0, nieuwIng.prijs);
+        opgeslagen++;
       }
-      opgeslagen++;
 
     } else if (r.type === 'verwijder') {
       // Ingrediënt verwijderen
