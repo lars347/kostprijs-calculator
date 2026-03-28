@@ -714,10 +714,17 @@
   <div class="modal" style="width:600px">
     <div class="modal-title">👥 Team beheren</div>
 
-    <!-- Zoekbalk -->
-    <div style="position:relative;margin-bottom:16px">
-      <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px">🔍</span>
-      <input type="text" id="users-search" placeholder="Zoek op gebruikersnaam…" oninput="filterUsers()" style="padding-left:36px;width:100%;height:38px">
+    <!-- Zoekbalk + sortering -->
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <div style="position:relative;flex:1">
+        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px">🔍</span>
+        <input type="text" id="users-search" placeholder="Zoek op gebruikersnaam…" oninput="filterUsers()" style="padding-left:36px;width:100%;height:38px">
+      </div>
+      <select id="users-sort" onchange="filterUsers()" style="height:38px;font-size:12px;padding:0 10px;border:1px solid var(--border);border-radius:2px;background:var(--surface);color:var(--text)">
+        <option value="username">Sorteer: Naam</option>
+        <option value="locatie">Sorteer: Locatie</option>
+        <option value="role">Sorteer: Rol</option>
+      </select>
     </div>
 
     <div id="users-list" style="max-height:280px;overflow-y:auto;border:1px solid var(--border);border-radius:2px;padding:0 12px"></div>
@@ -1400,14 +1407,27 @@ function removeRole() {
 }
 
 // GEBRUIKERSBEHEER
-function renderUsers(filter='') {
+function renderUsers(filter='', sort='username') {
   const users = getUsers();
-  const list = document.getElementById('users-list');
   const q = filter.toLowerCase();
-  const visible = users.filter(u =>
+  let visible = users.filter(u =>
     !q || u.username.toLowerCase().includes(q)
   );
 
+  // Sorteren
+  visible = visible.sort((a, b) => {
+    if (sort === 'locatie') {
+      const la = getUserLocatie(a) || 'zzz';
+      const lb = getUserLocatie(b) || 'zzz';
+      return la.localeCompare(lb) || a.username.localeCompare(b.username);
+    } else if (sort === 'role') {
+      const volgorde = { admin: 0, chef: 1, medewerker: 2 };
+      return (volgorde[a.role] ?? 3) - (volgorde[b.role] ?? 3) || a.username.localeCompare(b.username);
+    }
+    return a.username.localeCompare(b.username);
+  });
+
+  const list = document.getElementById('users-list');
   list.innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 90px 80px 80px 32px;gap:8px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding-bottom:8px;border-bottom:1px solid var(--border)">
       <span>Naam / gebruikersnaam</span><span>Rol</span><span>Locatie</span><span></span><span></span>
@@ -1465,7 +1485,8 @@ function openEigenCredentials() {
 
 function filterUsers() {
   const q = document.getElementById('users-search')?.value || '';
-  renderUsers(q);
+  const sort = document.getElementById('users-sort')?.value || 'username';
+  renderUsers(q, sort);
 }
 
 function openEditCredentials(idx) {
