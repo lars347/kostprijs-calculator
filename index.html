@@ -987,15 +987,19 @@
       </div>
 
       <!-- Bladwijzer knop -->
-      <div style="background:var(--surface2);border-radius:6px;padding:14px;display:flex;align-items:center;gap:14px">
-        <a id="vhc-bookmarklet-link" href="#" onclick="return false"
-           style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;background:var(--red);color:white;border-radius:4px;font-size:13px;font-weight:700;text-decoration:none;cursor:grab;user-select:none;white-space:nowrap"
-           draggable="true">
-          🔄 VHC → Kostprijs
-        </a>
-        <div style="font-size:12px;color:var(--muted);line-height:1.5">
-          ← Sleep deze knop naar je bladwijzerbalk<br>
-          <span style="font-size:11px">(eenmalig instellen, daarna altijd herbruikbaar)</span>
+      <div style="background:var(--surface2);border-radius:6px;padding:14px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px">📌 Stap 1 — Eenmalig instellen: sleep deze knop naar je bladwijzerbalk</div>
+        <div style="display:flex;align-items:center;gap:14px">
+          <a id="vhc-bookmarklet-link" href="#"
+             style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;background:var(--red);color:white;border-radius:4px;font-size:13px;font-weight:700;text-decoration:none;cursor:grab;user-select:none;white-space:nowrap;border:2px dashed rgba(255,255,255,0.4)"
+             draggable="true"
+             title="Sleep deze knop naar je bladwijzerbalk">
+            🔄 VHC → Kostprijs
+          </a>
+          <div style="font-size:12px;color:var(--muted);line-height:1.6">
+            ← <strong>Sleep</strong> naar je bladwijzerbalk<br>
+            <span style="font-size:11px">(daarna altijd herbruikbaar)</span>
+          </div>
         </div>
       </div>
     </div>
@@ -1116,7 +1120,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // SUPABASE CONFIG
 // ══════════════════════════════════════════════════════════════════════════════
-const APP_VERSION = 'v1.1.0';
+const APP_VERSION = 'v1.1.1';
 const SUPABASE_URL = 'https://mfexgibreooozqozzcow.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mZXhnaWJyZW9vb3pxb3p6Y293Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NzI2NjIsImV4cCI6MjA5MDA0ODY2Mn0.ufKbZhtfakH7TqA8SYAmw4NPnVLR96WjS5FmLmZn528';
 
@@ -3602,34 +3606,30 @@ function vhcTerug() {
 
 // ── Bookmarklet ───────────────────────────────────────────────────────────────
 function vhcUpdateBookmarklet() {
-  const appUrl = location.origin + location.pathname;
-  const code = `(function(){
-    var items=document.querySelectorAll('.amwishlist-item');
-    if(!items.length){alert('Geen producten gevonden.\nZorg dat de bestellijst open is in REGELWEERGAVE (knop rechtsboven).');return;}
-    var data=[];
-    items.forEach(function(item){
-      var naamEl=item.querySelector('.amwishlist-name')||item.querySelector('[class*="name"] a')||item.querySelector('[class*="name"]');
-      var prijs=item.querySelector('.price-box .price');
-      var sku=item.querySelector('.sku')||item.querySelector('[class*="sku"]');
-      var naam=naamEl?naamEl.textContent.trim():'';
-      if(naam&&naam.length>1&&prijs){
-        var p=parseFloat(prijs.textContent.replace(/[^0-9,]/g,'').replace(',','.'));
-        if(!isNaN(p)&&p>0)data.push({naam:naam,prijs:p,sku:sku?sku.textContent.trim():''});
-      }
-    });
-    if(!data.length){alert('Geen prijzen gevonden.\nSchakel naar REGELWEERGAVE en probeer opnieuw.');return;}
-    var win=window.open('${appUrl}','_kostprijs');
-    if(!win){alert('Pop-up geblokkeerd! Sta pop-ups toe voor lars347.github.io');return;}
-    var tries=0;
-    var interval=setInterval(function(){
-      tries++;
-      try{
-        if(win.vhcOntvangData){clearInterval(interval);win.vhcOntvangData(data);win.focus();return;}
-      }catch(e){}
-      if(tries>40){clearInterval(interval);alert('Verbinding mislukt. Probeer opnieuw.');}
-    },300);
-    alert(data.length+' producten gevonden! Ga terug naar de app.');
-  })();`;
+  // De bookmarklet gebruikt window.opener — werkt alleen als VHC is geopend VANUIT de app
+  const code = '(function(){'
+    + 'var items=document.querySelectorAll(".amwishlist-item");'
+    + 'if(!items.length){alert("Geen producten gevonden.\\nSchakel naar REGELWEERGAVE (knop rechtsboven) en probeer opnieuw.");return;}'
+    + 'var data=[];'
+    + 'items.forEach(function(item){'
+    + '  var naamEl=item.querySelector(".amwishlist-name")||item.querySelector("[class*=\"name\"] a")||item.querySelector("[class*=\"name\"]");'
+    + '  var prijs=item.querySelector(".price-box .price");'
+    + '  var sku=item.querySelector(".sku")||item.querySelector("[class*=\"sku\"]");'
+    + '  var naam=naamEl?naamEl.textContent.trim():"";'
+    + '  if(naam&&naam.length>1&&prijs){'
+    + '    var p=parseFloat(prijs.textContent.replace(/[^0-9,]/g,"").replace(",","."));'
+    + '    if(!isNaN(p)&&p>0)data.push({naam:naam,prijs:p,sku:sku?sku.textContent.trim():""});'
+    + '  }'
+    + '});'
+    + 'if(!data.length){alert("Geen producten met naam gevonden.\\nSchakel naar REGELWEERGAVE en probeer opnieuw.");return;}'
+    + 'if(window.opener&&window.opener.vhcOntvangData){'
+    + '  window.opener.vhcOntvangData(data);'
+    + '  window.opener.focus();'
+    + '  window.close();'
+    + '} else {'
+    + '  alert("Verbinding met app verloren.\\nOpen VHC via de \'VHC Sync\' knop in de app (niet rechtstreeks).\\n\\n" + data.length + " producten gevonden.");'
+    + '}'
+    + '})();';
   const link = document.getElementById('vhc-bookmarklet-link');
   if (link) link.href = 'javascript:' + encodeURIComponent(code);
 }
@@ -3639,16 +3639,21 @@ function vhcNaarVhc() {
   const lijstId = document.getElementById('vhc-lijst-select').value;
   vhcUpdateBookmarklet();
   const vhcUrl = 'https://vhcjongensalmere.nl/mwishlist/wishlist/index/wishlist_id/' + lijstId + '/';
-  window.open(vhcUrl, '_vhc_sync');
+  // Open als popup zodat window.opener in VHC naar de app verwijst
+  const popup = window.open(vhcUrl, '_vhc_sync', 'width=1280,height=800,noopener=no');
+  if (!popup) {
+    toast('Pop-up geblokkeerd! Klik op het pop-up icoon in je adresbalk en sta pop-ups toe.');
+    return;
+  }
+  window._vhcPopup = popup;
   // Naar stap 2: wachten
   vhcSetStap(2);
   document.getElementById('vhc-terug-btn').style.display = '';
   document.getElementById('vhc-naar-vhc-btn').style.display = 'none';
-  // Animeer progress bar om duidelijk te maken dat we wachten
   let pct = 0;
   const bar = document.getElementById('vhc-progress-bar');
   const barInterval = setInterval(() => {
-    pct = Math.min(pct + 1, 90);
+    pct = Math.min(pct + 0.5, 90);
     if (bar) bar.style.width = pct + '%';
   }, 200);
   window._vhcBarInterval = barInterval;
