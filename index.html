@@ -971,7 +971,7 @@
       <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;flex-shrink:0">
         <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
           <input type="checkbox" id="vhc-alleen-wijzigingen" checked onchange="renderVhcResultaten()">
-          Toon alleen gewijzigde prijzen
+          Toon alleen items met wijzigingen
         </label>
         <span id="vhc-sync-teller" style="font-size:12px;color:var(--muted)"></span>
       </div>
@@ -1462,6 +1462,15 @@ function applyRole(role) {
 }
 
 // Rollen: admin = alles, chef = inzien + medewerker aanmaken, medewerker = alleen inzien
+// Dezelfde hash methode als de Edge Functions
+async function hashWachtwoord(wachtwoord) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(wachtwoord + 'eendracht_salt_2024');
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return 'sha256:' + hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 function isAdmin() { return currentUser?.role === 'admin'; }
 function isReadOnly(role) {
   const r = role || currentUser?.role;
@@ -1786,8 +1795,9 @@ async function createUser() {
   }
   const nieuweLocatie = currentUser?.role === 'chef' ? getUserLocatie(currentUser) : locatie;
   try {
+    const gehasht = await hashWachtwoord(password);
     const result = await sbFetch('gebruikers', 'POST', {
-      username, password, role, naam: username, locatie: nieuweLocatie
+      username, password: gehasht, role, naam: username, locatie: nieuweLocatie
     });
     if (result && result[0]) _sbUsers.push({...result[0]});
     document.getElementById('new-username').value = '';
@@ -2726,10 +2736,31 @@ async function saveGer(silent=false) {
   const gspiek  = document.getElementById('ger-spieknaam')?.value.trim()||'';
   const gfoto = _gerFotoData !== undefined ? _gerFotoData : (editGerIdx>=0 ? gerechten[editGerIdx]?.foto : null);
   const ger={...existing, naam,categorie:document.getElementById('ger-cat').value,porties,compIng,compHf,kostprijs:total/porties,beschrijving:gbeschr,spieknaam:gspiek,foto:gfoto,id:editGerIdx>=0?gerechten[editGerIdx].id:Date.now()};
+  const isNieuw = editGerIdx < 0;
+  const tijdelijkId = ger.id;
   if (!silent) snapshot(editGerIdx>=0 ? 'Gerecht bewerkt' : 'Gerecht toegevoegd');
   if (editGerIdx>=0) { gerechten[editGerIdx]=ger; }
   else { gerechten.push(ger); editGerIdx=gerechten.length-1; }
   await sbSaveGer(ger);
+
+  // Als nieuw gerecht: vervang tijdelijk timestamp ID door echt Supabase ID in alle menukaarten
+  if (isNieuw && ger.id !== tijdelijkId) {
+    menukaarten.forEach(mk => {
+      if (mk.gerechten.includes(tijdelijkId)) {
+        mk.gerechten = mk.gerechten.map(id => id === tijdelijkId ? ger.id : id);
+        if (mk.prijzen?.[tijdelijkId]) {
+          mk.prijzen[ger.id] = mk.prijzen[tijdelijkId];
+          delete mk.prijzen[tijdelijkId];
+        }
+        if (mk.prijzenIncl?.[tijdelijkId]) {
+          mk.prijzenIncl[ger.id] = mk.prijzenIncl[tijdelijkId];
+          delete mk.prijzenIncl[tijdelijkId];
+        }
+        sbSaveMk(mk);
+      }
+    });
+  }
+
   if (!silent) { renderGerCards(); closeModal('modal-ger'); toast('Opgeslagen'); }
 }
 
@@ -3491,7 +3522,10 @@ function vhcOntvangData(producten) {
 }
 
 function vhcVergelijk(producten) {
+  const vhcNamen = new Set(producten.map(p => p.naam.toLowerCase()));
   const resultaten = [];
+
+  // 1. Koppel VHC producten aan bestaande ingrediënten
   producten.forEach(vhcProd => {
     const vhcNaamLc = vhcProd.naam.toLowerCase();
     const match = ingredienten.find(ing => {
@@ -3500,22 +3534,64 @@ function vhcVergelijk(producten) {
         ingNaamLc.includes(vhcNaamLc) ||
         vhcNaamLc.includes(ingNaamLc);
     });
+
     if (match) {
+      // Bestaand ingrediënt — prijs bijwerken
       const verschil = Math.round((vhcProd.prijs - match.prijs) * 100) / 100;
       const pct = match.prijs > 0 ? ((verschil / match.prijs) * 100).toFixed(1) : '0';
       resultaten.push({
+        type: 'update',
         ingId: match.id, ingIdx: ingredienten.indexOf(match), ingNaam: match.naam,
         vhcNaam: vhcProd.naam, oudePrijs: match.prijs, nieuwePrijs: vhcProd.prijs,
-        verschil, pct, gewijzigd: Math.abs(verschil) > 0.001, geselecteerd: Math.abs(verschil) > 0.001
+        verschil, pct,
+        gewijzigd: Math.abs(verschil) > 0.001,
+        geselecteerd: Math.abs(verschil) > 0.001
+      });
+    } else {
+      // Nieuw product — toevoegen aan Supabase
+      resultaten.push({
+        type: 'nieuw',
+        ingId: null, ingIdx: -1, ingNaam: vhcProd.naam,
+        vhcNaam: vhcProd.naam, oudePrijs: 0, nieuwePrijs: vhcProd.prijs,
+        verschil: vhcProd.prijs, pct: '100',
+        gewijzigd: true, geselecteerd: false // standaard niet geselecteerd, admin kiest
       });
     }
   });
+
+  // 2. Ingrediënten die niet meer in VHC lijst staan (leverancier = VHC)
+  ingredienten.forEach((ing, idx) => {
+    const isVhc = (ing.leverancier || '').toLowerCase().includes('vhc');
+    if (!isVhc) return;
+    const ingNaamLc = ing.naam.toLowerCase();
+    const nogInVhc = producten.some(p => {
+      const pLc = p.naam.toLowerCase();
+      return pLc === ingNaamLc || pLc.includes(ingNaamLc) || ingNaamLc.includes(pLc);
+    });
+    if (!nogInVhc) {
+      resultaten.push({
+        type: 'verwijder',
+        ingId: ing.id, ingIdx: idx, ingNaam: ing.naam,
+        vhcNaam: '—', oudePrijs: ing.prijs, nieuwePrijs: 0,
+        verschil: 0, pct: '0',
+        gewijzigd: true, geselecteerd: false // standaard niet geselecteerd
+      });
+    }
+  });
+
   _vhcGescrapedData = resultaten;
-  const aantalGewijzigd = resultaten.filter(r => r.gewijzigd).length;
-  const lijstNaam = document.getElementById('vhc-lijst-select')?.selectedOptions[0]?.text || '';
+  const aantalUpdate  = resultaten.filter(r => r.type === 'update' && r.gewijzigd).length;
+  const aantalNieuw   = resultaten.filter(r => r.type === 'nieuw').length;
+  const aantalVerwijder = resultaten.filter(r => r.type === 'verwijder').length;
+
   document.getElementById('vhc-sync-status').innerHTML =
-    `✅ <strong>${producten.length}</strong> producten gelezen — <strong>${aantalGewijzigd}</strong> prijswijzigingen gevonden (${resultaten.length} gekoppeld aan ingrediënten)`;
-  document.getElementById('vhc-opslaan-btn').style.display = aantalGewijzigd > 0 ? '' : 'none';
+    `✅ <strong>${producten.length}</strong> producten gelezen &nbsp;·&nbsp; `
+    + `<span style="color:#e67e22"><strong>${aantalNieuw}</strong> nieuw</span> &nbsp;·&nbsp; `
+    + `<span style="color:#2980b9"><strong>${aantalUpdate}</strong> prijswijzigingen</span> &nbsp;·&nbsp; `
+    + `<span style="color:#c0392b"><strong>${aantalVerwijder}</strong> niet meer in lijst</span>`;
+
+  document.getElementById('vhc-opslaan-btn').style.display =
+    (aantalUpdate + aantalNieuw + aantalVerwijder) > 0 ? '' : 'none';
   renderVhcResultaten();
 }
 
@@ -3523,52 +3599,107 @@ function renderVhcResultaten() {
   const alleenWijzigingen = document.getElementById('vhc-alleen-wijzigingen').checked;
   const zichtbaar = _vhcGescrapedData.filter(r => !alleenWijzigingen || r.gewijzigd);
   const container = document.getElementById('vhc-sync-resultaten');
+
   if (!zichtbaar.length) {
-    container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-style:italic">Geen ' + (alleenWijzigingen ? 'prijswijzigingen' : 'gekoppelde producten') + ' gevonden</div>';
+    container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-style:italic">Geen wijzigingen gevonden</div>';
     document.getElementById('vhc-sync-teller').textContent = '';
     return;
   }
+
   const geselecteerd = _vhcGescrapedData.filter(r => r.geselecteerd).length;
   document.getElementById('vhc-sync-teller').textContent = geselecteerd + ' geselecteerd';
-  let html = '<div style="display:grid;grid-template-columns:28px 1fr 90px 90px 90px;gap:8px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:8px 14px;border-bottom:2px solid var(--border);position:sticky;top:0;background:white">'
-    + '<span></span><span>Ingrediënt</span><span>Huidig</span><span>VHC prijs</span><span>Verschil</span></div>';
+
+  // Type labels en kleuren
+  const typeLabel = { update: '↕ Prijs', nieuw: '+ Nieuw', verwijder: '✕ Weg' };
+  const typeBg    = { update: '', nieuw: '#f0faf0', verwijder: '#fff5f5' };
+  const typeKleur = { update: '#2980b9', nieuw: '#27ae60', verwijder: '#c0392b' };
+
+  let html = '<div style="display:grid;grid-template-columns:28px 80px 1fr 85px 85px 85px;gap:6px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:8px 12px;border-bottom:2px solid var(--border);position:sticky;top:0;background:white">'
+    + '<span></span><span>Type</span><span>Ingrediënt</span><span>Huidig</span><span>VHC prijs</span><span>Verschil</span></div>';
+
   html += zichtbaar.map(r => {
-    const kleur = r.verschil > 0 ? '#c0392b' : r.verschil < 0 ? '#27ae60' : 'var(--muted)';
-    const pijl = r.verschil > 0 ? '↑' : r.verschil < 0 ? '↓' : '=';
     const gi = _vhcGescrapedData.indexOf(r);
-    return '<div style="display:grid;grid-template-columns:28px 1fr 90px 90px 90px;gap:8px;align-items:center;padding:7px 14px;border-bottom:1px solid #ede8df;' + (r.gewijzigd ? '' : 'opacity:0.45') + '">'
-      + '<input type="checkbox" ' + (r.geselecteerd ? 'checked' : '') + ' onchange="_vhcGescrapedData[' + gi + '].geselecteerd=this.checked;renderVhcResultaten()">'
-      + '<div><div style="font-size:12px;font-weight:600">' + r.ingNaam + '</div>'
-      + (r.ingNaam !== r.vhcNaam ? '<div style="font-size:10px;color:var(--muted)">VHC: ' + r.vhcNaam + '</div>' : '') + '</div>'
-      + '<div style="font-size:12px;font-family:monospace">€ ' + r.oudePrijs.toFixed(2).replace('.', ',') + '</div>'
-      + '<div style="font-size:12px;font-family:monospace;font-weight:700">€ ' + r.nieuwePrijs.toFixed(2).replace('.', ',') + '</div>'
-      + '<div style="font-size:12px;font-weight:700;color:' + kleur + '">' + pijl + ' ' + Math.abs(r.verschil).toFixed(2).replace('.', ',') + ' (' + r.pct + '%)</div>'
+    const kleur = r.type === 'verwijder' ? '#c0392b' : r.verschil > 0 ? '#c0392b' : r.verschil < 0 ? '#27ae60' : 'var(--muted)';
+    const pijl  = r.type === 'verwijder' ? '' : r.verschil > 0 ? '↑' : r.verschil < 0 ? '↓' : '=';
+    return `<div style="display:grid;grid-template-columns:28px 80px 1fr 85px 85px 85px;gap:6px;align-items:center;padding:7px 12px;border-bottom:1px solid #ede8df;background:${typeBg[r.type]}">`
+      + `<input type="checkbox" ${r.geselecteerd ? 'checked' : ''} onchange="_vhcGescrapedData[${gi}].geselecteerd=this.checked;renderVhcResultaten()">`
+      + `<span style="font-size:10px;font-weight:700;color:${typeKleur[r.type]}">${typeLabel[r.type]}</span>`
+      + `<div><div style="font-size:12px;font-weight:600">${r.ingNaam}</div>${r.ingNaam !== r.vhcNaam && r.vhcNaam !== '—' ? `<div style="font-size:10px;color:var(--muted)">VHC: ${r.vhcNaam}</div>` : ''}</div>`
+      + `<div style="font-size:12px;font-family:monospace">${r.oudePrijs > 0 ? '€ ' + r.oudePrijs.toFixed(2).replace('.', ',') : '—'}</div>`
+      + `<div style="font-size:12px;font-family:monospace;font-weight:700">${r.nieuwePrijs > 0 ? '€ ' + r.nieuwePrijs.toFixed(2).replace('.', ',') : '—'}</div>`
+      + `<div style="font-size:12px;font-weight:700;color:${kleur}">${r.type === 'verwijder' ? 'Verwijderen' : pijl + ' ' + Math.abs(r.verschil).toFixed(2).replace('.', ',')}</div>`
       + '</div>';
   }).join('');
+
   container.innerHTML = html;
 }
 
 async function vhcOpslaanAlles() {
-  const teOpslaan = _vhcGescrapedData.filter(r => r.geselecteerd && r.gewijzigd);
-  if (!teOpslaan.length) { toast('Geen wijzigingen geselecteerd'); return; }
-  if (!confirm(teOpslaan.length + ' prijzen bijwerken?')) return;
+  const teOpslaan = _vhcGescrapedData.filter(r => r.geselecteerd);
+  if (!teOpslaan.length) { toast('Selecteer minstens één item'); return; }
+
+  const aantalNieuw = teOpslaan.filter(r => r.type === 'nieuw').length;
+  const aantalUpdate = teOpslaan.filter(r => r.type === 'update').length;
+  const aantalVerwijder = teOpslaan.filter(r => r.type === 'verwijder').length;
+
+  const msg = [
+    aantalUpdate > 0 ? aantalUpdate + ' prijzen bijwerken' : '',
+    aantalNieuw > 0 ? aantalNieuw + ' nieuwe ingrediënten toevoegen' : '',
+    aantalVerwijder > 0 ? aantalVerwijder + ' ingrediënten verwijderen' : ''
+  ].filter(Boolean).join(', ');
+
+  if (!confirm(msg + '?')) return;
+
   const btn = document.getElementById('vhc-opslaan-btn');
   btn.textContent = '⏳ Opslaan...';
   btn.disabled = true;
   let opgeslagen = 0;
+
   for (const r of teOpslaan) {
-    const ing = ingredienten[r.ingIdx];
-    if (!ing) continue;
-    await savePrijsHistorie(ing.id, ing.naam, r.oudePrijs, r.nieuwePrijs);
-    ing.prijs = r.nieuwePrijs;
-    await sbSaveIng(ing);
-    opgeslagen++;
+    if (r.type === 'update') {
+      // Prijswijziging
+      const ing = ingredienten[r.ingIdx];
+      if (!ing) continue;
+      await savePrijsHistorie(ing.id, ing.naam, r.oudePrijs, r.nieuwePrijs);
+      ing.prijs = r.nieuwePrijs;
+      await sbSaveIng(ing);
+      opgeslagen++;
+
+    } else if (r.type === 'nieuw') {
+      // Nieuw ingrediënt toevoegen
+      const nieuwIng = {
+        naam: r.vhcNaam,
+        leverancier: 'VHC',
+        categorie: 'VHC',
+        eenheid: 'kg',
+        prijs: r.nieuwePrijs,
+        sverlies: 0,
+        spieknaam: '',
+        productCategorie: ''
+      };
+      const res = await sbFetch('ingredienten', 'POST', nieuwIng);
+      if (res && res[0]) {
+        nieuwIng.id = res[0].id;
+        ingredienten.push(nieuwIng);
+        await savePrijsHistorie(nieuwIng.id, nieuwIng.naam, 0, nieuwIng.prijs);
+      }
+      opgeslagen++;
+
+    } else if (r.type === 'verwijder') {
+      // Ingrediënt verwijderen
+      const ing = ingredienten[r.ingIdx];
+      if (!ing) continue;
+      await sbDelete('ingredienten', ing.id);
+      ingredienten.splice(r.ingIdx, 1);
+      opgeslagen++;
+    }
   }
+
   renderIngredienten();
   btn.textContent = '💾 Wijzigingen opslaan';
   btn.disabled = false;
   closeModal('modal-vhc-sync');
-  toast('✅ ' + opgeslagen + ' prijzen bijgewerkt');
+  toast('✅ ' + opgeslagen + ' wijzigingen opgeslagen');
 }
 
 // Zet bookmarklet klaar zodra modal opent
