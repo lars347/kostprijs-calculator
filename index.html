@@ -1239,7 +1239,7 @@ async function ensureDefaultUsers() {
 const LOCATIES = ['DEALK','DEE','DEH','DEB','DEBUS','DEGE','DEZE','DEW','OX','H&G','DEA'];
 
 function getUserLocatie(u) {
-  return u.profiel?.locatie || u.locatie || '';
+  return u.locatie || u.profiel?.locatie || '';
 }
 
 function getUsers() {
@@ -1518,30 +1518,28 @@ async function saveRolLocatie() {
   const nieuweLocatie = document.getElementById('edit-cred-locatie')?.value || '';
   const nieuweUsername = document.getElementById('edit-cred-nieuwe-username')?.value.trim() || '';
 
-  if (!u.profiel) u.profiel = {};
   u.role = nieuweRol;
-  u.profiel.locatie = nieuweLocatie;
+  u.locatie = nieuweLocatie;
 
-  const updates = {
-    role: nieuweRol,
-    profiel: { ...(u.profiel), locatie: nieuweLocatie }
-  };
+  const updates = { role: nieuweRol, locatie: nieuweLocatie };
 
-  // Gebruikersnaam wijzigen als ingevuld
   if (nieuweUsername && nieuweUsername !== u.username) {
     const bestaatAl = _sbUsers.find(x => x.username.toLowerCase() === nieuweUsername.toLowerCase() && x.id !== u.id);
     if (bestaatAl) { toast('Deze gebruikersnaam bestaat al'); return; }
     updates.username = nieuweUsername;
+    updates.naam = nieuweUsername;
     u.username = nieuweUsername;
+    u.naam = nieuweUsername;
   }
 
   try {
-    await sbFetch('gebruikers', 'PATCH', updates, `?id=eq.${u.id}`);
+    await sbFetch('gebruikers', 'PATCH', updates, '?id=eq.' + u.id);
     document.getElementById('modal-edit-credentials').classList.remove('open');
     renderUsers();
     toast('Opgeslagen');
-  } catch(e) { toast('Fout bij opslaan'); }
+  } catch(e) { console.error(e); toast('Fout bij opslaan'); }
 }
+
 
 function openProfiel(idx) {
   const u = _sbUsers[idx];
@@ -1602,26 +1600,24 @@ async function createUser() {
   const role     = document.getElementById('new-role').value;
   const locatie  = document.getElementById('new-locatie')?.value || '';
   if (!username || !password) { toast('Vul gebruikersnaam en wachtwoord in'); return; }
-  if (_sbUsers.find(u => u.username === username)) { toast('Gebruikersnaam bestaat al'); return; }
+  if (_sbUsers.find(u => u.username.toLowerCase() === username.toLowerCase())) { toast('Gebruikersnaam bestaat al'); return; }
   if (currentUser?.role === 'chef' && role !== 'medewerker') {
     toast('Als chef kun je alleen medewerker-accounts aanmaken'); return;
   }
   if (currentUser?.role === 'medewerker') {
     toast('Je hebt geen rechten om accounts aan te maken'); return;
   }
-  // Chef koppelt automatisch aan eigen locatie
   const nieuweLocatie = currentUser?.role === 'chef' ? getUserLocatie(currentUser) : locatie;
   try {
     const result = await sbFetch('gebruikers', 'POST', {
-      username, password, role, naam: username,
-      profiel: nieuweLocatie ? { locatie: nieuweLocatie } : {}
+      username, password, role, naam: username, locatie: nieuweLocatie
     });
     if (result && result[0]) _sbUsers.push({...result[0]});
     document.getElementById('new-username').value = '';
     document.getElementById('new-password').value = '';
     renderUsers();
     toast('Account aangemaakt');
-  } catch(e) { toast('Fout bij aanmaken account'); }
+  } catch(e) { console.error(e); toast('Fout bij aanmaken account'); }
 }
 
 async function deleteUser(idx) {
