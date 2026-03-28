@@ -768,48 +768,69 @@
       <span class="badge badge-red" id="edit-cred-rolbadge">—</span>
     </div>
 
-    <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border)">Wachtwoord wijzigen</div>
+    <!-- Wachtwoord wijzigen (eigen account) -->
+    <div id="edit-cred-eigen-pw-wrap">
+      <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border)">Wachtwoord wijzigen</div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-light);margin-bottom:6px">Huidig wachtwoord</div>
+          <input type="password" id="edit-cred-confirm" placeholder="Vul je huidige wachtwoord in" style="width:100%">
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-light);margin-bottom:6px">Nieuw wachtwoord</div>
+          <input type="password" id="edit-cred-password" placeholder="Kies een nieuw wachtwoord" style="width:100%">
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-light);margin-bottom:6px">Nieuw wachtwoord herhalen</div>
+          <input type="password" id="edit-cred-password2" placeholder="Herhaal je nieuwe wachtwoord" style="width:100%">
+        </div>
+      </div>
+    </div>
 
-    <div style="display:flex;flex-direction:column;gap:14px">
-      <div>
-        <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-light);margin-bottom:6px">Huidig wachtwoord</div>
-        <input type="password" id="edit-cred-confirm" placeholder="Vul je huidige wachtwoord in" style="width:100%">
+    <!-- Admin: wachtwoord resetten zonder oud wachtwoord -->
+    <div id="edit-cred-admin-pw-wrap" style="display:none">
+      <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border)">Wachtwoord resetten</div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-light);margin-bottom:6px">Nieuw wachtwoord</div>
+          <input type="password" id="edit-cred-reset-password" placeholder="Nieuw wachtwoord voor dit account" style="width:100%">
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-light);margin-bottom:6px">Herhalen</div>
+          <input type="password" id="edit-cred-reset-password2" placeholder="Herhaal nieuw wachtwoord" style="width:100%">
+        </div>
+        <div style="text-align:right">
+          <button class="btn btn-primary" onclick="adminResetWachtwoord()">🔑 Wachtwoord resetten</button>
+        </div>
       </div>
-      <div>
-        <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-light);margin-bottom:6px">Nieuw wachtwoord</div>
-        <input type="password" id="edit-cred-password" placeholder="Kies een nieuw wachtwoord" style="width:100%">
-      </div>
-      <div>
-        <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-light);margin-bottom:6px">Nieuw wachtwoord herhalen</div>
-        <input type="password" id="edit-cred-password2" placeholder="Herhaal je nieuwe wachtwoord" style="width:100%">
-      </div>
-      <div id="edit-cred-rol-wrap" style="display:none">
-        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:16px;padding-bottom:8px;border-top:1px solid var(--border);padding-top:16px">Rol &amp; Locatie</div>
-        <div style="display:flex;flex-direction:column;gap:12px">
-          <div>
-            <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-light);margin-bottom:6px">Rol</div>
-            <select id="edit-cred-rol" style="width:100%">
-              <option value="medewerker">Medewerker — alleen inzien</option>
-              <option value="chef">Chef — inzien + accounts aanmaken</option>
-              <option value="admin">Admin — alles beheren</option>
-            </select>
-          </div>
-          <div id="edit-cred-locatie-wrap">
-            <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-light);margin-bottom:6px">Locatie</div>
-            <select id="edit-cred-locatie" style="width:100%">
-              <option value="">— Geen locatie —</option>
-              <option>DEALK</option><option>DEE</option><option>DEH</option><option>DEB</option>
-              <option>DEBUS</option><option>DEGE</option><option>DEZE</option><option>DEW</option>
-              <option>OX</option><option>H&amp;G</option><option>DEA</option>
-            </select>
-          </div>
-          <div>
-            <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-light);margin-bottom:6px">Gebruikersnaam wijzigen</div>
-            <input type="text" id="edit-cred-nieuwe-username" placeholder="Laat leeg om niet te wijzigen" style="width:100%">
-          </div>
-          <div style="text-align:right">
-            <button class="btn btn-primary" onclick="saveRolLocatie()">💾 Opslaan</button>
-          </div>
+    </div>
+
+    <div id="edit-cred-rol-wrap" style="display:none">
+      <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:16px;padding-bottom:8px;border-top:1px solid var(--border);padding-top:16px">Rol &amp; Locatie</div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-light);margin-bottom:6px">Rol</div>
+          <select id="edit-cred-rol" style="width:100%">
+            <option value="medewerker">Medewerker — alleen inzien</option>
+            <option value="chef">Chef — inzien + accounts aanmaken</option>
+            <option value="admin">Admin — alles beheren</option>
+          </select>
+        </div>
+        <div id="edit-cred-locatie-wrap">
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-light);margin-bottom:6px">Locatie</div>
+          <select id="edit-cred-locatie" style="width:100%">
+            <option value="">— Geen locatie —</option>
+            <option>DEALK</option><option>DEE</option><option>DEH</option><option>DEB</option>
+            <option>DEBUS</option><option>DEGE</option><option>DEZE</option><option>DEW</option>
+            <option>OX</option><option>H&amp;G</option><option>DEA</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-light);margin-bottom:6px">Gebruikersnaam wijzigen</div>
+          <input type="text" id="edit-cred-nieuwe-username" placeholder="Laat leeg om niet te wijzigen" style="width:100%">
+        </div>
+        <div style="text-align:right">
+          <button class="btn btn-primary" onclick="saveRolLocatie()">💾 Opslaan</button>
         </div>
       </div>
     </div>
@@ -818,7 +839,7 @@
     <input type="hidden" id="edit-cred-username">
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="document.getElementById('modal-edit-credentials').classList.remove('open')">Annuleren</button>
-      <button class="btn btn-primary" onclick="saveCredentials()">Wachtwoord wijzigen</button>
+      <button class="btn btn-primary" id="edit-cred-pw-btn" onclick="saveCredentials()">Wachtwoord wijzigen</button>
     </div>
   </div>
 </div>
@@ -1465,13 +1486,60 @@ function openEditCredentials(idx) {
   document.getElementById('edit-cred-password2') && (document.getElementById('edit-cred-password2').value = '');
   document.getElementById('edit-cred-confirm').value = '';
   const rolWrap = document.getElementById('edit-cred-rol-wrap');
-  rolWrap.style.display = (isAdmin && !isZelf) ? '' : 'none';
+  const eigenPwWrap = document.getElementById('edit-cred-eigen-pw-wrap');
+  const adminPwWrap = document.getElementById('edit-cred-admin-pw-wrap');
+  const pwBtn = document.getElementById('edit-cred-pw-btn');
+
   if (isAdmin && !isZelf) {
+    // Admin bewerkt iemand anders — toon reset sectie, verberg eigen wachtwoord sectie
+    eigenPwWrap.style.display = 'none';
+    adminPwWrap.style.display = '';
+    pwBtn.style.display = 'none';
+    rolWrap.style.display = '';
     document.getElementById('edit-cred-rol').value = u.role || 'medewerker';
     document.getElementById('edit-cred-locatie').value = getUserLocatie(u) || '';
     document.getElementById('edit-cred-nieuwe-username').value = '';
+    document.getElementById('edit-cred-reset-password').value = '';
+    document.getElementById('edit-cred-reset-password2').value = '';
+  } else {
+    // Eigen account — toon eigen wachtwoord sectie
+    eigenPwWrap.style.display = '';
+    adminPwWrap.style.display = 'none';
+    pwBtn.style.display = '';
+    rolWrap.style.display = 'none';
+    document.getElementById('edit-cred-confirm').value = '';
+    document.getElementById('edit-cred-password').value = '';
+    document.getElementById('edit-cred-password2').value = '';
   }
   openModal('modal-edit-credentials');
+}
+
+async function adminResetWachtwoord() {
+  const idx = parseInt(document.getElementById('edit-cred-idx').value);
+  const u = _sbUsers[idx];
+  const nieuwWachtwoord  = document.getElementById('edit-cred-reset-password').value;
+  const nieuwWachtwoord2 = document.getElementById('edit-cred-reset-password2').value;
+
+  if (!nieuwWachtwoord) { toast('Vul een nieuw wachtwoord in'); return; }
+  if (nieuwWachtwoord.length < 6) { toast('Wachtwoord moet minimaal 6 tekens zijn'); return; }
+  if (nieuwWachtwoord !== nieuwWachtwoord2) { toast('Wachtwoorden komen niet overeen'); return; }
+  if (!confirm(`Wachtwoord van "${u.username}" resetten?`)) return;
+
+  try {
+    const res = await fetch(SUPABASE_URL + '/functions/v1/wijzig-wachtwoord', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY
+      },
+      body: JSON.stringify({ userId: u.id, adminReset: true, nieuwWachtwoord })
+    });
+    const data = await res.json();
+    if (!res.ok) { toast(data.error || 'Fout bij resetten'); return; }
+    document.getElementById('modal-edit-credentials').classList.remove('open');
+    toast('Wachtwoord succesvol gereset');
+  } catch(e) { toast('Verbindingsfout. Probeer opnieuw.'); }
 }
 
 async function saveCredentials() {
