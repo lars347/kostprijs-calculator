@@ -275,7 +275,7 @@
     <button class="nav-tab" id="nav-tab-ingredienten" onclick="showPage('ingredienten',this)">Ingrediënten</button>
   </div>
   <div class="nav-user">
-    <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:var(--muted);opacity:0.6;margin-right:4px" id="nav-version">v1.0.0</span>
+    <span style="font-size:10px;font-weight:700;letter-spacing:0.5px;color:white;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.3);border-radius:3px;padding:2px 7px;margin-right:8px" id="nav-version">v1.0.3</span>
     <span class="nav-user-name" id="nav-username"></span>
     <span class="nav-role-badge" id="nav-role-badge"></span>
     <button class="nav-logout" id="nav-account-btn" onclick="openEigenCredentials()">👤 Mijn account</button>
@@ -949,10 +949,11 @@
       <div style="background:#fdf6ec;border:1px solid #e8d5b0;border-radius:4px;padding:14px;margin-bottom:12px">
         <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#8b6914;margin-bottom:8px">📌 Hoe werkt het?</div>
         <ol style="margin:0;padding-left:18px;font-size:13px;color:var(--text);line-height:1.8">
-          <li>Sleep de knop hieronder naar je bladwijzerbalk</li>
-          <li>Klik op <strong>VHC openen</strong> — je gaat naar de bestellijst</li>
-          <li>Klik op de <strong>bladwijzer</strong> op die pagina</li>
-          <li>De prijzen worden automatisch teruggestuurd</li>
+          <li>Sleep de knop hieronder <strong>eenmalig</strong> naar je bladwijzerbalk</li>
+          <li>Klik op <strong>VHC openen</strong> — de bestellijst opent</li>
+          <li>Schakel naar <strong>Regelweergave</strong> (knop rechtsboven op de VHC pagina)</li>
+          <li>Klik op de <strong>bladwijzer</strong> in je bladwijzerbalk</li>
+          <li>Prijzen worden automatisch teruggestuurd</li>
         </ol>
       </div>
 
@@ -1075,7 +1076,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // SUPABASE CONFIG
 // ══════════════════════════════════════════════════════════════════════════════
-const APP_VERSION = 'v1.0.3';
+const APP_VERSION = 'v1.0.4';
 const SUPABASE_URL = 'https://mfexgibreooozqozzcow.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mZXhnaWJyZW9vb3pxb3p6Y293Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NzI2NjIsImV4cCI6MjA5MDA0ODY2Mn0.ufKbZhtfakH7TqA8SYAmw4NPnVLR96WjS5FmLmZn528';
 
@@ -3517,22 +3518,22 @@ function vhcTerug() {
 }
 
 function vhcUpdateBookmarklet() {
-  // Bouw de bookmarklet code die op VHC wordt uitgevoerd
   const appUrl = location.origin + location.pathname;
   const code = `(function(){
     var items=document.querySelectorAll('.amwishlist-item');
-    if(!items.length){alert('Geen producten gevonden. Zorg dat de bestellijst geopend is in regelweergave.');return;}
+    if(!items.length){alert('Geen producten gevonden. Zorg dat de bestellijst open is in regelweergave.');return;}
     var data=[];
     items.forEach(function(item){
-      var naam=item.querySelector('[class*="name"] a')||item.querySelector('[class*="name"]');
+      var naamEl=item.querySelector('.amwishlist-name')||item.querySelector('[class*="name"] a')||item.querySelector('[class*="name"]');
       var prijs=item.querySelector('.price-box .price');
-      var sku=item.querySelector('[class*="sku"]');
-      if(naam&&prijs){
+      var sku=item.querySelector('.sku')||item.querySelector('[class*="sku"]');
+      var naam=naamEl?naamEl.textContent.trim():'';
+      if(naam&&naam.length>1&&prijs){
         var p=parseFloat(prijs.textContent.replace(/[^0-9,]/g,'').replace(',','.'));
-        if(!isNaN(p)&&p>0) data.push({naam:naam.textContent.trim(),prijs:p,sku:sku?sku.textContent.trim():''});
+        if(!isNaN(p)&&p>0) data.push({naam:naam,prijs:p,sku:sku?sku.textContent.trim():''});
       }
     });
-    if(!data.length){alert('Geen prijzen gevonden op deze pagina.');return;}
+    if(!data.length){alert('Geen prijzen gevonden. Schakel naar regelweergave en probeer opnieuw.');return;}
     var win=window.open('${appUrl}#vhc-sync','_kostprijs');
     var interval=setInterval(function(){
       try{
@@ -3575,9 +3576,13 @@ function vhcVergelijk(producten) {
     const vhcNaamLc = vhcProd.naam.toLowerCase();
     const match = ingredienten.find(ing => {
       const ingNaamLc = ing.naam.toLowerCase();
-      return ingNaamLc === vhcNaamLc ||
-        ingNaamLc.includes(vhcNaamLc) ||
-        vhcNaamLc.includes(ingNaamLc);
+      // Exacte match
+      if (ingNaamLc === vhcNaamLc) return true;
+      // Één naam bevat de andere volledig — minimaal 8 tekens om valse matches te voorkomen
+      // bijv. "Lismo Pesto" mag NIET matchen op "Pesto" (te kort / ander product)
+      if (ingNaamLc.length >= 8 && vhcNaamLc.includes(ingNaamLc)) return true;
+      if (vhcNaamLc.length >= 8 && ingNaamLc.includes(vhcNaamLc)) return true;
+      return false;
     });
 
     if (match) {
@@ -3590,7 +3595,8 @@ function vhcVergelijk(producten) {
         vhcNaam: vhcProd.naam, oudePrijs: match.prijs, nieuwePrijs: vhcProd.prijs,
         verschil, pct,
         gewijzigd: Math.abs(verschil) > 0.001,
-        geselecteerd: Math.abs(verschil) > 0.001
+        geselecteerd: Math.abs(verschil) > 0.001,
+        matchInfo: match.naam.toLowerCase() !== vhcProd.naam.toLowerCase() ? `→ gekoppeld aan: "${match.naam}"` : null
       });
     } else {
       // Nieuw product — toevoegen aan Supabase
@@ -3611,7 +3617,10 @@ function vhcVergelijk(producten) {
     const ingNaamLc = ing.naam.toLowerCase();
     const nogInVhc = producten.some(p => {
       const pLc = p.naam.toLowerCase();
-      return pLc === ingNaamLc || pLc.includes(ingNaamLc) || ingNaamLc.includes(pLc);
+      if (pLc === ingNaamLc) return true;
+      if (ingNaamLc.length >= 8 && pLc.includes(ingNaamLc)) return true;
+      if (pLc.length >= 8 && ingNaamLc.includes(pLc)) return true;
+      return false;
     });
     if (!nogInVhc) {
       resultaten.push({
@@ -3669,7 +3678,9 @@ function renderVhcResultaten() {
     return `<div style="display:grid;grid-template-columns:28px 80px 1fr 85px 85px 85px;gap:6px;align-items:center;padding:7px 12px;border-bottom:1px solid #ede8df;background:${typeBg[r.type]}">`
       + `<input type="checkbox" ${r.geselecteerd ? 'checked' : ''} onchange="_vhcGescrapedData[${gi}].geselecteerd=this.checked;renderVhcResultaten()">`
       + `<span style="font-size:10px;font-weight:700;color:${typeKleur[r.type]}">${typeLabel[r.type]}</span>`
-      + `<div><div style="font-size:12px;font-weight:600">${r.ingNaam}</div>${r.ingNaam !== r.vhcNaam && r.vhcNaam !== '—' ? `<div style="font-size:10px;color:var(--muted)">VHC: ${r.vhcNaam}</div>` : ''}</div>`
+      + `<div><div style="font-size:12px;font-weight:600">${r.ingNaam}</div>`
+      + (r.matchInfo ? `<div style="font-size:10px;color:#e67e22">${r.matchInfo}</div>` : '')
+      + (r.ingNaam !== r.vhcNaam && r.vhcNaam !== '—' && !r.matchInfo ? `<div style="font-size:10px;color:var(--muted)">VHC: ${r.vhcNaam}</div>` : '') + '</div>'
       + `<div style="font-size:12px;font-family:monospace">${r.oudePrijs > 0 ? '€ ' + r.oudePrijs.toFixed(2).replace('.', ',') : '—'}</div>`
       + `<div style="font-size:12px;font-family:monospace;font-weight:700">${r.nieuwePrijs > 0 ? '€ ' + r.nieuwePrijs.toFixed(2).replace('.', ',') : '—'}</div>`
       + `<div style="font-size:12px;font-weight:700;color:${kleur}">${r.type === 'verwijder' ? 'Verwijderen' : pijl + ' ' + Math.abs(r.verschil).toFixed(2).replace('.', ',')}</div>`
