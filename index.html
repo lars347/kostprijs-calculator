@@ -1075,7 +1075,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // SUPABASE CONFIG
 // ══════════════════════════════════════════════════════════════════════════════
-const APP_VERSION = 'v1.0.0';
+const APP_VERSION = 'v1.0.3';
 const SUPABASE_URL = 'https://mfexgibreooozqozzcow.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mZXhnaWJyZW9vb3pxb3p6Y293Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NzI2NjIsImV4cCI6MjA5MDA0ODY2Mn0.ufKbZhtfakH7TqA8SYAmw4NPnVLR96WjS5FmLmZn528';
 
@@ -2684,9 +2684,16 @@ function openHfDetail(idx) {
   const rows=allComps.map(c=>{
     const src=c.sourceType==='ing'?ingredienten.find(x=>x.id==c.sourceId):recepturen.find(x=>x.id==c.sourceId);
     const cost=costForRow(c.sourceType,c.sourceId,c.hoeveelheid,c.eenheid);
-    const label = c.sourceType==='hf' ? ` <span class="badge badge-gray" style="font-size:9px">REC</span>` : '';
     const opm = c.opmerking ? `<div class="comp-opmerking">💬 ${c.opmerking}</div>` : '';
-    return `<tr><td><strong style="color:#1a1a1a">${src?.naam||'—'}</strong>${label}${opm}</td><td class="mono">${c.hoeveelheid} ${c.eenheid}</td>${kanFinancieelZien() ? `<td class="mono" style="color:var(--red)">€ ${cost.toFixed(4).replace('.',',')}</td>` : ''}</tr>`;
+    if (c.sourceType === 'hf' && src) {
+      const subIdx = recepturen.indexOf(src);
+      return `<tr><td>
+        <strong style="color:var(--red);cursor:pointer;text-decoration:underline;text-underline-offset:2px" onclick="openHfDetail(${subIdx})" title="Open receptuur '${src.naam}'">${src.naam}</strong>
+        <span class="badge badge-gray" style="font-size:9px;margin-left:4px">REC</span>
+        ${opm}
+      </td><td class="mono">${c.hoeveelheid} ${c.eenheid}</td>${kanFinancieelZien() ? `<td class="mono" style="color:var(--red)">€ ${cost.toFixed(4).replace('.',',')}</td>` : ''}</tr>`;
+    }
+    return `<tr><td><strong style="color:#1a1a1a">${src?.naam||'—'}</strong>${opm}</td><td class="mono">${c.hoeveelheid} ${c.eenheid}</td>${kanFinancieelZien() ? `<td class="mono" style="color:var(--red)">€ ${cost.toFixed(4).replace('.',',')}</td>` : ''}</tr>`;
   }).join('');
   document.getElementById('hf-detail-content').innerHTML=`
     ${hf.foto ? `<img src="${hf.foto}" class="detail-foto" alt="${hf.naam}">` : ''}
@@ -3692,10 +3699,10 @@ async function vhcOpslaanAlles() {
   btn.textContent = '⏳ Opslaan...';
   btn.disabled = true;
   let opgeslagen = 0;
+  const toegevoegdeIngIds = []; // bijhouden voor melding achteraf
 
   for (const r of teOpslaan) {
     if (r.type === 'update') {
-      // Prijswijziging
       const ing = ingredienten[r.ingIdx];
       if (!ing) continue;
       await savePrijsHistorie(ing.id, ing.naam, r.oudePrijs, r.nieuwePrijs);
@@ -3704,27 +3711,32 @@ async function vhcOpslaanAlles() {
       opgeslagen++;
 
     } else if (r.type === 'nieuw') {
-      // Nieuw ingrediënt toevoegen via sbSaveIng zodat kolomnamen kloppen
+      // Gebruik directe POST — sla id weg zodat sbSaveIng POST doet (niet PATCH)
       const nieuwIng = {
-        id: null, // geen bestaand id → POST
         naam: r.vhcNaam,
         leverancier: 'VHC',
         categorie: 'VHC',
-        eenheid: 'kg',
+        eenheid: 'stuk', // onbekend — markeer voor handmatige controle
         prijs: r.nieuwePrijs,
         sverlies: 0,
         spieknaam: '',
         productCategorie: ''
       };
-      await sbSaveIng(nieuwIng); // zet nieuwIng.id na POST
-      if (nieuwIng.id) {
+      // Direct POST zonder id veld
+      const res = await sbFetch('ingredienten', 'POST', {
+        naam: nieuwIng.naam, leverancier: nieuwIng.leverancier,
+        categorie: nieuwIng.categorie, eenheid: nieuwIng.eenheid,
+        prijs: nieuwIng.prijs, sverlies: nieuwIng.sverlies
+      });
+      if (res && res[0]) {
+        nieuwIng.id = res[0].id;
         ingredienten.push(nieuwIng);
+        toegevoegdeIngIds.push({ id: nieuwIng.id, idx: ingredienten.length - 1, naam: nieuwIng.naam });
         await savePrijsHistorie(nieuwIng.id, nieuwIng.naam, 0, nieuwIng.prijs);
         opgeslagen++;
       }
 
     } else if (r.type === 'verwijder') {
-      // Ingrediënt verwijderen
       const ing = ingredienten[r.ingIdx];
       if (!ing) continue;
       await sbDelete('ingredienten', ing.id);
@@ -3737,7 +3749,26 @@ async function vhcOpslaanAlles() {
   btn.textContent = '💾 Wijzigingen opslaan';
   btn.disabled = false;
   closeModal('modal-vhc-sync');
-  toast('✅ ' + opgeslagen + ' wijzigingen opgeslagen');
+
+  // Toon melding voor nieuwe producten die handmatige controle nodig hebben
+  if (toegevoegdeIngIds.length > 0) {
+    const namen = toegevoegdeIngIds.map(i => i.naam).join('\n• ');
+    const naarBewerken = confirm(
+      `✅ ${opgeslagen} wijzigingen opgeslagen.\n\n` +
+      `⚠️ ${toegevoegdeIngIds.length} nieuwe product(en) toegevoegd met eenheid "stuk" — controleer dit:\n• ${namen}\n\n` +
+      `Wil je deze nu bewerken?`
+    );
+    if (naarBewerken) {
+      // Ga naar ingrediënten pagina en open het eerste nieuwe product
+      showPage('ingredienten', document.querySelector('.nav-tab[onclick*="ingredienten"]'));
+      setTimeout(() => {
+        const eersteIdx = toegevoegdeIngIds[0].idx;
+        if (eersteIdx >= 0 && eersteIdx < ingredienten.length) openIngModal(eersteIdx);
+      }, 300);
+    }
+  } else {
+    toast('✅ ' + opgeslagen + ' wijzigingen opgeslagen');
+  }
 }
 
 // Zet bookmarklet klaar zodra modal opent
@@ -3814,6 +3845,7 @@ async function openPrijsHistorie(idx) {
 // MENUKAART DUPLICEREN
 // ══════════════════════════════════════════════════════════════════════════════
 async function dupliceerMk(idx) {
+  if (!isAdmin()) { toast('Alleen admins mogen menukaarten dupliceren'); return; }
   const mk = menukaarten[idx];
   const naam = prompt('Naam voor de kopie:', mk.naam + ' (kopie)');
   if (!naam || !naam.trim()) return;
@@ -3827,9 +3859,11 @@ async function dupliceerMk(idx) {
   };
   menukaarten.push(kopie);
   await sbSaveMk(kopie);
+  // Terug naar overzicht zodat nieuwe kaart meteen zichtbaar is
+  document.getElementById('mk-list').classList.remove('hidden');
+  document.getElementById('mk-detail').classList.remove('open');
   renderMkOverview();
   toast('Menukaart gedupliceerd');
-  openMkDetail(menukaarten.length - 1);
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -4505,7 +4539,7 @@ function openMkDetail(idx) {
         <button class="btn btn-ghost" onclick="openRecepturenModal(${idx})">📋 Recepturen</button>
         <button class="btn btn-ghost" onclick="printSpiekbriefjes(${idx})">🖨️ Spiekbriefjes</button>
         <button class="btn btn-ghost" onclick="openInkooplijstModal(${idx})">🛒 Bestellijst</button>
-        <button class="btn btn-ghost" onclick="dupliceerMk(${idx})">⧉ Dupliceren</button>
+        ${isAdmin() ? `<button class="btn btn-ghost" onclick="dupliceerMk(${idx})">⧉ Dupliceren</button>` : ''}
         <button class="btn btn-ghost" onclick="openMkModal(${idx})">✎ Bewerken</button>
       </div>` : currentUser?.role === 'chef' ? `<div style="display:flex;gap:8px">
         <button class="btn btn-ghost" onclick="openRecepturenModal(${idx})">📋 Recepturen</button>
