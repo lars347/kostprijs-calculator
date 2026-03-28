@@ -995,15 +995,27 @@
       </div>
     </div>
 
-    <!-- STAP 2: Wachten -->
+    <!-- STAP 2: Wachten + plak veld -->
     <div id="vhc-stap-2" style="display:none">
-      <div style="text-align:center;padding:32px 0">
-        <div style="font-size:40px;margin-bottom:16px" id="vhc-wacht-icon">⏳</div>
-        <div style="font-size:16px;font-weight:600;margin-bottom:8px" id="vhc-wacht-titel">VHC is geopend in een nieuw tabblad</div>
-        <div style="font-size:13px;color:var(--muted)" id="vhc-wacht-sub">Ga naar dat tabblad en klik de bladwijzer 🔄 VHC → Kostprijs</div>
-        <div style="margin-top:20px;height:4px;background:var(--border);border-radius:2px;overflow:hidden">
-          <div id="vhc-progress-bar" style="height:100%;width:0%;background:var(--red);transition:width 0.5s;border-radius:2px"></div>
+      <div style="text-align:center;padding:20px 0 16px">
+        <div style="font-size:36px;margin-bottom:12px" id="vhc-wacht-icon">⏳</div>
+        <div style="font-size:15px;font-weight:600;margin-bottom:6px" id="vhc-wacht-titel">VHC is geopend in een nieuw tabblad</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.8" id="vhc-wacht-sub">
+          1. Klik de bladwijzer <strong>eerste keer</strong> → interceptor installeren<br>
+          2. Scroll door de hele lijst zodat alle producten laden<br>
+          3. Klik de bladwijzer <strong>opnieuw</strong> → data wordt gekopieerd naar klembord
         </div>
+      </div>
+      <div style="background:#f8f4ef;border:1px solid #e0d5c5;border-radius:6px;padding:14px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red);margin-bottom:8px">Stap 4 — Plak hier de gekopieerde data</div>
+        <textarea id="vhc-plak-veld" placeholder='Plak hier de VHC data (Ctrl+V)...' rows="3"
+          style="width:100%;border:1px solid var(--border);border-radius:4px;padding:8px;font-size:12px;font-family:monospace;resize:none;box-sizing:border-box;background:white"></textarea>
+        <button class="btn btn-primary" style="margin-top:8px;width:100%" onclick="vhcVerwerkGeplakteTekst()">
+          ✅ Verwerken
+        </button>
+      </div>
+      <div style="margin-top:12px;height:4px;background:var(--border);border-radius:2px;overflow:hidden">
+        <div id="vhc-progress-bar" style="height:100%;width:0%;background:var(--red);transition:width 0.5s;border-radius:2px"></div>
       </div>
     </div>
 
@@ -1111,7 +1123,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // SUPABASE CONFIG
 // ══════════════════════════════════════════════════════════════════════════════
-const APP_VERSION = 'v1.3.3';
+const APP_VERSION = 'v1.3.4';
 const SUPABASE_URL = 'https://mfexgibreooozqozzcow.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mZXhnaWJyZW9vb3pxb3p6Y293Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NzI2NjIsImV4cCI6MjA5MDA0ODY2Mn0.ufKbZhtfakH7TqA8SYAmw4NPnVLR96WjS5FmLmZn528';
 
@@ -3604,6 +3616,8 @@ function vhcSetStap(nr) {
 }
 
 function vhcTerug() {
+  clearInterval(window._vhcBarInterval);
+
   vhcSetStap(1);
   document.getElementById('vhc-terug-btn').style.display = 'none';
   document.getElementById('vhc-naar-vhc-btn').style.display = '';
@@ -3684,17 +3698,21 @@ function vhcUpdateBookmarklet() {
     + '  alert("Stap 1 klaar!\n\nScroll nu langzaam door de HELE lijst zodat alle producten laden.\nKlik dan de bladwijzer OPNIEUW.");'
     + '  return;'
     + '}'
-    + 'if(window.opener&&window.opener.vhcOntvangPrijzen){'
-    + '  window.opener.vhcOntvangPrijzen(producten);'
-    + '  window.opener.focus();'
-    + '  window.close();'
-    + '}else{'
-    + '  alert("Verbinding met app verloren.\nOpen VHC via de VHC Sync knop in de app.");'
-    + '}'
+    // Kopieer naar klembord + toon plak-instructie
+    + 'var json=JSON.stringify(producten);'
+    + 'navigator.clipboard.writeText(json).then(function(){'
+    + '  alert(producten.length+" producten gekopieerd!\\n\\n1. Ga terug naar de app\\n2. Plak de data in het tekstveld\\n3. Klik Verwerken");'
+    + '}).catch(function(){'
+    // Fallback: toon data in prompt zodat gebruiker kan kopieren
+    + '  var ok=window.prompt(producten.length+" producten gevonden. Selecteer alles (Ctrl+A) en kopieer (Ctrl+C):",json);'
+    + '});'
     + '})();';
   const link = document.getElementById('vhc-bookmarklet-link');
   if (link) link.href = 'javascript:' + encodeURIComponent(code);
 }
+
+
+
 
 function vhcNaarVhc() {
   if (_vhcXlsxData.length === 0) {
@@ -3705,19 +3723,19 @@ function vhcNaarVhc() {
   }
   const lijstId = document.getElementById('vhc-lijst-select').value;
   vhcUpdateBookmarklet();
-  // Open in normaal nieuw tabblad (niet popup) zodat bladwijzerbalk beschikbaar is
+  // Open VHC in normaal nieuw tabblad (bladwijzerbalk beschikbaar)
   window.open('https://vhcjongensalmere.nl/mwishlist/wishlist/index/wishlist_id/' + lijstId + '/', '_blank');
   vhcSetStap(2);
   document.getElementById('vhc-terug-btn').style.display = '';
   document.getElementById('vhc-naar-vhc-btn').style.display = 'none';
-  let pct = 0;
-  const bar = document.getElementById('vhc-progress-bar');
-  const bi = setInterval(() => { pct = Math.min(pct + 0.3, 90); if (bar) bar.style.width = pct + '%'; }, 200);
-  window._vhcBarInterval = bi;
+  // Leeg plak-veld
+  const plakVeld = document.getElementById('vhc-plak-veld');
+  if (plakVeld) plakVeld.value = '';
 }
 
 function vhcOntvangPrijzen(producten) {
   clearInterval(window._vhcBarInterval);
+
   const bar = document.getElementById('vhc-progress-bar');
   if (bar) bar.style.width = '100%';
   document.getElementById('vhc-wacht-icon').textContent = '\u2705';
@@ -3725,6 +3743,22 @@ function vhcOntvangPrijzen(producten) {
   _vhcPrijzen = {};
   producten.forEach(p => { _vhcPrijzen[String(p.sku)] = p.prijs; });
   setTimeout(() => vhcVerwerken(), 300);
+}
+
+function vhcVerwerkGeplakteTekst() {
+  const tekst = document.getElementById('vhc-plak-veld')?.value?.trim();
+  if (!tekst) { toast('Plak eerst de data van de bladwijzer'); return; }
+  try {
+    const producten = JSON.parse(tekst);
+    if (!Array.isArray(producten) || producten.length === 0) {
+      toast('Ongeldige data \u2014 kopieer opnieuw met de bladwijzer');
+      return;
+    }
+    document.getElementById('vhc-plak-veld').value = '';
+    vhcOntvangPrijzen(producten);
+  } catch(e) {
+    toast('Kon data niet verwerken \u2014 kopieer opnieuw met de bladwijzer');
+  }
 }
 
 async function vhcVerwerken() {
