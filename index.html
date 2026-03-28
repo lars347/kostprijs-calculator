@@ -930,25 +930,26 @@
 <div class="modal-overlay" id="modal-vhc-sync">
   <div class="modal" style="width:660px;max-height:92vh;display:flex;flex-direction:column">
 
-    <!-- Header met stap indicator -->
     <div class="modal-title" style="display:flex;justify-content:space-between;align-items:center">
       <span>🔄 VHC Synchroniseren</span>
-      <div id="vhc-stap-indicator" style="display:flex;gap:6px;align-items:center;font-size:11px;font-weight:600">
-        <span id="vhc-dot-1" style="width:24px;height:24px;border-radius:50%;background:var(--red);color:white;display:flex;align-items:center;justify-content:center;font-size:11px">1</span>
+      <div style="display:flex;gap:6px;align-items:center">
+        <span id="vhc-dot-1" style="width:24px;height:24px;border-radius:50%;background:var(--red);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">1</span>
         <span style="width:20px;height:2px;background:var(--border)"></span>
-        <span id="vhc-dot-2" style="width:24px;height:24px;border-radius:50%;background:var(--border);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:11px">2</span>
+        <span id="vhc-dot-2" style="width:24px;height:24px;border-radius:50%;background:var(--border);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">2</span>
         <span style="width:20px;height:2px;background:var(--border)"></span>
-        <span id="vhc-dot-3" style="width:24px;height:24px;border-radius:50%;background:var(--border);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:11px">3</span>
+        <span id="vhc-dot-3" style="width:24px;height:24px;border-radius:50%;background:var(--border);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">3</span>
       </div>
     </div>
 
-    <!-- STAP 1: Kies bestellijst + bladwijzer -->
+    <!-- STAP 1: Upload XLSX -->
     <div id="vhc-stap-1">
-      <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Selecteer de VHC bestellijst en volg de stappen om de prijzen te synchroniseren.</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:16px">
+        Download eerst de bestellijst als XLSX van VHC, upload hem hier, en haal dan de prijzen op met de bladwijzer.
+      </div>
 
-      <div class="input-group" style="margin-bottom:16px">
+      <div class="input-group" style="margin-bottom:12px">
         <label>VHC Bestellijst</label>
-        <select id="vhc-lijst-select" style="font-size:14px">
+        <select id="vhc-lijst-select">
           <option value="24103">Lente 2026</option>
           <option value="18655">eendracht totaal</option>
           <option value="23638">Winter 2026</option>
@@ -959,64 +960,54 @@
         </select>
       </div>
 
-      <!-- Stappenplan -->
-      <div style="background:#f8f4ef;border:1px solid #e0d5c5;border-radius:6px;padding:16px;margin-bottom:16px">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red);margin-bottom:12px">Hoe werkt het?</div>
-        <div style="display:flex;flex-direction:column;gap:10px">
-          <div style="display:flex;gap:12px;align-items:flex-start">
-            <span style="min-width:22px;height:22px;border-radius:50%;background:var(--red);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">1</span>
-            <div style="font-size:13px">Sleep de rode knop hieronder <strong>eenmalig</strong> naar je bladwijzerbalk</div>
-          </div>
-          <div style="display:flex;gap:12px;align-items:flex-start">
-            <span style="min-width:22px;height:22px;border-radius:50%;background:var(--red);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">2</span>
-            <div style="font-size:13px">Klik op <strong>"VHC openen"</strong> — de bestellijst opent in een nieuw venster</div>
-          </div>
-          <div style="display:flex;gap:12px;align-items:flex-start">
-            <span style="min-width:22px;height:22px;border-radius:50%;background:var(--red);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">3</span>
-            <div style="font-size:13px">Klik op de bladwijzer <strong>"🔄 VHC → Kostprijs"</strong> — je krijgt een melding</div>
-          </div>
-          <div style="display:flex;gap:12px;align-items:flex-start">
-            <span style="min-width:22px;height:22px;border-radius:50%;background:var(--red);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">4</span>
-            <div style="font-size:13px">Scroll door de lijst zodat alle producten laden, klik dan de bladwijzer <strong>opnieuw</strong></div>
-          </div>
-          <div style="display:flex;gap:12px;align-items:flex-start">
-            <span style="min-width:22px;height:22px;border-radius:50%;background:#27ae60;color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">✓</span>
-            <div style="font-size:13px;color:#27ae60;font-weight:600">Klaar — de app verwerkt automatisch alle prijzen</div>
-          </div>
-        </div>
+      <!-- XLSX Upload zone -->
+      <div id="vhc-upload-zone" onclick="document.getElementById('vhc-xlsx-input').click()"
+           style="border:2px dashed var(--border);border-radius:6px;padding:24px;text-align:center;cursor:pointer;background:var(--surface2);transition:border-color 0.2s;margin-bottom:12px"
+           ondragover="event.preventDefault();this.style.borderColor='var(--red)'"
+           ondragleave="this.style.borderColor='var(--border)'"
+           ondrop="event.preventDefault();this.style.borderColor='var(--border)';vhcVerwerkXlsx(event.dataTransfer.files[0])">
+        <div style="font-size:28px;margin-bottom:8px">📄</div>
+        <div style="font-size:14px;font-weight:600;color:var(--text)" id="vhc-upload-label">Klik of sleep het VHC XLSX bestand hier</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">Export bestellijst → XLSX downloaden op de VHC website</div>
+        <input type="file" id="vhc-xlsx-input" accept=".xlsx" style="display:none" onchange="vhcVerwerkXlsx(this.files[0])">
       </div>
 
-      <!-- Bladwijzer knop -->
-      <div style="background:var(--surface2);border-radius:6px;padding:14px">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px">📌 Stap 1 — Eenmalig instellen: sleep deze knop naar je bladwijzerbalk</div>
-        <div style="display:flex;align-items:center;gap:14px">
+      <!-- Status XLSX -->
+      <div id="vhc-xlsx-status" style="display:none;background:#e8f8ef;border:1px solid #a8dfc0;border-radius:4px;padding:10px 14px;font-size:13px;color:#1a7a45;margin-bottom:12px"></div>
+
+      <!-- Bladwijzer sectie -->
+      <div style="background:#f8f4ef;border:1px solid #e0d5c5;border-radius:6px;padding:14px;margin-bottom:12px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red);margin-bottom:10px">Stap 2 — Prijzen ophalen via bladwijzer</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.8;margin-bottom:12px">
+          1. Sleep de rode knop <strong>eenmalig</strong> naar je bladwijzerbalk<br>
+          2. Klik <strong>"VHC openen"</strong> → de bestellijst opent<br>
+          3. Klik de bladwijzer → krijg melding, klik opnieuw na scrollen<br>
+          4. Prijzen worden automatisch gekoppeld aan het XLSX
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
           <a id="vhc-bookmarklet-link" href="#"
-             style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;background:var(--red);color:white;border-radius:4px;font-size:13px;font-weight:700;text-decoration:none;cursor:grab;user-select:none;white-space:nowrap;border:2px dashed rgba(255,255,255,0.4)"
-             draggable="true"
-             title="Sleep deze knop naar je bladwijzerbalk">
+             style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:var(--red);color:white;border-radius:4px;font-size:12px;font-weight:700;text-decoration:none;cursor:grab;white-space:nowrap;border:2px dashed rgba(255,255,255,0.4)"
+             draggable="true" title="Sleep naar bladwijzerbalk">
             🔄 VHC → Kostprijs
           </a>
-          <div style="font-size:12px;color:var(--muted);line-height:1.6">
-            ← <strong>Sleep</strong> naar je bladwijzerbalk<br>
-            <span style="font-size:11px">(daarna altijd herbruikbaar)</span>
-          </div>
+          <span style="font-size:11px;color:var(--muted)">← sleep naar bladwijzerbalk (eenmalig)</span>
         </div>
       </div>
     </div>
 
-    <!-- STAP 2: Wachten op data -->
+    <!-- STAP 2: Wachten -->
     <div id="vhc-stap-2" style="display:none">
       <div style="text-align:center;padding:32px 0">
         <div style="font-size:40px;margin-bottom:16px" id="vhc-wacht-icon">⏳</div>
-        <div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px" id="vhc-wacht-titel">Wachten op VHC data…</div>
-        <div style="font-size:13px;color:var(--muted)" id="vhc-wacht-sub">Schakel naar Regelweergave op de VHC pagina en klik daarna de bladwijzer</div>
+        <div style="font-size:16px;font-weight:600;margin-bottom:8px" id="vhc-wacht-titel">Wachten op prijzen van VHC…</div>
+        <div style="font-size:13px;color:var(--muted)" id="vhc-wacht-sub">Klik de bladwijzer op de VHC pagina</div>
         <div style="margin-top:20px;height:4px;background:var(--border);border-radius:2px;overflow:hidden">
           <div id="vhc-progress-bar" style="height:100%;width:0%;background:var(--red);transition:width 0.5s;border-radius:2px"></div>
         </div>
       </div>
     </div>
 
-    <!-- STAP 3: Verwerking + eindresultaat -->
+    <!-- STAP 3: Rapport -->
     <div id="vhc-stap-3" style="display:none;flex:1;min-height:0;flex-direction:column">
       <div id="vhc-resultaat-header" style="margin-bottom:12px;flex-shrink:0"></div>
       <div id="vhc-resultaat-tabs" style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:12px;flex-shrink:0"></div>
@@ -1120,7 +1111,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // SUPABASE CONFIG
 // ══════════════════════════════════════════════════════════════════════════════
-const APP_VERSION = 'v1.2.0';
+const APP_VERSION = 'v1.3.1';
 const SUPABASE_URL = 'https://mfexgibreooozqozzcow.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mZXhnaWJyZW9vb3pxb3p6Y293Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NzI2NjIsImV4cCI6MjA5MDA0ODY2Mn0.ufKbZhtfakH7TqA8SYAmw4NPnVLR96WjS5FmLmZn528';
 
@@ -1170,7 +1161,8 @@ async function loadAllData() {
     ingredienten = (ing || []).map(r => ({
       ...r,
       productCategorie: r.productCategorie || r.productcategorie || '',
-      spieknaam: r.spieknaam || ''
+      spieknaam: r.spieknaam || '',
+      sku: r.sku || ''
     }));
     recepturen   = (hf || []).map(r => ({
       ...r,
@@ -1968,7 +1960,8 @@ async function sbSaveIng(ing) {
       prijs: ing.prijs,
       sverlies: ing.sverlies,
       spieknaam: ing.spieknaam || '',
-      productcategorie: ing.productCategorie || ing.productcategorie || ''
+      productcategorie: ing.productCategorie || ing.productcategorie || '',
+      sku: ing.sku || ''
     };
     const id = ing.id;
     if (id && id !== null && String(id).length < 13) {
@@ -3569,31 +3562,44 @@ ${paginas}
 
 
 // ══════════════════════════════════════════════════════════════════════════════
-// VHC PRIJSSYNCHRONISATIE
 // ══════════════════════════════════════════════════════════════════════════════
-// ══════════════════════════════════════════════════════════════════════════════
-// VHC SYNCHRONISATIE — volledig herbouwde versie
+// VHC SYNCHRONISATIE — XLSX + XHR prijzen
 // ══════════════════════════════════════════════════════════════════════════════
 
-let _vhcRapport = null; // opgeslagen rapport na sync
-let _vhcActiefTabblad = 'prijzen'; // huidig actief tabblad in resultaat
+let _vhcRapport = null;
+let _vhcActiefTabblad = 'prijzen';
+let _vhcXlsxData = [];
+let _vhcPrijzen = {};
 
-// ── Stap indicators ──────────────────────────────────────────────────────────
+function parseerEenheid(salesUnit) {
+  const s = (salesUnit || '').toLowerCase();
+  if (s.includes('kilo') || s.includes(' kg')) return 'kg';
+  if (s.includes('liter')) return 'l';
+  if (s.includes('milliliter') || s.includes('ml')) return 'ml';
+  if (s.includes('gram')) return 'g';
+  if (s.includes('stuk') || s.includes('stuks')) return 'stuk';
+  if (s.includes('fles')) return 'fles';
+  if (s.includes('doos')) return 'doos';
+  if (s.includes('zak')) return 'zak';
+  if (s.includes('blik')) return 'blik';
+  if (s.includes('pot')) return 'pot';
+  if (s.includes('pak')) return 'pak';
+  if (s.includes('bak')) return 'bak';
+  return 'stuk';
+}
+
 function vhcSetStap(nr) {
   [1,2,3].forEach(i => {
     const dot = document.getElementById('vhc-dot-' + i);
     if (!dot) return;
-    if (i < nr) {
-      dot.style.background = '#27ae60'; dot.style.color = 'white';
-    } else if (i === nr) {
-      dot.style.background = 'var(--red)'; dot.style.color = 'white';
-    } else {
-      dot.style.background = 'var(--border)'; dot.style.color = 'var(--muted)';
-    }
+    if (i < nr) { dot.style.background = '#27ae60'; dot.style.color = 'white'; }
+    else if (i === nr) { dot.style.background = 'var(--red)'; dot.style.color = 'white'; }
+    else { dot.style.background = 'var(--border)'; dot.style.color = 'var(--muted)'; }
   });
-  document.getElementById('vhc-stap-1').style.display = nr === 1 ? '' : 'none';
-  document.getElementById('vhc-stap-2').style.display = nr === 2 ? '' : 'none';
-  document.getElementById('vhc-stap-3').style.display = nr === 3 ? 'flex' : 'none';
+  ['vhc-stap-1','vhc-stap-2','vhc-stap-3'].forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = (i + 1 === nr) ? (nr === 3 ? 'flex' : '') : 'none';
+  });
 }
 
 function vhcTerug() {
@@ -3604,13 +3610,56 @@ function vhcTerug() {
   vhcUpdateBookmarklet();
 }
 
-// ── Bookmarklet ───────────────────────────────────────────────────────────────
+function vhcVerwerkXlsx(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    if (typeof XLSX === 'undefined') {
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+      script.onload = () => vhcParseerXlsx(e.target.result, file.name);
+      document.head.appendChild(script);
+    } else {
+      vhcParseerXlsx(e.target.result, file.name);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function vhcParseerXlsx(buffer, bestandsnaam) {
+  try {
+    const wb = XLSX.read(buffer, { type: 'array' });
+    const sheet = wb.Sheets[wb.SheetNames[0]];
+    const data = XLSX.utils.sheet_to_json(sheet);
+    _vhcXlsxData = data.map(row => ({
+      sku: String(row.Sku || row.SKU || row.sku || '').trim(),
+      naam: (row.ProductName || row.productname || row.naam || row.Name || '').trim(),
+      salesUnit: (row.salesUnit || row.SalesUnit || '').trim(),
+      eenheid: parseerEenheid(row.salesUnit || row.SalesUnit || '')
+    })).filter(r => r.sku && r.naam);
+
+    const statusEl = document.getElementById('vhc-xlsx-status');
+    const labelEl = document.getElementById('vhc-upload-label');
+    const zoneEl = document.getElementById('vhc-upload-zone');
+
+    if (_vhcXlsxData.length === 0) {
+      statusEl.style.display = '';
+      statusEl.style.cssText = 'display:block;background:#fff0f0;border:1px solid #f0b0b0;border-radius:4px;padding:10px 14px;font-size:13px;color:#900;margin-bottom:12px';
+      statusEl.innerHTML = '\u274c Geen geldige producten gevonden. Controleer of dit het juiste VHC XLSX bestand is.';
+      return;
+    }
+    if (labelEl) labelEl.textContent = '\u2705 ' + bestandsnaam;
+    if (zoneEl) zoneEl.style.borderColor = '#27ae60';
+    statusEl.style.display = '';
+    statusEl.style.cssText = 'display:block;background:#e8f8ef;border:1px solid #a8dfc0;border-radius:4px;padding:10px 14px;font-size:13px;color:#1a7a45;margin-bottom:12px';
+    statusEl.innerHTML = '\u2705 <strong>' + _vhcXlsxData.length + ' producten</strong> geladen uit "' + bestandsnaam + '" \u2014 klik nu <strong>VHC openen</strong>';
+    vhcUpdateBookmarklet();
+  } catch(err) { toast('Fout bij lezen XLSX: ' + err.message); }
+}
+
 function vhcUpdateBookmarklet() {
-  // Nieuwe aanpak: onderschep XHR calls van VHC zelf — werkt in elke weergave, geen DOM scraping
   const code = '(function(){'
-    // Stap 1: kijk of er al onderschepte data is van eerder op deze pagina
     + 'var alleData=window.__vhcGevangen||[];'
-    // Stap 2: verzamel unieke producten
     + 'var gezieneSkus=new Set();'
     + 'var producten=[];'
     + 'alleData.forEach(function(items){'
@@ -3619,158 +3668,136 @@ function vhcUpdateBookmarklet() {
     + '    if(!gezieneSkus.has(item.sku)&&item.name&&item.price){'
     + '      gezieneSkus.add(item.sku);'
     + '      var p=parseFloat((item.price||"").replace(/[^0-9,]/g,"").replace(",","."));'
-    + '      if(!isNaN(p)&&p>0)producten.push({naam:item.name,prijs:p,sku:item.sku||""});'
+    + '      if(!isNaN(p)&&p>0)producten.push({naam:item.name,prijs:p,sku:String(item.sku)});'
     + '    }'
     + '  });'
     + '});'
-    // Stap 3: als nog geen data, installeer interceptor en wacht
     + 'if(!producten.length){'
     + '  if(!window.__vhcXhrGeinstalleerd){'
     + '    window.__vhcGevangen=[];'
-    + '    var origSend=XMLHttpRequest.prototype.send;'
-    + '    var origOpen=XMLHttpRequest.prototype.open;'
-    + '    XMLHttpRequest.prototype.open=function(m,u){this.__url=u;return origOpen.apply(this,arguments);};'
-    + '    XMLHttpRequest.prototype.send=function(b){'
-    + '      if(this.__url&&this.__url.indexOf("getProducts")>-1){'
-    + '        this.addEventListener("load",function(){'
-    + '          try{var d=JSON.parse(this.responseText);if(Array.isArray(d))window.__vhcGevangen.push(d);}catch(e){}'
-    + '        });'
-    + '      }'
-    + '      return origSend.apply(this,arguments);'
-    + '    };'
+    + '    var os=XMLHttpRequest.prototype.send,oo=XMLHttpRequest.prototype.open;'
+    + '    XMLHttpRequest.prototype.open=function(m,u){this.__url=u;return oo.apply(this,arguments);};'
+    + '    XMLHttpRequest.prototype.send=function(b){if(this.__url&&this.__url.indexOf("getProducts")>-1){this.addEventListener("load",function(){try{var d=JSON.parse(this.responseText);if(Array.isArray(d))window.__vhcGevangen.push(d);}catch(e){}});}return os.apply(this,arguments);};'
     + '    window.__vhcXhrGeinstalleerd=true;'
     + '  }'
-    + '  alert("Interceptor geinstalleerd!\n\nScroll nu door de bestellijst zodat alle producten laden, en klik daarna de bladwijzer opnieuw.");'
+    + '  alert("Stap 1 klaar!\n\nScroll nu langzaam door de HELE lijst zodat alle producten laden.\nKlik dan de bladwijzer OPNIEUW.");'
     + '  return;'
     + '}'
-    // Stap 4: stuur naar app
-    + 'if(window.opener&&window.opener.vhcOntvangData){'
-    + '  window.opener.vhcOntvangData(producten);'
+    + 'if(window.opener&&window.opener.vhcOntvangPrijzen){'
+    + '  window.opener.vhcOntvangPrijzen(producten);'
     + '  window.opener.focus();'
     + '  window.close();'
     + '}else{'
-    + '  alert("Verbinding met app verloren.\n\nOpen VHC via de VHC Sync knop in de app.");'
+    + '  alert("Verbinding met app verloren.\nOpen VHC via de VHC Sync knop in de app.");'
     + '}'
     + '})();';
   const link = document.getElementById('vhc-bookmarklet-link');
   if (link) link.href = 'javascript:' + encodeURIComponent(code);
 }
 
-// ── VHC openen ────────────────────────────────────────────────────────────────
 function vhcNaarVhc() {
-  const lijstId = document.getElementById('vhc-lijst-select').value;
-  vhcUpdateBookmarklet();
-  const vhcUrl = 'https://vhcjongensalmere.nl/mwishlist/wishlist/index/wishlist_id/' + lijstId + '/';
-  // Open als popup zodat window.opener in VHC naar de app verwijst
-  const popup = window.open(vhcUrl, '_vhc_sync', 'width=1280,height=800,noopener=no');
-  if (!popup) {
-    toast('Pop-up geblokkeerd! Klik op het pop-up icoon in je adresbalk en sta pop-ups toe.');
+  if (_vhcXlsxData.length === 0) {
+    toast('Upload eerst het VHC XLSX bestand');
+    const inp = document.getElementById('vhc-xlsx-input');
+    if (inp) inp.click();
     return;
   }
+  const lijstId = document.getElementById('vhc-lijst-select').value;
+  vhcUpdateBookmarklet();
+  const popup = window.open('https://vhcjongensalmere.nl/mwishlist/wishlist/index/wishlist_id/' + lijstId + '/', '_vhc_sync', 'width=1280,height=800,noopener=no');
+  if (!popup) { toast('Pop-up geblokkeerd! Sta pop-ups toe voor deze site.'); return; }
   window._vhcPopup = popup;
-  // Naar stap 2: wachten
   vhcSetStap(2);
   document.getElementById('vhc-terug-btn').style.display = '';
   document.getElementById('vhc-naar-vhc-btn').style.display = 'none';
   let pct = 0;
   const bar = document.getElementById('vhc-progress-bar');
-  const barInterval = setInterval(() => {
-    pct = Math.min(pct + 0.5, 90);
-    if (bar) bar.style.width = pct + '%';
-  }, 200);
-  window._vhcBarInterval = barInterval;
+  const bi = setInterval(() => { pct = Math.min(pct + 0.3, 90); if (bar) bar.style.width = pct + '%'; }, 200);
+  window._vhcBarInterval = bi;
 }
 
-// ── Ontvang data van bookmarklet ──────────────────────────────────────────────
-function vhcOntvangData(producten) {
+function vhcOntvangPrijzen(producten) {
   clearInterval(window._vhcBarInterval);
   const bar = document.getElementById('vhc-progress-bar');
   if (bar) bar.style.width = '100%';
-  document.getElementById('vhc-wacht-icon').textContent = '✅';
-  document.getElementById('vhc-wacht-titel').textContent = producten.length + ' producten ontvangen — bezig met verwerken…';
-  document.getElementById('vhc-wacht-sub').textContent = 'Prijzen worden vergeleken en opgeslagen…';
-  setTimeout(() => vhcVerwerken(producten), 400);
+  document.getElementById('vhc-wacht-icon').textContent = '\u2705';
+  document.getElementById('vhc-wacht-titel').textContent = producten.length + ' prijzen ontvangen \u2014 verwerken\u2026';
+  _vhcPrijzen = {};
+  producten.forEach(p => { _vhcPrijzen[String(p.sku)] = p.prijs; });
+  setTimeout(() => vhcVerwerken(), 300);
 }
 
-// ── Verwerken: vergelijk + opslaan ───────────────────────────────────────────
-async function vhcVerwerken(producten) {
+async function vhcVerwerken() {
   const rapport = {
     datum: new Date().toLocaleString('nl-NL'),
     lijstNaam: document.getElementById('vhc-lijst-select')?.selectedOptions[0]?.text || '',
-    prijsWijzigingen: [],   // { ingNaam, oud, nieuw, verschil, pct }
-    nieuwToegevoegd: [],    // { naam, prijs, id, incompleet, ontbrekend[] }
-    wegUitLijst: [],        // { ingNaam } — was VHC, staat niet meer in lijst
-    totaalGescraped: producten.length
+    prijsWijzigingen: [], nieuwToegevoegd: [], wegUitLijst: [], geenPrijs: [],
+    totaalXlsx: _vhcXlsxData.length, totaalPrijzen: Object.keys(_vhcPrijzen).length
   };
 
-  // 1. Vergelijk elk VHC product met ingredienten
-  for (const vhcProd of producten) {
-    const vhcNaamLc = vhcProd.naam.toLowerCase();
-    const match = ingredienten.find(ing => {
-      const n = ing.naam.toLowerCase();
-      return n === vhcNaamLc || n.includes(vhcNaamLc) || vhcNaamLc.includes(n);
-    });
+  // Helper: normaliseer naam voor vergelijking
+  function normNaam(s) {
+    return (s||'').toLowerCase().trim()
+      .replace(/\s+/g, ' ')           // meerdere spaties → één
+      .replace(/[^a-z0-9 ]/g, '');   // alleen letters/cijfers/spaties
+  }
+
+  // Bouw snelle lookup maps
+  const ingOpNaam = new Map(ingredienten.map(ing => [normNaam(ing.naam), ing]));
+  const ingOpSku  = new Map(ingredienten
+    .filter(ing => ing.sku)
+    .map(ing => [String(ing.sku).trim(), ing])
+  );
+
+  for (const xlsxProd of _vhcXlsxData) {
+    const prijs = _vhcPrijzen[xlsxProd.sku];
+    if (prijs === undefined) { rapport.geenPrijs.push({ naam: xlsxProd.naam, sku: xlsxProd.sku }); continue; }
+
+    // Drielaagse match: SKU → exacte naam → genormaliseerde naam
+    const match = ingOpSku.get(xlsxProd.sku)
+      || ingOpNaam.get(normNaam(xlsxProd.naam))
+      || ingredienten.find(ing => normNaam(ing.naam) === normNaam(xlsxProd.naam));
 
     if (match) {
-      const verschil = Math.round((vhcProd.prijs - match.prijs) * 100) / 100;
+      // Bestaand ingrediënt gevonden — alleen prijs bijwerken indien gewijzigd
+      const verschil = Math.round((prijs - match.prijs) * 100) / 100;
       if (Math.abs(verschil) > 0.001) {
-        await savePrijsHistorie(match.id, match.naam, match.prijs, vhcProd.prijs);
-        match.prijs = vhcProd.prijs;
+        const oud = match.prijs;
+        await savePrijsHistorie(match.id, match.naam, oud, prijs);
+        match.prijs = prijs;
         await sbSaveIng(match);
-        rapport.prijsWijzigingen.push({
-          ingNaam: match.naam,
-          oud: match.prijs + verschil, // herstel oud voor display
-          nieuw: vhcProd.prijs,
-          verschil,
-          pct: ((verschil / (match.prijs)) * 100).toFixed(1)
-        });
-        // Fix: sla de juiste oude prijs op
-        rapport.prijsWijzigingen[rapport.prijsWijzigingen.length-1].oud = vhcProd.prijs - verschil;
+        rapport.prijsWijzigingen.push({ ingNaam: match.naam, oud, nieuw: prijs, verschil, pct: ((verschil / oud) * 100).toFixed(1) });
+      }
+      // Sla SKU op als die nog niet known is
+      if (!match.sku && xlsxProd.sku) {
+        match.sku = xlsxProd.sku;
+        await sbSaveIng(match);
       }
     } else {
-      // Nieuw product — sla op en markeer incompleet indien nodig
-      const ontbrekend = [];
-      if (!vhcProd.naam) ontbrekend.push('naam');
-      if (!vhcProd.prijs) ontbrekend.push('prijs');
-      // Eenheid en leverancier zijn altijd onbekend van VHC
-      ontbrekend.push('eenheid');
-      const incompleet = ontbrekend.length > 0;
-
-      const nieuwIng = {
-        naam: vhcProd.naam,
-        leverancier: 'VHC',
-        categorie: 'VHC',
-        eenheid: 'stuk', // placeholder
-        prijs: vhcProd.prijs,
-        sverlies: 0
-      };
-
+      // Echt nieuw — voeg toe
+      const incompleet = xlsxProd.eenheid === 'stuk';
       const res = await sbFetch('ingredienten', 'POST', {
-        naam: nieuwIng.naam, leverancier: nieuwIng.leverancier,
-        categorie: nieuwIng.categorie, eenheid: nieuwIng.eenheid,
-        prijs: nieuwIng.prijs, sverlies: nieuwIng.sverlies
+        naam: xlsxProd.naam, leverancier: 'VHC', categorie: 'VHC',
+        eenheid: xlsxProd.eenheid, prijs, sverlies: 0
       });
       if (res && res[0]) {
-        nieuwIng.id = res[0].id;
-        nieuwIng.spieknaam = '';
-        nieuwIng.productCategorie = '';
-        ingredienten.push(nieuwIng);
-        await savePrijsHistorie(nieuwIng.id, nieuwIng.naam, 0, nieuwIng.prijs);
-        rapport.nieuwToegevoegd.push({ naam: vhcProd.naam, prijs: vhcProd.prijs, id: nieuwIng.id, idx: ingredienten.length - 1, incompleet, ontbrekend });
+        const ni = { ...res[0], spieknaam: '', productCategorie: '', eenheid: xlsxProd.eenheid };
+        ingredienten.push(ni);
+        ingOpNaam.set(normNaam(ni.naam), ni); // voorkom dubbel bij meerdere runs
+        await savePrijsHistorie(ni.id, ni.naam, 0, prijs);
+        rapport.nieuwToegevoegd.push({
+          naam: xlsxProd.naam, prijs, eenheid: xlsxProd.eenheid,
+          salesUnit: xlsxProd.salesUnit, id: ni.id,
+          idx: ingredienten.length - 1, incompleet
+        });
       }
     }
   }
 
-  // 2. Controleer welke VHC ingredienten niet meer in de lijst staan
-  const vhcNamenLower = new Set(producten.map(p => p.naam.toLowerCase()));
+  const xlsxNamen = new Set(_vhcXlsxData.map(p => normNaam(p.naam)));
   ingredienten.forEach(ing => {
-    if ((ing.leverancier || '').toLowerCase() !== 'vhc') return;
-    const ingNaamLc = ing.naam.toLowerCase();
-    const nogInLijst = producten.some(p => {
-      const pLc = p.naam.toLowerCase();
-      return pLc === ingNaamLc || pLc.includes(ingNaamLc) || ingNaamLc.includes(pLc);
-    });
-    if (!nogInLijst) rapport.wegUitLijst.push({ ingNaam: ing.naam });
+    if ((ing.leverancier||'').toLowerCase() !== 'vhc') return;
+    if (!xlsxNamen.has(normNaam(ing.naam))) rapport.wegUitLijst.push({ ingNaam: ing.naam });
   });
 
   renderIngredienten();
@@ -3778,50 +3805,31 @@ async function vhcVerwerken(producten) {
   vhcToonRapport(rapport);
 }
 
-// ── Rapport tonen ─────────────────────────────────────────────────────────────
 function vhcToonRapport(rapport) {
   vhcSetStap(3);
   document.getElementById('vhc-terug-btn').style.display = '';
   document.getElementById('vhc-print-btn').style.display = '';
   document.getElementById('vhc-naar-vhc-btn').style.display = 'none';
-
   const aantalIncompleet = rapport.nieuwToegevoegd.filter(n => n.incompleet).length;
+  document.getElementById('vhc-resultaat-header').innerHTML =
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">'
+    + '<div style="background:#e8f8ef;border:1px solid #a8dfc0;border-radius:4px;padding:6px 12px;font-size:13px"><strong style="color:#1a7a45">' + rapport.prijsWijzigingen.length + '</strong> prijswijzigingen</div>'
+    + '<div style="background:#e8f0ff;border:1px solid #a8c0f0;border-radius:4px;padding:6px 12px;font-size:13px"><strong style="color:#1a40a0">' + rapport.nieuwToegevoegd.length + '</strong> nieuw toegevoegd</div>'
+    + (aantalIncompleet > 0 ? '<div style="background:#fff8e8;border:1px solid #f0d080;border-radius:4px;padding:6px 12px;font-size:13px"><strong style="color:#a06010">\u26a0\ufe0f ' + aantalIncompleet + '</strong> eenheid controleren</div>' : '')
+    + (rapport.wegUitLijst.length > 0 ? '<div style="background:#fff0f0;border:1px solid #f0b0b0;border-radius:4px;padding:6px 12px;font-size:13px"><strong style="color:#900">\ud83d\udccb ' + rapport.wegUitLijst.length + '</strong> niet meer in lijst</div>' : '')
+    + (rapport.geenPrijs.length > 0 ? '<div style="background:#f5f5f5;border:1px solid #ddd;border-radius:4px;padding:6px 12px;font-size:13px"><strong>\u2753 ' + rapport.geenPrijs.length + '</strong> geen prijs gevonden</div>' : '')
+    + '</div>'
+    + '<div style="font-size:11px;color:var(--muted)">' + rapport.datum + ' \u00b7 ' + rapport.totaalXlsx + ' in XLSX \u00b7 ' + rapport.totaalPrijzen + ' prijzen \u00b7 "' + rapport.lijstNaam + '"</div>';
 
-  // Header samenvatting
-  const header = document.getElementById('vhc-resultaat-header');
-  const allesOk = rapport.prijsWijzigingen.length === 0 && rapport.nieuwToegevoegd.length === 0 && rapport.wegUitLijst.length === 0;
-  header.innerHTML = `
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:4px">
-      <div style="background:#e8f8ef;border:1px solid #a8dfc0;border-radius:4px;padding:8px 14px;font-size:13px">
-        <strong style="color:#1a7a45">${rapport.prijsWijzigingen.length}</strong> <span style="color:#333">prijswijzigingen</span>
-      </div>
-      <div style="background:${rapport.nieuwToegevoegd.length > 0 ? '#e8f0ff' : '#f5f5f5'};border:1px solid ${rapport.nieuwToegevoegd.length > 0 ? '#a8c0f0' : '#ddd'};border-radius:4px;padding:8px 14px;font-size:13px">
-        <strong style="color:#1a40a0">${rapport.nieuwToegevoegd.length}</strong> <span style="color:#333">nieuw toegevoegd</span>
-      </div>
-      ${aantalIncompleet > 0 ? `<div style="background:#fff8e8;border:1px solid #f0d080;border-radius:4px;padding:8px 14px;font-size:13px">
-        <strong style="color:#a06010">⚠️ ${aantalIncompleet}</strong> <span style="color:#333">incompleet — controleer</span>
-      </div>` : ''}
-      ${rapport.wegUitLijst.length > 0 ? `<div style="background:#fff0f0;border:1px solid #f0b0b0;border-radius:4px;padding:8px 14px;font-size:13px">
-        <strong style="color:#900">📋 ${rapport.wegUitLijst.length}</strong> <span style="color:#333">niet meer in VHC lijst</span>
-      </div>` : ''}
-    </div>
-    <div style="font-size:11px;color:var(--muted);margin-top:4px">Gesynchroniseerd op ${rapport.datum} · ${rapport.totaalGescraped} producten gelezen uit "${rapport.lijstNaam}"</div>`;
-
-  // Tabbladen
-  const tabs = document.getElementById('vhc-resultaat-tabs');
   const tabDefs = [
-    { id: 'prijzen', label: '↕ Prijzen (' + rapport.prijsWijzigingen.length + ')' },
-    { id: 'nieuw', label: '➕ Nieuw (' + rapport.nieuwToegevoegd.length + ')' + (aantalIncompleet > 0 ? ' ⚠️' : '') },
-    { id: 'weg', label: '📋 Niet meer in lijst (' + rapport.wegUitLijst.length + ')' },
+    { id: 'prijzen', label: '\u2195 Prijzen (' + rapport.prijsWijzigingen.length + ')' },
+    { id: 'nieuw', label: '\u2795 Nieuw (' + rapport.nieuwToegevoegd.length + ')' + (aantalIncompleet > 0 ? ' \u26a0\ufe0f' : '') },
+    { id: 'weg', label: '\ud83d\udccb Weg (' + rapport.wegUitLijst.length + ')' },
+    ...(rapport.geenPrijs.length > 0 ? [{ id: 'geenprijs', label: '\u2753 Geen prijs (' + rapport.geenPrijs.length + ')' }] : [])
   ];
-  tabs.innerHTML = tabDefs.map(t =>
-    `<button onclick="vhcToonTab('${t.id}')" id="vhc-tab-${t.id}"
-      style="padding:8px 14px;border:none;background:none;cursor:pointer;font-size:12px;font-weight:600;
-             color:${_vhcActiefTabblad === t.id ? 'var(--red)' : 'var(--muted)'};
-             border-bottom:2px solid ${_vhcActiefTabblad === t.id ? 'var(--red)' : 'transparent'};
-             margin-bottom:-2px">${t.label}</button>`
+  document.getElementById('vhc-resultaat-tabs').innerHTML = tabDefs.map(t =>
+    '<button onclick="vhcToonTab(\'' + t.id + '\')" id="vhc-tab-' + t.id + '" style="padding:8px 14px;border:none;background:none;cursor:pointer;font-size:12px;font-weight:600;color:' + (_vhcActiefTabblad === t.id ? 'var(--red)' : 'var(--muted)') + ';border-bottom:2px solid ' + (_vhcActiefTabblad === t.id ? 'var(--red)' : 'transparent') + ';margin-bottom:-2px">' + t.label + '</button>'
   ).join('');
-
   vhcToonTab(_vhcActiefTabblad, rapport);
 }
 
@@ -3829,130 +3837,53 @@ function vhcToonTab(tabId, rapport) {
   _vhcActiefTabblad = tabId;
   const r = rapport || _vhcRapport;
   if (!r) return;
-
-  // Update tab stijlen
-  ['prijzen','nieuw','weg'].forEach(t => {
+  ['prijzen','nieuw','weg','geenprijs'].forEach(t => {
     const el = document.getElementById('vhc-tab-' + t);
     if (!el) return;
     el.style.color = t === tabId ? 'var(--red)' : 'var(--muted)';
     el.style.borderBottom = t === tabId ? '2px solid var(--red)' : '2px solid transparent';
   });
-
   const inhoud = document.getElementById('vhc-resultaat-inhoud');
-
   if (tabId === 'prijzen') {
-    if (!r.prijsWijzigingen.length) {
-      inhoud.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-style:italic">Geen prijswijzigingen</div>';
-    } else {
-      inhoud.innerHTML = `<div style="display:grid;grid-template-columns:1fr 85px 85px 80px;gap:6px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:8px 12px;border-bottom:2px solid var(--border);position:sticky;top:0;background:white">
-        <span>Ingrediënt</span><span>Oud</span><span>Nieuw</span><span>Verschil</span></div>` +
-      r.prijsWijzigingen.map(p => {
-        const kleur = p.verschil > 0 ? '#c0392b' : '#27ae60';
-        const pijl = p.verschil > 0 ? '↑' : '↓';
-        return `<div style="display:grid;grid-template-columns:1fr 85px 85px 80px;gap:6px;align-items:center;padding:7px 12px;border-bottom:1px solid #ede8df">
-          <div style="font-size:12px;font-weight:600">${p.ingNaam}</div>
-          <div style="font-size:12px;font-family:monospace;color:var(--muted)">€ ${p.oud.toFixed(2).replace('.',',')}</div>
-          <div style="font-size:12px;font-family:monospace;font-weight:700">€ ${p.nieuw.toFixed(2).replace('.',',')}</div>
-          <div style="font-size:12px;font-weight:700;color:${kleur}">${pijl} ${Math.abs(p.verschil).toFixed(2).replace('.',',')} (${Math.abs(p.pct)}%)</div>
-        </div>`;
-      }).join('');
-    }
-
+    if (!r.prijsWijzigingen.length) { inhoud.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-style:italic">Geen prijswijzigingen</div>'; return; }
+    inhoud.innerHTML = '<div style="display:grid;grid-template-columns:1fr 85px 85px 80px;gap:6px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:8px 12px;border-bottom:2px solid var(--border);position:sticky;top:0;background:white"><span>Ingredi\u00ebnt</span><span>Oud</span><span>Nieuw</span><span>Verschil</span></div>'
+      + r.prijsWijzigingen.map(p => '<div style="display:grid;grid-template-columns:1fr 85px 85px 80px;gap:6px;align-items:center;padding:7px 12px;border-bottom:1px solid #ede8df"><div style="font-size:12px;font-weight:600">' + p.ingNaam + '</div><div style="font-size:12px;font-family:monospace;color:var(--muted)">\u20ac ' + p.oud.toFixed(2).replace('.',',') + '</div><div style="font-size:12px;font-family:monospace;font-weight:700">\u20ac ' + p.nieuw.toFixed(2).replace('.',',') + '</div><div style="font-size:12px;font-weight:700;color:' + (p.verschil > 0 ? '#c0392b' : '#27ae60') + '">' + (p.verschil > 0 ? '\u2191' : '\u2193') + ' ' + Math.abs(p.verschil).toFixed(2).replace('.',',') + ' (' + Math.abs(p.pct) + '%)</div></div>').join('');
   } else if (tabId === 'nieuw') {
-    if (!r.nieuwToegevoegd.length) {
-      inhoud.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-style:italic">Geen nieuwe producten</div>';
-    } else {
-      inhoud.innerHTML = `<div style="display:grid;grid-template-columns:1fr 80px 140px 100px;gap:6px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:8px 12px;border-bottom:2px solid var(--border);position:sticky;top:0;background:white">
-        <span>Product</span><span>Prijs</span><span>Status</span><span>Actie</span></div>` +
-      r.nieuwToegevoegd.map(n => {
-        const status = n.incompleet
-          ? `<span style="background:#fff3cd;color:#856404;border-radius:3px;padding:2px 8px;font-size:10px;font-weight:700">⚠️ Incompleet</span>`
-          : `<span style="background:#d4edda;color:#155724;border-radius:3px;padding:2px 8px;font-size:10px;font-weight:700">✅ Compleet</span>`;
-        const ontbr = n.incompleet ? `<div style="font-size:10px;color:#856404;margin-top:2px">Ontbreekt: ${n.ontbrekend.join(', ')}</div>` : '';
-        return `<div style="display:grid;grid-template-columns:1fr 80px 140px 100px;gap:6px;align-items:center;padding:8px 12px;border-bottom:1px solid #ede8df;background:${n.incompleet ? '#fffdf0' : 'white'}">
-          <div><div style="font-size:12px;font-weight:600">${n.naam}</div>${ontbr}</div>
-          <div style="font-size:12px;font-family:monospace">€ ${n.prijs.toFixed(2).replace('.',',')}</div>
-          <div>${status}</div>
-          <div><button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="closeModal('modal-vhc-sync');showPage('ingredienten',null);setTimeout(()=>openIngModal(${n.idx}),300)">✎ Bewerken</button></div>
-        </div>`;
-      }).join('');
-    }
-
+    if (!r.nieuwToegevoegd.length) { inhoud.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-style:italic">Geen nieuwe producten</div>'; return; }
+    inhoud.innerHTML = '<div style="display:grid;grid-template-columns:1fr 70px 80px 110px 60px;gap:6px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:8px 12px;border-bottom:2px solid var(--border);position:sticky;top:0;background:white"><span>Product</span><span>Prijs</span><span>Eenheid</span><span>Status</span><span></span></div>'
+      + r.nieuwToegevoegd.map(function(n) { return '<div style="display:grid;grid-template-columns:1fr 70px 80px 110px 60px;gap:6px;align-items:center;padding:7px 12px;border-bottom:1px solid #ede8df;background:' + (n.incompleet ? '#fffdf0' : 'white') + '"><div style="font-size:12px;font-weight:600">' + n.naam + (n.incompleet ? '<div style="font-size:10px;color:#856404">' + n.salesUnit + '</div>' : '') + '</div><div style="font-size:12px;font-family:monospace">\u20ac ' + n.prijs.toFixed(2).replace('.',',') + '</div><div style="font-size:12px">' + n.eenheid + '</div><div>' + (n.incompleet ? '<span style="background:#fff3cd;color:#856404;border-radius:3px;padding:2px 6px;font-size:10px;font-weight:700">\u26a0\ufe0f Controleer</span>' : '<span style="background:#d4edda;color:#155724;border-radius:3px;padding:2px 6px;font-size:10px;font-weight:700">\u2705 OK</span>') + '</div><div><button class="btn btn-ghost" style="font-size:11px;padding:3px 8px" onclick="closeModal(\'modal-vhc-sync\');showPage(\'ingredienten\',null);setTimeout(function(){openIngModal(' + n.idx + ')},300)">\u270e</button></div></div>'; }).join('');
   } else if (tabId === 'weg') {
-    if (!r.wegUitLijst.length) {
-      inhoud.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-style:italic">Alle VHC ingrediënten staan nog in de lijst</div>';
-    } else {
-      inhoud.innerHTML = `<div style="padding:10px 12px;background:#fff5f5;border-bottom:1px solid #f0c0c0;font-size:12px;color:#900">
-        ℹ️ Deze ingrediënten hebben leverancier "VHC" maar staan niet meer in de geselecteerde bestellijst. Ze zijn <strong>niet verwijderd</strong> — controleer handmatig.
-      </div>` +
-      r.wegUitLijst.map(w =>
-        `<div style="padding:8px 12px;border-bottom:1px solid #ede8df;font-size:12px;color:var(--text)">📋 ${w.ingNaam}</div>`
-      ).join('');
-    }
+    if (!r.wegUitLijst.length) { inhoud.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-style:italic">Alle VHC ingredi\u00ebnten staan nog in de lijst</div>'; return; }
+    inhoud.innerHTML = '<div style="padding:10px 12px;background:#fff5f5;border-bottom:1px solid #f0c0c0;font-size:12px;color:#900">\u2139\ufe0f Niet verwijderd \u2014 controleer handmatig.</div>' + r.wegUitLijst.map(w => '<div style="padding:8px 12px;border-bottom:1px solid #ede8df;font-size:12px">\ud83d\udccb ' + w.ingNaam + '</div>').join('');
+  } else if (tabId === 'geenprijs') {
+    inhoud.innerHTML = '<div style="padding:10px 12px;background:#f5f5f5;border-bottom:1px solid #ddd;font-size:12px;color:#666">\u2139\ufe0f Scroll verder op VHC en sync opnieuw om meer prijzen te vangen.</div>' + (r.geenPrijs||[]).map(p => '<div style="padding:8px 12px;border-bottom:1px solid #ede8df;font-size:12px">\u2753 ' + p.naam + ' <span style="color:var(--muted);font-size:11px">(SKU: ' + p.sku + ')</span></div>').join('');
   }
 }
 
-// ── Rapport printen ───────────────────────────────────────────────────────────
 function vhcPrintRapport() {
   const r = _vhcRapport;
   if (!r) return;
   const win = window.open('', '_vhc_print');
-
-  const prijsRijen = r.prijsWijzigingen.map(function(p) {
-    return '<tr><td>' + p.ingNaam + '</td><td>\u20ac ' + p.oud.toFixed(2) + '</td><td><strong>\u20ac ' + p.nieuw.toFixed(2) + '</strong></td>'
-      + '<td class="' + (p.verschil > 0 ? 'rood' : 'groen') + '">' + (p.verschil > 0 ? '\u2191' : '\u2193') + ' \u20ac ' + Math.abs(p.verschil).toFixed(2) + ' (' + Math.abs(p.pct) + '%)</td></tr>';
-  }).join('');
-
-  const nieuwRijen = r.nieuwToegevoegd.map(function(n) {
-    const badge = n.incompleet
-      ? '<span class="badge-warn">\u26a0\ufe0f Incompleet: ' + n.ontbrekend.join(', ') + '</span>'
-      : '<span class="badge-ok">\u2705 Compleet</span>';
-    return '<tr><td>' + n.naam + '</td><td>\u20ac ' + n.prijs.toFixed(2) + '</td><td>' + badge + '</td></tr>';
-  }).join('');
-
-  const wegRijen = r.wegUitLijst.map(function(w) {
-    return '<tr><td>' + w.ingNaam + '</td></tr>';
-  }).join('');
-
-  const html = '<!DOCTYPE html><html><head><title>VHC Sync Rapport</title>'
-    + '<style>body{font-family:Arial,sans-serif;padding:20px;color:#333;font-size:12px}'
-    + 'h1{font-size:16px;margin-bottom:4px}h2{font-size:13px;margin:16px 0 8px;border-bottom:1px solid #ccc;padding-bottom:4px}'
-    + 'table{width:100%;border-collapse:collapse;margin-bottom:12px}'
-    + 'th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#666;padding:4px 8px;border-bottom:2px solid #ccc}'
-    + 'td{padding:5px 8px;border-bottom:1px solid #eee;font-size:12px}'
-    + '.rood{color:#c0392b;font-weight:700}.groen{color:#27ae60;font-weight:700}'
-    + '.badge-warn{background:#fff3cd;color:#856404;padding:2px 6px;border-radius:3px;font-size:10px}'
-    + '.badge-ok{background:#d4edda;color:#155724;padding:2px 6px;border-radius:3px;font-size:10px}'
-    + '@media print{@page{margin:15mm}}</style></head><body>'
-    + '<h1>VHC Sync Rapport</h1>'
-    + '<div style="color:#666;margin-bottom:16px">' + r.datum + ' \u00b7 ' + r.totaalGescraped + ' producten \u00b7 "' + r.lijstNaam + '"</div>'
+  const pr = r.prijsWijzigingen.map(p => '<tr><td>' + p.ingNaam + '</td><td>\u20ac ' + p.oud.toFixed(2) + '</td><td><strong>\u20ac ' + p.nieuw.toFixed(2) + '</strong></td><td style="color:' + (p.verschil>0?'#c0392b':'#27ae60') + '">' + (p.verschil>0?'\u2191':'\u2193') + ' \u20ac ' + Math.abs(p.verschil).toFixed(2) + '</td></tr>').join('');
+  const nr = r.nieuwToegevoegd.map(n => '<tr><td>' + n.naam + '</td><td>\u20ac ' + n.prijs.toFixed(2) + '</td><td>' + n.eenheid + '</td><td>' + (n.incompleet ? '\u26a0\ufe0f controleer eenheid' : '\u2705 OK') + '</td></tr>').join('');
+  const html = '<!DOCTYPE html><html><head><title>VHC Sync</title><style>body{font-family:Arial,sans-serif;padding:20px;font-size:12px}h2{font-size:13px;margin:12px 0 6px;border-bottom:1px solid #ccc}table{width:100%;border-collapse:collapse}th{text-align:left;font-size:10px;text-transform:uppercase;color:#666;padding:4px 8px;border-bottom:2px solid #ccc}td{padding:5px 8px;border-bottom:1px solid #eee}</style></head><body>'
+    + '<h1 style="font-size:16px">VHC Sync Rapport \u2014 ' + r.datum + '</h1>'
     + '<h2>\u2195 Prijswijzigingen (' + r.prijsWijzigingen.length + ')</h2>'
-    + (r.prijsWijzigingen.length === 0 ? '<p style="color:#666;font-style:italic">Geen prijswijzigingen</p>'
-      : '<table><tr><th>Ingredi\u00ebnt</th><th>Oud</th><th>Nieuw</th><th>Verschil</th></tr>' + prijsRijen + '</table>')
-    + '<h2>\u2795 Nieuw toegevoegd (' + r.nieuwToegevoegd.length + ')</h2>'
-    + (r.nieuwToegevoegd.length === 0 ? '<p style="color:#666;font-style:italic">Geen nieuwe producten</p>'
-      : '<table><tr><th>Product</th><th>Prijs</th><th>Status</th></tr>' + nieuwRijen + '</table>')
-    + '<h2>\ud83d\udccb Niet meer in VHC lijst (' + r.wegUitLijst.length + ')</h2>'
-    + (r.wegUitLijst.length === 0 ? '<p style="color:#666;font-style:italic">Geen</p>'
-      : '<table><tr><th>Ingredi\u00ebnt</th></tr>' + wegRijen + '</table>');
-
+    + (pr ? '<table><tr><th>Ingredi\u00ebnt</th><th>Oud</th><th>Nieuw</th><th>Verschil</th></tr>' + pr + '</table>' : '<p style="color:#666;font-style:italic">Geen</p>')
+    + '<h2>\u2795 Nieuw (' + r.nieuwToegevoegd.length + ')</h2>'
+    + (nr ? '<table><tr><th>Product</th><th>Prijs</th><th>Eenheid</th><th>Status</th></tr>' + nr + '</table>' : '<p style="color:#666;font-style:italic">Geen</p>')
+    + '<h2>\ud83d\udccb Niet meer in lijst (' + r.wegUitLijst.length + ')</h2>'
+    + (r.wegUitLijst.length ? '<table><tr><th>Ingredi\u00ebnt</th></tr>' + r.wegUitLijst.map(w=>'<tr><td>'+w.ingNaam+'</td></tr>').join('') + '</table>' : '<p style="color:#666;font-style:italic">Geen</p>')
+    + '</body></html>';
   win.document.write(html);
   win.document.close();
-  setTimeout(function() { win.print(); }, 400);
+  setTimeout(() => win.print(), 400);
 }
-
-
 
 async function savePrijsHistorie(ingId, naam, oudePrijs, nieuwePrijs) {
   try {
-    await sbFetch('prijshistorie', 'POST', {
-      ingredient_id: ingId,
-      ingredient_naam: naam,
-      oud_prijs: oudePrijs,
-      nieuw_prijs: nieuwePrijs
-    });
+    await sbFetch('prijshistorie', 'POST', { ingredient_id: ingId, ingredient_naam: naam, oud_prijs: oudePrijs, nieuw_prijs: nieuwePrijs });
   } catch(e) {
-    // Fallback naar localStorage
     const key = 'prijshist_' + ingId;
     let hist = [];
     try { hist = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e2) {}
@@ -3964,1980 +3895,13 @@ async function savePrijsHistorie(ingId, naam, oudePrijs, nieuwePrijs) {
 
 async function getPrijsHistorie(ingId) {
   try {
-    const data = await sbFetch('prijshistorie', 'GET', null,
-      `?ingredient_id=eq.${ingId}&order=datum.desc&limit=50`
-    );
-    return (data || []).map(r => ({
-      datum: r.datum,
-      oud: r.oud_prijs,
-      nieuw: r.nieuw_prijs
-    }));
+    const data = await sbFetch('prijshistorie', 'GET', null, `?ingredient_id=eq.${ingId}&order=datum.desc&limit=50`);
+    return (data || []).map(r => ({ datum: r.datum, oud: r.oud_prijs, nieuw: r.nieuw_prijs }));
   } catch(e) {
-    // Fallback naar localStorage
     try { return JSON.parse(localStorage.getItem('prijshist_' + ingId) || '[]'); } catch(e2) { return []; }
   }
 }
 
-async function openPrijsHistorie(idx) {
-  const ing = ingredienten[idx];
-  const hist = await getPrijsHistorie(ing.id);
-  if (!hist.length) { toast('Nog geen prijswijzigingen geregistreerd'); return; }
-  const rows = hist.slice().reverse().map(h => {
-    const datum = new Date(h.datum).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' });
-    const diff = h.nieuw - h.oud;
-    const pct = ((diff / h.oud) * 100).toFixed(1);
-    const kleur = diff > 0 ? '#c0392b' : '#27ae60';
-    const pijl = diff > 0 ? '\u2191' : '\u2193';
-    return '<tr><td style="padding:8px 12px;font-size:13px;color:#888">' + datum + '</td>'
-      + '<td style="padding:8px 12px;font-family:monospace">€ ' + h.oud.toFixed(2).replace('.',',') + '</td>'
-      + '<td style="padding:8px 12px;font-family:monospace">€ ' + h.nieuw.toFixed(2).replace('.',',') + '</td>'
-      + '<td style="padding:8px 12px;font-weight:700;color:' + kleur + '">' + pijl + ' ' + Math.abs(diff).toFixed(2).replace('.',',') + ' (' + pct + '%)</td></tr>';
-  }).join('');
-  const html = '<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8"><title>Prijshistorie</title>'
-    + '<style>body{font-family:Arial,sans-serif;padding:24px;color:#1a1a1a;max-width:600px;margin:0 auto}'
-    + 'h2{color:#8B1C1C;margin-bottom:4px}p{color:#888;margin-bottom:20px;font-size:13px}'
-    + 'table{width:100%;border-collapse:collapse}th{text-align:left;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#888;border-bottom:2px solid #ddd}'
-    + 'tr:nth-child(even){background:#fdfaf6}td{border-bottom:1px solid #eee}</style></head>'
-    + '<body><h2>' + ing.naam + '</h2>'
-    + '<p>Huidige prijs: € ' + ing.prijs.toFixed(2).replace('.',',') + ' / ' + ing.eenheid + ' · ' + hist.length + ' wijziging' + (hist.length !== 1 ? 'en' : '') + '</p>'
-    + '<table><thead><tr><th>Datum</th><th>Was</th><th>Wordt</th><th>Verschil</th></tr></thead><tbody>' + rows + '</tbody></table></body></html>';
-  const w = window.open('', '_blank', 'width=640,height=500');
-  w.document.write(html); w.document.close();
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-// MENUKAART DUPLICEREN
-// ══════════════════════════════════════════════════════════════════════════════
-async function dupliceerMk(idx) {
-  if (!isAdmin()) { toast('Alleen admins mogen menukaarten dupliceren'); return; }
-  const mk = menukaarten[idx];
-  const naam = prompt('Naam voor de kopie:', mk.naam + ' (kopie)');
-  if (!naam || !naam.trim()) return;
-  const kopie = {
-    naam: naam.trim(),
-    omschrijving: mk.omschrijving || '',
-    gerechten: [...mk.gerechten],
-    prijzen: {...(mk.prijzen||{})},
-    prijzenIncl: {...(mk.prijzenIncl||{})},
-    id: Date.now()
-  };
-  menukaarten.push(kopie);
-  await sbSaveMk(kopie);
-  // Terug naar overzicht zodat nieuwe kaart meteen zichtbaar is
-  document.getElementById('mk-list').classList.remove('hidden');
-  document.getElementById('mk-detail').classList.remove('open');
-  renderMkOverview();
-  toast('Menukaart gedupliceerd');
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-// INKOOPLIJST
-// ══════════════════════════════════════════════════════════════════════════════
-function getProductCategorie(ing) {
-  if (ing.productCategorie) return ing.productCategorie;
-  const n = (ing.naam || '').toLowerCase();
-  const lev = (ing.leverancier || '').toLowerCase();
-
-  if (/arancini|aspergekroket|bami sate schijf|bitterbal|bloemkool bites|geitenkaas spinazie kroket|kaashapje|kabeljauw piccalilly|kalfskroket|piccalilly kroket|snack with benefits|sate bitterbal|vlammetje|gehaktbal|albondigas/.test(n)) return 'Borrelhappen & Snacks';
-  if (/apple of my pie|brownie|cheesecake|chocolate chip|cinnamon buddy|cookie|femke|mille feuille|meringue|panacotta|paris brest|profiterol|tiramisu|tarte|bastogne|granola|debic|karamelsaus|lemon curd/.test(n)) return 'Patisserie & Dessert';
-  if (/garnaal|gamba|heilbot|kabeljauw|kreeft|makreel|mosselen|paling|\brog\b|tonijn|zalm|zeebaars|zeevruchten|ansjovis|forelkuit|blinis|zeevis/.test(n) || lev.includes('schmidt') || lev === 'bawykov') return 'Vis & Zeevruchten';
-  if (/achterham|brisket|\bcanard\b|\beend\b|rillettes|\bgans\b|\bgehakt\b|hooiberg|\bkalf|\bkip |lams|lam\/|\brund\b|schnitzel|\bspek|tournedos|entrecote|ossenhaas|ribeye|dijfilet|freiland ei|rollade|varkenswang|wildzwijn|\bhert\b|spareribs|stoof hachee|stoof rendang|stoof goulash|stoof varken|stoof hert|stoof gans|stoof oesterzwam|confit|ossenworst|burger 130g|sparckitchen/.test(n)) return 'Vlees & Gevogelte';
-  if (/\bboter |beurre|blauwklaver|bleu d'|boerenkaas|borrelkaas|bunkerkaas|cheddar|\bcream\b|\bfeta\b|geitenkaas naturel|gesneden boerenkaas|grand'or|\bkaas|yoghurt|mascarpone|roomboter|slagroom|debic cream|konings yoghurt/.test(n)) return 'Zuivel & Kaas';
-  if (/aardbei|\bappel|avocado|bosbess|\bbramen\b|\bcitroen\b|framboos|gele biet|\bmango\b|passievrucht|\bpeer |sinaasappel|\blimoen\b|\blimes\b|limoensap|lemon curd/.test(n)) return 'Fruit';
-  if (/asperge|basilicum|biet rood|bospeen|bieslook|cherry tros|courgette|champignon|haricot|kappert|knolselderi|komkommer|koriander|cress|little gem|paksoi|paprika|paddenstoel|\bprei |radijs|rode ui|rucola|sjalot|\bsla\b|sla |snijboon|spinazie|\btomaat|trostomaat|tuinkers|veldsla|witlof|\buitje|\buien |augurk|bonen mix|tuinerwt|\bwortel\b|rode kool|zuurkool|olijven|spitskool|bieten geel|bieten rood|\bpeulen\b|doperwten|kriel|\bsnijboon/.test(n)) return 'Groenten';
-  if (/aioli|antiboise|burgersaus|cassoulet|champagne room|champignonroom|compote|\bcr[eè]me |dressing|hollandaise|\bjam |\bjus |pinda.sate|remoulade|romesco|salade parel|\bsaus |\bsoep |stroganoff|tonnato|topinamboer|vinaigrette|mayonaise|mayo |ragout|\blak |mosterd|ketchup|chillisaus|appelstroop|\bazijn\b|gembersiroop|stoof barigoule|stoof oesterzwam|lemon curd|mackays/.test(n)) return 'Sauzen & Soepen';
-  if (/aardappel|bonken geschild|sweet potato|frites|fries|\bgnocchi\b|parelgort|spaghetti|\brijst\b|couscous|patisseriebloem|\bbloem\b|kriel/.test(n)) return 'Aardappels & Granen';
-  if (/alsaveur|brioche|\bbrood\b|broodheeren|chaupain|croissant|flammkuchen|landbrood|\bquiche\b|kletzenbrood/.test(n)) return 'Bakkerij & Brood';
-  if (/apollo |jeneverbessen|kaneel|peper zwart|sabroso|olie pomace|olijfolie|zonnebloem|\bzeezout\b|zee zout|zeezout fijn|\bzout\b|\bsuiker\b|poedersuiker|kristalsuiker|steranijs|laurierblad|tomato powder|pijnboom|hazelnoot|walnoot|zonnebloempit|horeca mix|van wijck/.test(n)) return 'Kruiden & Specerijen';
-  if (/hevel|prikker|sier |vacuumzak|boterpapier/.test(n)) return 'Overig';
-  return 'Overig';
-}
-
-
-function getVoorraadKey() {
-  return 'voorraad_' + (currentUser?.username || 'default');
-}
-
-function loadVoorraad() {
-  try { return JSON.parse(localStorage.getItem(getVoorraadKey()) || '{}'); } catch(e) { return {}; }
-}
-
-function saveVoorraadFromModal() {
-  const voorraad = loadVoorraad();
-  document.querySelectorAll('#inkooplijst-body input[data-ing-id]').forEach(inp => {
-    const id = inp.dataset.ingId;
-    voorraad[id] = inp.value.trim();
-  });
-  localStorage.setItem(getVoorraadKey(), JSON.stringify(voorraad));
-}
-
-let _inkoopMkIdx = -1;
-let _inkoopIngMap = new Map();
-
-function printInkooplijst(idx) {
-  const mk = menukaarten[idx];
-  if (!mk || !mk.gerechten.length) { toast('Geen gerechten in deze menukaart'); return; }
-
-  _inkoopMkIdx = idx;
-  _inkoopIngMap = new Map();
-
-  // Recursieve functie — haalt alle ingrediënten op, ook uit geneste recepturen
-  function voegIngToe(hfId, bezocht = new Set()) {
-    if (bezocht.has(hfId)) return; // voorkom oneindige loop
-    bezocht.add(hfId);
-    const hf = recepturen.find(r => r.id == hfId);
-    if (!hf) return;
-    const allComps = [...(hf.componenten || []), ...(hf.compIng || []), ...(hf.compHf || [])];
-    allComps.forEach(cc => {
-      if (cc.sourceType === 'ing') {
-        const ing = ingredienten.find(i => i.id == cc.sourceId);
-        if (ing) _inkoopIngMap.set(ing.id, ing);
-      } else if (cc.sourceType === 'hf') {
-        voegIngToe(cc.sourceId, bezocht); // recursief
-      }
-    });
-  }
-
-  const inMk = mk.gerechten.map(id => gerechten.find(g => g.id == id)).filter(Boolean);
-  inMk.forEach(ger => {
-    (ger.compIng || []).forEach(c => {
-      const ing = ingredienten.find(i => i.id == c.sourceId);
-      if (ing) _inkoopIngMap.set(ing.id, ing);
-    });
-    (ger.compHf || []).forEach(c => {
-      voegIngToe(c.sourceId); // recursief alle niveaus
-    });
-  });
-
-  if (!_inkoopIngMap.size) { toast('Geen ingrediënten gevonden'); return; }
-
-  // Laad opgeslagen ijzeren voorraad waarden uit localStorage
-  const sleutel = 'ijzervoorraad_' + mk.id;
-  let opgeslagen = {};
-  try { opgeslagen = JSON.parse(localStorage.getItem(sleutel) || '{}'); } catch(e) {}
-
-  const catVolgorde = ['Vlees & Gevogelte','Vis & Zeevruchten','Groenten','Fruit',
-    'Zuivel & Kaas','Aardappels & Granen','Sauzen & Soepen','Bakkerij & Brood',
-    'Kruiden & Specerijen','Borrelhappen & Snacks','Patisserie & Dessert','Overig'];
-
-  const gesorteerd = [..._inkoopIngMap.values()].sort((a,b) => {
-    const ca = catVolgorde.indexOf(getProductCategorie(a));
-    const cb = catVolgorde.indexOf(getProductCategorie(b));
-    if (ca !== cb) return ca - cb;
-    return (a.spieknaam||a.naam).localeCompare(b.spieknaam||b.naam);
-  });
-
-  // Bouw de modal body — gegroepeerd per categorie met invulveld
-  let huidigeCat = '';
-  const rijen = gesorteerd.map(ing => {
-    const cat = getProductCategorie(ing);
-    const naam = ing.spieknaam || ing.naam;
-    const waarde = opgeslagen[ing.id] || '';
-    let header = '';
-    if (cat !== huidigeCat) {
-      huidigeCat = cat;
-      header = `<div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--red);padding:10px 0 4px;border-bottom:1px solid var(--border);margin-top:8px">${cat}</div>`;
-    }
-    return header + `<div style="display:grid;grid-template-columns:1fr 60px 80px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid #ede8df">
-      <span style="font-size:13px;color:#1a1a1a">${naam}</span>
-      <span style="font-size:11px;color:var(--muted)">${ing.eenheid}</span>
-      <input type="number" min="0" step="1" placeholder="—"
-        value="${waarde}"
-        data-ing-id="${ing.id}"
-        oninput="slaIJzerVoorraadOp(${mk.id}, ${ing.id}, this.value)"
-        style="height:30px;text-align:center;font-size:13px;font-weight:700">
-    </div>`;
-  }).join('');
-
-  document.getElementById('inkooplijst-titel').textContent = '\uD83D\uDED2 Inkooplijst — IJzeren voorraad instellen';
-  document.getElementById('inkooplijst-body').innerHTML = rijen;
-  _openModalId='modal-inkooplijst'; document.getElementById('modal-inkooplijst').classList.add('open'); history.pushState({ modal: 'modal-inkooplijst' }, '', window.location.hash || '#menukaart');
-}
-
-function slaIJzerVoorraadOp(mkId, ingId, waarde) {
-  const sleutel = 'ijzervoorraad_' + mkId;
-  let opgeslagen = {};
-  try { opgeslagen = JSON.parse(localStorage.getItem(sleutel) || '{}'); } catch(e) {}
-  if (waarde === '' || waarde === null) {
-    delete opgeslagen[ingId];
-  } else {
-    opgeslagen[ingId] = parseFloat(waarde);
-  }
-  localStorage.setItem(sleutel, JSON.stringify(opgeslagen));
-}
-
-function doPrintInkooplijst() {
-  const mk = menukaarten[_inkoopMkIdx];
-  if (!mk) return;
-
-  // Lees alle ingevulde ijzeren voorraad waarden
-  const sleutel = 'ijzervoorraad_' + mk.id;
-  let ijzerVoorraad = {};
-  try { ijzerVoorraad = JSON.parse(localStorage.getItem(sleutel) || '{}'); } catch(e) {}
-
-  document.getElementById('modal-inkooplijst').classList.remove('open');
-
-  const logoEl = document.querySelector('.logo-wrap img');
-  const logoSrc = logoEl ? logoEl.src : '';
-  const datum = new Date().toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
-
-  const catVolgorde = ['Vlees & Gevogelte','Vis & Zeevruchten','Groenten','Fruit',
-    'Zuivel & Kaas','Aardappels & Granen','Sauzen & Soepen','Bakkerij & Brood',
-    'Kruiden & Specerijen','Borrelhappen & Snacks','Patisserie & Dessert','Overig'];
-
-  const vhc = [..._inkoopIngMap.values()].filter(i => i.leverancier === 'VHC').sort((a,b) => {
-    const ca = catVolgorde.indexOf(getProductCategorie(a)), cb = catVolgorde.indexOf(getProductCategorie(b));
-    return ca !== cb ? ca - cb : (a.spieknaam||a.naam).localeCompare(b.spieknaam||b.naam);
-  });
-  const overig = [..._inkoopIngMap.values()].filter(i => i.leverancier !== 'VHC').sort((a,b) => {
-    const ca = catVolgorde.indexOf(getProductCategorie(a)), cb = catVolgorde.indexOf(getProductCategorie(b));
-    return ca !== cb ? ca - cb : (a.spieknaam||a.naam).localeCompare(b.spieknaam||b.naam);
-  });
-
-  function maakPagina(titel, items) {
-    if (!items.length) return '';
-    const perKolom = Math.ceil(items.length / 3);
-    const kolommen = [items.slice(0, perKolom), items.slice(perKolom, perKolom*2), items.slice(perKolom*2)];
-
-    const kolomHtml = kolommen.map(kolomItems => {
-      if (!kolomItems.length) return '<div class="kolom"></div>';
-      let huidigeCat = '';
-      const rijen = kolomItems.map(ing => {
-        const naam = ing.spieknaam || ing.naam;
-        const cat = getProductCategorie(ing);
-        const ijzerWaarde = ijzerVoorraad[ing.id];
-        let header = '';
-        if (cat !== huidigeCat) {
-          huidigeCat = cat;
-          header = '<div class="cat-header">' + cat + '</div>';
-        }
-        return header
-          + '<div class="rij">'
-          + '<div class="ing-naam">' + naam + '</div>'
-          + '<div class="vakje"></div>'
-          + '<div class="vakje' + (ijzerWaarde !== undefined ? ' gevuld' : '') + '">'
-          + (ijzerWaarde !== undefined ? ijzerWaarde : '') + '</div>'
-          + '</div>';
-      }).join('');
-      return '<div class="kolom">' + rijen + '</div>';
-    }).join('');
-
-    return '<div class="pagina">'
-      + '<div class="header">'
-      + (logoSrc ? '<img src="' + logoSrc + '" class="logo">' : '')
-      + '<div class="hm"><div class="mkn">' + mk.naam + '</div><div class="catn">' + titel + '</div><div class="sub">' + items.length + ' producten</div></div>'
-      + '<div class="legenda">'
-      + '<div class="legenda-item"><div class="legenda-box"></div><span>Bestelling</span></div>'
-      + '<div class="legenda-item"><div class="legenda-box voorraad"></div><span>IJzervoorraad</span></div>'
-      + '</div></div>'
-      + '<div class="kolommen">' + kolomHtml + '</div>'
-      + '</div>';
-  }
-
-  const paginas = [maakPagina('VHC', vhc), maakPagina('Overige leveranciers', overig)].filter(Boolean).join('');
-
-  const html = '<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8"><title>Bestellijst \u2014 ' + mk.naam + '</title>'
-    + '<style>'
-    + '@page{size:A4 portrait;margin:8mm;}'
-    + '*{margin:0;padding:0;box-sizing:border-box;}'
-    + 'body{font-family:Arial,sans-serif;color:#1a1a1a;font-size:10px;}'
-    + '.pagina{width:100%;min-height:281mm;page-break-after:always;display:flex;flex-direction:column;}'
-    + '.pagina:last-child{page-break-after:avoid;}'
-    + '.header{display:grid;grid-template-columns:40px 1fr auto;align-items:center;gap:10px;border-bottom:2.5px solid #8B1C1C;padding-bottom:6px;margin-bottom:8px;flex-shrink:0;}'
-    + '.logo{width:36px;height:36px;object-fit:contain;}'
-    + '.mkn{font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#8B1C1C;margin-bottom:1px;}'
-    + '.catn{font-size:16px;font-weight:700;line-height:1;}'
-    + '.sub{font-size:9px;color:#888;margin-top:2px;}'
-    + '.legenda{display:flex;flex-direction:column;gap:3px;align-items:flex-end;}'
-    + '.legenda-item{display:flex;align-items:center;gap:5px;font-size:9px;color:#888;}'
-    + '.legenda-box{width:32px;height:14px;border:1px solid #999;border-radius:2px;flex-shrink:0;}'
-    + '.legenda-box.voorraad{background:#f0ebe3;border-color:#c8b89a;}'
-    + '.kolommen{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:0 10px;align-items:start;}'
-    + '.kolom{}'
-    + '.cat-header{font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8B1C1C;background:#f0ebe3;padding:3px 5px;margin-top:4px;border-bottom:1px solid #ddd;}'
-    + '.cat-header:first-child{margin-top:0;}'
-    + '.rij{display:grid;grid-template-columns:1fr auto auto auto;gap:0;align-items:center;border-bottom:1px solid #ede8df;min-height:18px;}'
-    + '.rij:last-child{border-bottom:none;}'
-    + '.ing-naam{padding:2px 4px 2px 5px;font-size:10px;color:#1a1a1a;line-height:1.2;}'
-    + '.ing-eenh{padding:2px 3px;font-size:9px;color:#888;white-space:nowrap;}'
-    // Bestelling: leeg vakje
-    + '.vakje{width:26px;height:14px;border:1px solid #bbb;border-radius:2px;margin:2px 2px 2px 0;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;}'
-    // IJzervoorraad: zacht achtergrond, getal erin als ingevuld
-    + '.vakje.gevuld{background:#f0ebe3;border-color:#c8b89a;color:#8B1C1C;}'
-    + '@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}'
-    + '</style></head><body>' + paginas
-    + '<script>window.onload=function(){setTimeout(function(){window.print();},300);};<\/script>'
-    + '</body></html>';
-
-  const win = window.open('', '_blank', 'width=820,height=1100');
-  win.document.write(html);
-  win.document.close();
-}
-
-
-function openRecepturenModal(idx) {
-  _recepturenMkIdx = idx;
-  const mk = menukaarten[idx];
-  document.getElementById('recepturen-modal-title').textContent = '📋 Recepturen — ' + mk.naam;
-
-  // Verzamel alle unieke recepturen die in de menukaart gebruikt worden
-  const inMk = mk.gerechten.map(id => gerechten.find(g => g.id == id)).filter(Boolean);
-  const hfMap = new Map(); // id -> { hf, gebruiktIn: [gernamen] }
-  inMk.forEach(ger => {
-    (ger.compHf || []).forEach(c => {
-      const hf = recepturen.find(r => r.id == c.sourceId);
-      if (!hf) return;
-      if (!hfMap.has(hf.id)) hfMap.set(hf.id, { hf, gebruiktIn: [] });
-      hfMap.get(hf.id).gebruiktIn.push(ger.spieknaam || ger.naam);
-    });
-  });
-
-  const lijst = document.getElementById('recepturen-lijst');
-  if (hfMap.size === 0) {
-    lijst.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-style:italic">Geen recepturen gebruikt in deze menukaart</div>';
-  } else {
-    lijst.innerHTML = [...hfMap.values()].map(({ hf, gebruiktIn }) => {
-      const comps = (hf.componenten || []).map(c => {
-        const src = c.sourceType === 'hf'
-          ? recepturen.find(r => r.id == c.sourceId)
-          : ingredienten.find(i => i.id == c.sourceId);
-        let h = c.hoeveelheid, e = c.eenheid;
-        if (e === 'kg') { h = h * 1000; e = 'g'; }
-        else if (e === 'l') { h = h * 1000; e = 'ml'; }
-        const hStr = Number.isInteger(h) ? h : parseFloat(h.toFixed(3));
-        const waarde = c.opmerking || (hStr + '\u00a0' + e);
-        return `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #ede8df;font-size:13px">
-          <span style="color:#1a1a1a">${src?.spieknaam || src?.naam || '—'}${c.sourceType === 'hf' ? ' <span style="background:#8B1C1C;color:white;font-size:8px;font-weight:700;padding:1px 3px;border-radius:2px;vertical-align:middle">rec</span>' : ''}</span>
-          <span style="font-weight:700;color:#222;white-space:nowrap;padding-left:12px">${waarde}</span>
-        </div>`;
-      }).join('');
-
-      const beschrijving = hf.beschrijving || hf.opmerking || '';
-
-      return `<div style="border:1px solid var(--border);border-radius:2px;margin-bottom:12px;overflow:hidden">
-        <div style="background:var(--surface2);padding:10px 14px">
-          <div style="font-size:16px;font-weight:700;color:#1a1a1a">${hf.naam}</div>
-          ${beschrijving ? `<div style="font-size:12px;color:var(--muted);margin-top:4px;font-style:italic">${beschrijving}</div>` : ''}
-        </div>
-        <div style="padding:8px 14px">${comps}</div>
-      </div>`;
-    }).join('');
-  }
-
-  openModal('modal-recepturen');
-}
-
-function printRecepturen() {
-  const mk = menukaarten[_recepturenMkIdx];
-  if (!mk) return;
-
-  const inMk = mk.gerechten.map(id => gerechten.find(g => g.id == id)).filter(Boolean);
-  const hfMap = new Map();
-  inMk.forEach(ger => {
-    (ger.compHf || []).forEach(c => {
-      const hf = recepturen.find(r => r.id == c.sourceId);
-      if (!hf) return;
-      if (!hfMap.has(hf.id)) hfMap.set(hf.id, { hf });
-    });
-  });
-
-  if (hfMap.size === 0) { toast('Geen recepturen in deze menukaart'); return; }
-
-  const logoEl = document.querySelector('.logo-wrap img');
-  const logoSrc = logoEl ? logoEl.src : '';
-
-  function fmtW(c) {
-    if (c.opmerking) return c.opmerking;
-    let h = c.hoeveelheid, e = c.eenheid;
-    if (e === 'kg') { h = h * 1000; e = 'g'; }
-    else if (e === 'l') { h = h * 1000; e = 'ml'; }
-    const hStr = Number.isInteger(h) ? h : parseFloat(h.toFixed(3));
-    return hStr + '\u00a0' + e;
-  }
-
-  // Elke receptuur renderen als een blok
-  const alleHf = [...hfMap.values()].map(({ hf }) => {
-    const beschrijving = hf.beschrijving || hf.opmerking || '';
-    const rows = (hf.componenten || []).map(c => {
-      const src = c.sourceType === 'hf'
-        ? recepturen.find(r => r.id == c.sourceId)
-        : ingredienten.find(i => i.id == c.sourceId);
-      const isHf = c.sourceType === 'hf';
-      return `<tr>
-        <td class="cn">${src?.spieknaam || src?.naam || '\u2014'}${isHf ? ' <span class="rec">rec</span>' : ''}</td>
-        <td class="cw">${fmtW(c)}</td>
-      </tr>`;
-    }).join('');
-
-    return `<div class="hf-blok">
-      <div class="hf-naam">${hf.naam}</div>
-      ${beschrijving ? `<div class="hf-sub">${beschrijving}</div>` : ''}
-      <table><tbody>${rows}</tbody></table>
-    </div>`;
-  });
-
-  // Verdeel in groepen van 2 per pagina
-  const paginas = [];
-  for (let i = 0; i < alleHf.length; i += 2) {
-    const linker = alleHf[i];
-    const rechter = alleHf[i + 1] || '';
-    paginas.push(`<div class="pagina">
-      <div class="header">
-        ${logoSrc ? `<img src="${logoSrc}" class="logo">` : ''}
-        <div class="hm">
-          <div class="mkn">${mk.naam}</div>
-          <div class="catn">Recepturen</div>
-        </div>
-      </div>
-      <div class="kolommen">
-        <div class="kolom">${linker}</div>
-        <div class="kolom">${rechter}</div>
-      </div>
-    </div>`);
-  }
-
-  const html = `<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8">
-<title>Recepturen \u2014 ${mk.naam}</title>
-<style>
-@page{size:A4 portrait;margin:10mm;}
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:Arial,sans-serif;background:white;color:#1a1a1a;}
-
-.pagina{
-  width:100%;
-  height:277mm;
-  page-break-after:always;
-  display:flex;
-  flex-direction:column;
-}
-.pagina:last-child{page-break-after:avoid;}
-
-/* Header */
-.header{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  border-bottom:3px solid #8B1C1C;
-  padding-bottom:8px;
-  margin-bottom:12px;
-  flex-shrink:0;
-}
-.logo{width:44px;height:44px;object-fit:contain;flex-shrink:0;}
-.hm{flex:1;}
-.mkn{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#8B1C1C;margin-bottom:2px;}
-.catn{font-size:20px;font-weight:700;color:#1a1a1a;line-height:1;}
-
-/* Twee kolommen naast elkaar */
-.kolommen{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:14px;
-  flex:1;
-  min-height:0;
-}
-
-.kolom{
-  display:flex;
-  flex-direction:column;
-  gap:14px;
-}
-
-/* Elk receptuurblok */
-.hf-blok{
-  border:1.5px solid #c8b89a;
-  border-radius:3px;
-  background:#fdfaf6;
-  overflow:hidden;
-}
-
-.hf-naam{
-  font-size:15px;
-  font-weight:700;
-  color:#8B1C1C;
-  padding:8px 12px 6px;
-  border-bottom:1px solid #ddd;
-  line-height:1.2;
-}
-
-.hf-sub{
-  font-size:10px;
-  color:#888;
-  font-style:italic;
-  padding:4px 12px 0;
-}
-
-/* Componenten tabel */
-table{width:100%;border-collapse:collapse;}
-tr{border-bottom:1px solid #ede8df;height:30px;}
-tr:last-child{border-bottom:none;}
-.cn{padding:4px 8px 4px 12px;color:#1a1a1a;font-size:13px;line-height:1.3;vertical-align:middle;width:100%;}
-.cw{padding:4px 0 4px 6px;font-weight:700;font-size:13px;color:#222;white-space:nowrap;text-align:right;vertical-align:middle;padding-right:12px;}
-.rec{display:inline-block;background:#8B1C1C;color:white;font-size:7px;font-weight:700;padding:1px 3px;border-radius:2px;vertical-align:middle;margin-left:2px;}
-
-@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
-</style></head><body>
-${paginas.join('')}
-<script>window.onload=function(){setTimeout(function(){window.print();},300);};<\/script>
-</body></html>`;
-
-  const win = window.open('', '_blank', 'width=820,height=1000');
-  win.document.write(html);
-  win.document.close();
-  document.getElementById('modal-recepturen').classList.remove('open');
-}
-
-function printSpiekbriefjes(idx) {
-  _spiekMkIdx = idx;
-  const mk = menukaarten[idx];
-  if (!mk || !mk.gerechten.length) { toast('Geen gerechten in deze menukaart'); return; }
-
-  const inMk = mk.gerechten.map(id => gerechten.find(g => g.id == id)).filter(Boolean);
-  const cats = [...new Set(inMk.map(g => g.categorie))];
-
-  // Bouw checkboxlijst
-  const container = document.getElementById('spiek-cats');
-  container.innerHTML = cats.map((cat, i) => {
-    const n = inMk.filter(g => g.categorie === cat).length;
-    return '<label style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--border);border-radius:2px;cursor:pointer;background:var(--surface2)">'
-      + '<input type="checkbox" id="spiek-cat-' + i + '" value="' + cat + '" checked style="width:16px;height:16px;accent-color:var(--red);flex-shrink:0">'
-      + '<div>'
-      + '<div style="font-weight:600;font-size:14px;color:#1a1a1a">' + cat + '</div>'
-      + '<div style="font-size:11px;color:var(--muted);margin-top:1px">' + n + ' gerecht' + (n !== 1 ? 'en' : '') + '</div>'
-      + '</div></label>';
-  }).join('');
-
-  openModal('modal-spiek');
-}
-
-function spiekSelectAll(val) {
-  document.querySelectorAll('#spiek-cats input[type=checkbox]').forEach(cb => cb.checked = val);
-}
-
-function doPrintSpiekbriefjes() {
-  const mk = menukaarten[_spiekMkIdx];
-  if (!mk) return;
-
-  const geselecteerd = [...document.querySelectorAll('#spiek-cats input[type=checkbox]:checked')].map(cb => cb.value);
-  if (!geselecteerd.length) { toast('Selecteer minimaal één categorie'); return; }
-
-  document.getElementById('modal-spiek').classList.remove('open');
-  _doPrintSpiek(mk, geselecteerd);
-}
-
-function _doPrintSpiek(mk, geselecteerdeCats) {
-  const inMk = mk.gerechten.map(id => gerechten.find(g => g.id == id)).filter(Boolean);
-  const logoEl = document.querySelector('.logo-wrap img');
-  const logoSrc = logoEl ? logoEl.src : '';
-
-  function fmtHoeveelheid(c) {
-    if (c.opmerking) return c.opmerking;
-    let h = c.hoeveelheid, e = c.eenheid;
-    if (e === 'kg') { h = h * 1000; e = 'g'; }
-    else if (e === 'l') { h = h * 1000; e = 'ml'; }
-    const hStr = Number.isInteger(h) ? h : parseFloat(h.toFixed(3)).toString();
-    return hStr + '\u00a0' + e;
-  }
-
-  function getCols(n) {
-    if (n <= 2) return 2;
-    if (n <= 3) return 3;
-    if (n <= 6) return 3;
-    return 4;
-  }
-
-  const paginas = geselecteerdeCats.map(cat => {
-    const gerInCat = inMk.filter(g => g.categorie === cat);
-    const cols = getCols(gerInCat.length);
-    const maxComps = Math.max(...gerInCat.map(g => (g.compIng||[]).length + (g.compHf||[]).length), 1);
-    const fs = 12;
-
-    const gerechtenHtml = gerInCat.map(ger => {
-      const allComps = [
-        ...(ger.compIng||[]).map(c => {
-          const src = ingredienten.find(i => i.id == c.sourceId);
-          return { naam: src?.spieknaam || src?.naam || '\u2014', waarde: fmtHoeveelheid(c), isHf: false };
-        }),
-        ...(ger.compHf||[]).map(c => {
-          const src = recepturen.find(r => r.id == c.sourceId);
-          return { naam: src?.spieknaam || src?.naam || '\u2014', waarde: fmtHoeveelheid(c), isHf: true };
-        })
-      ];
-      const rijen = allComps.map(comp =>
-        '<tr><td class="cn">' + comp.naam + (comp.isHf ? ' <span class="rec">rec</span>' : '') + '</td>'
-        + '<td class="cw">' + comp.waarde + '</td></tr>'
-      ).join('');
-      return '<div class="gb" style="font-size:' + fs + 'px">'
-        + '<div class="gn" style="font-size:' + (fs+1) + 'px">' + (ger.spieknaam || ger.naam)
-        + (ger.porties > 1 ? ' <span class="gp">\u00b7\u00a0' + ger.porties + 'x</span>' : '') + '</div>'
-        + '<table><tbody>' + rijen + '</tbody></table></div>';
-    }).join('');
-
-    return '<div class="pagina"><div class="header">'
-      + (logoSrc ? '<img src="' + logoSrc + '" class="logo">' : '')
-      + '<div class="hm"><div class="mkn">' + mk.naam + '</div><div class="catn">' + cat + '</div></div>'
-      + '<div></div></div>'
-      + '<div class="grid" style="grid-template-columns:repeat(' + cols + ',1fr)">' + gerechtenHtml + '</div></div>';
-  }).join('');
-
-  const html = `<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8">
-<title>Spiekbriefjes \u2014 ${mk.naam}</title>
-<style>
-@page{size:A4 landscape;margin:5mm;}
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:Arial,sans-serif;background:white;color:#1a1a1a;}
-
-.pagina{
-  width:100%;
-  height:197mm; /* A4 liggend min marges */
-  page-break-after:always;
-  display:flex;
-  flex-direction:column;
-}
-.pagina:last-child{page-break-after:avoid;}
-
-.header{
-  display:grid;
-  grid-template-columns:52px 1fr 52px;
-  align-items:center;
-  border-bottom:3px solid #8B1C1C;
-  padding-bottom:7px;
-  margin-bottom:8px;
-  flex-shrink:0;
-}
-.logo{width:44px;height:44px;object-fit:contain;}
-.hm{text-align:center;}
-.mkn{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#8B1C1C;margin-bottom:2px;}
-.catn{font-size:22px;font-weight:700;color:#1a1a1a;line-height:1;}
-
-/* Grid vult de resterende hoogte en verdeelt in gelijke cellen */
-.grid{
-  flex:1;
-  display:grid;
-  gap:6px;
-  grid-auto-rows:1fr; /* alle rijen even hoog */
-  min-height:0;
-}
-
-/* Elk vakje vult zijn cel exact — geen grotere, geen kleinere */
-.gb{
-  border:1.5px solid #c8b89a;
-  border-radius:3px;
-  padding:7px 9px;
-  background:#fdfaf6;
-  overflow:hidden; /* inhoud die te lang is, knipt af */
-  display:flex;
-  flex-direction:column;
-}
-
-.gn{
-  font-weight:700;
-  color:#8B1C1C;
-  line-height:1.2;
-  padding-bottom:4px;
-  margin-bottom:4px;
-  border-bottom:1px solid #ddd;
-  text-align:center;
-  flex-shrink:0;
-  /* Lange namen afkappen op 2 regels */
-  display:-webkit-box;
-  -webkit-line-clamp:2;
-  -webkit-box-orient:vertical;
-  overflow:hidden;
-}
-.gp{font-weight:400;color:#999;font-size:0.85em;}
-
-table{width:100%;border-collapse:collapse;flex:1;}
-tr{border-bottom:1px solid #ede8df;height:22px;}
-tr:last-child{border-bottom:none;}
-.cn{padding:2px 6px 2px 0;color:#1a1a1a;line-height:1.3;width:100%;vertical-align:middle;}
-.cw{padding:2px 0 2px 4px;font-weight:700;color:#222;white-space:nowrap;text-align:right;vertical-align:middle;}
-.rec{display:inline-block;background:#8B1C1C;color:white;font-size:7px;font-weight:700;padding:1px 3px;border-radius:2px;vertical-align:middle;margin-left:2px;}
-
-@media print{
-  body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .pagina{height:197mm;}
-}
-</style></head><body>
-${paginas}
-<script>window.onload=function(){setTimeout(function(){window.print();},300);};<\/script>
-</body></html>`;
-
-  const win = window.open('', '_blank', 'width=1120,height=780');
-  win.document.write(html);
-  win.document.close();
-}
-
-
-function goToHfDetail(hfIdx, event) {
-  if (event) event.stopPropagation();
-  if (hfIdx < 0) return;
-  // Navigeer naar recepturen tab
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('page-recepturen').classList.add('active');
-  document.querySelectorAll('.nav-tab').forEach(t => {
-    if ((t.getAttribute('onclick')||'').includes('recepturen')) t.classList.add('active');
-  });
-  // Sla huidige gerecht-state op in history zodat terug werkt
-  history.pushState({ page: 'gerechten', detail: 'ger', idx: openGerDetailIdx }, '', '#gerechten-detail-'+openGerDetailIdx);
-  // Open de receptuur detail
-  openHfDetail(hfIdx);
-}
-
-function goToGerDetail(gerIdx, event) {
-  if (event) event.stopPropagation();
-  if (gerIdx < 0) return;
-  // Navigate to gerechten tab and open detail
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('page-gerechten').classList.add('active');
-  // Set active tab
-  document.querySelectorAll('.nav-tab').forEach(t => {
-    if (t.getAttribute('onclick')?.includes('gerechten')) t.classList.add('active');
-  });
-  // Push menukaart state first so back goes there
-  history.pushState({ page: 'menukaart', detail: 'mk', idx: openMkDetailIdx }, '', '#menukaart-detail-'+openMkDetailIdx);
-  openGerDetail(gerIdx);
-}
-
-function openMkDetail(idx) {
-  openMkDetailIdx = idx;
-  const mk = menukaarten[idx];
-
-  document.getElementById('mk-detail-content').innerHTML = `
-    <div class="detail-header">
-      <div>
-        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:6px">Menukaart</div>
-        <div class="detail-title">${mk.naam}</div>
-        ${mk.omschrijving ? `<div style="font-size:14px;color:var(--muted);margin-top:6px">${mk.omschrijving}</div>` : ''}
-      </div>
-      ${!isReadOnly() ? `<div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn btn-ghost" onclick="openRecepturenModal(${idx})">📋 Recepturen</button>
-        <button class="btn btn-ghost" onclick="printSpiekbriefjes(${idx})">🖨️ Spiekbriefjes</button>
-        <button class="btn btn-ghost" onclick="openInkooplijstModal(${idx})">🛒 Bestellijst</button>
-        ${isAdmin() ? `<button class="btn btn-ghost" onclick="dupliceerMk(${idx})">⧉ Dupliceren</button>` : ''}
-        <button class="btn btn-ghost" onclick="openMkModal(${idx})">✎ Bewerken</button>
-      </div>` : currentUser?.role === 'chef' ? `<div style="display:flex;gap:8px">
-        <button class="btn btn-ghost" onclick="openRecepturenModal(${idx})">📋 Recepturen</button>
-        <button class="btn btn-ghost" onclick="printSpiekbriefjes(${idx})">🖨️ Spiekbriefjes</button>
-        <button class="btn btn-ghost" onclick="openInkooplijstModal(${idx})">🛒 Bestellijst</button>
-      </div>` : `<div style="display:flex;gap:8px">
-        <button class="btn btn-ghost" onclick="openRecepturenModal(${idx})">📋 Recepturen</button>
-        <button class="btn btn-ghost" onclick="printSpiekbriefjes(${idx})">🖨️ Spiekbriefjes</button>
-      </div>`}
-    </div>
-
-    <div class="panel">
-      <div class="panel-title">Gerechten & verkoopprijzen</div>
-
-      ${!isReadOnly() ? `
-      <!-- Zoekbalk om gerecht toe te voegen -->
-      <div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)">
-        <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Gerecht toevoegen</div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <div class="search-select-wrap" id="mk-ger-search-wrap" style="flex:1">
-            <span class="search-input-icon">🔍</span>
-            <div class="search-input" tabindex="0" id="mk-ger-search-btn" style="cursor:pointer">Zoek gerecht om toe te voegen…</div>
-            <div class="search-dropdown" id="mk-ger-dropdown">
-              <input class="search-filter" type="text" placeholder="Typ om te zoeken…" autocomplete="off" id="mk-ger-filter">
-              <div class="search-list" id="mk-ger-list">
-                ${gerechten.length === 0
-                  ? '<div class="search-no-results">Geen gerechten beschikbaar</div>'
-                  : gerechten.map(g => `<div class="search-option" data-id="${g.id}" data-naam="${g.naam}">${g.naam} <span style="float:right;font-family:\'Courier Prime\',monospace;font-size:11px;color:var(--muted)">€ ${g.kostprijs.toFixed(2).replace('.',',')}</span></div>`).join('')
-                }
-              </div>
-            </div>
-          </div>
-          <button class="btn btn-primary" onclick="voegGerechtToeAanMk(${mk.id})" style="white-space:nowrap">+ Toevoegen</button>
-        </div>
-      </div>` : ''}
-
-      <!-- Kolomkoppen + gerechtenlijst per categorie -->
-      <div id="mk-ger-rows">
-        ${mk.gerechten.length === 0
-          ? '<div style="padding:20px 0;text-align:center;color:var(--muted);font-style:italic;font-size:14px">Nog geen gerechten toegevoegd</div>'
-          : renderMkGerRows(mk)
-        }
-      </div>
-    </div>`;
-
-  // Dropdown logica
-  const btn    = document.getElementById('mk-ger-search-btn');
-  const dd     = document.getElementById('mk-ger-dropdown');
-  const filter = document.getElementById('mk-ger-filter');
-  const list   = document.getElementById('mk-ger-list');
-  if (btn && dd && filter && list) {
-    btn.addEventListener('click', e => {
-      e.stopPropagation();
-      dd.classList.toggle('open');
-      if (dd.classList.contains('open')) { filter.value=''; filterMkGerList(''); setTimeout(()=>filter.focus(),50); }
-    });
-    filter.addEventListener('input', () => filterMkGerList(filter.value));
-    filter.addEventListener('click', e => e.stopPropagation());
-    list.addEventListener('click', e => {
-      const opt = e.target.closest('.search-option');
-      if (!opt) return;
-      btn.textContent = opt.dataset.naam;
-      btn.dataset.selectedId = opt.dataset.id;
-      dd.classList.remove('open');
-      list.querySelectorAll('.search-option').forEach(o => o.classList.remove('selected'));
-      opt.classList.add('selected');
-    });
-    document.addEventListener('click', () => dd.classList.remove('open'), { once: false });
-  }
-
-  document.getElementById('mk-overview').style.display = 'none';
-  document.getElementById('mk-detail').classList.add('open');
-  history.pushState({ page: 'menukaart', detail: 'mk', idx }, '', '#menukaart-detail-'+idx);
-}
-
-function filterMkGerList(query) {
-  const q = query.toLowerCase();
-  const list = document.getElementById('mk-ger-list');
-  if (!list) return;
-  let any = false;
-  list.querySelectorAll('.search-option').forEach(opt => {
-    const match = opt.dataset.naam.toLowerCase().includes(q);
-    opt.style.display = match ? '' : 'none';
-    if (match) any = true;
-  });
-  let noRes = list.querySelector('.search-no-results');
-  if (!any) {
-    if (!noRes) { noRes = document.createElement('div'); noRes.className = 'search-no-results'; noRes.textContent = 'Geen resultaten'; list.appendChild(noRes); }
-    noRes.style.display = '';
-  } else if (noRes) { noRes.style.display = 'none'; }
-}
-
-function renderMkGerRows(mk) {
-  if (!mk.gerechten.length) return '';
-  const isAdmin = !isReadOnly();
-  const finZien = kanFinancieelZien();
-  const cols = '1fr' + (finZien ? ' 110px 120px 80px' : '') + (isAdmin ? ' 32px' : '');
-  const lbl = 'font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)';
-  let html = '<div style="display:grid;grid-template-columns:' + cols + ';gap:12px;padding:0 0 8px;border-bottom:2px solid var(--border);margin-bottom:4px">'
-    + '<span style="' + lbl + '">Gerecht</span>'
-    + (finZien ? '<span style="' + lbl + '">Kostprijs</span><span style="' + lbl + '">VP incl. BTW</span><span style="' + lbl + '">Inkoop %</span>' : '')
-    + (isAdmin ? '<span></span>' : '')
-    + '</div>';
-
-  const inMk = mk.gerechten.map(id => gerechten.find(g => g.id == id)).filter(Boolean);
-  const cats = [...new Set(inMk.map(g => g.categorie))];
-
-  cats.forEach(cat => {
-    html += '<div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--red);padding:14px 0 6px;border-bottom:1px solid var(--border);margin-top:8px">' + cat + '</div>';
-    inMk.filter(g => g.categorie === cat).forEach(ger => {
-      const gerId = ger.id;
-      const btw = parseFloat(ger.btw || 9);
-      const vpIncl = ger.verkoopprijs ? ger.verkoopprijs * (1 + btw/100) : 0;
-      const vpExcl = vpIncl > 0 ? vpIncl / (1 + btw/100) : 0;
-      const marge = vpExcl > 0 ? ((1 - ger.kostprijs/vpExcl)*100) : null;
-      const inkoop = marge !== null ? (100 - marge) : null;
-      const mc = inkoop === null ? 'var(--muted)' : inkoop <= 35 ? 'var(--green)' : inkoop <= 50 ? '#c4a060' : 'var(--danger)';
-      const gerIdx = gerechten.findIndex(g => g.id == gerId);
-      const kostp = ger.kostprijs.toFixed(2).replace('.',',');
-      const margeStr = inkoop !== null ? inkoop.toFixed(1)+'%' : '—';
-
-      html += '<div style="display:grid;grid-template-columns:' + cols + ';gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid #ede8df;cursor:pointer" onclick="goToGerDetail(' + gerIdx + ',event)">'
-        + '<span style="font-size:14px;color:#1a1a1a;font-weight:600">' + ger.naam + '</span>';
-
-      if (finZien) {
-        html += '<span class="mono" style="font-size:13px;color:var(--red)">€ ' + kostp + '</span>'
-          + '<span class="mono" style="font-size:13px">' + (vpIncl ? '€ ' + vpIncl.toFixed(2).replace('.',',') : '—') + '</span>'
-          + '<span class="mono" style="font-size:13px;font-weight:700;color:' + mc + '">' + margeStr + '</span>';
-      }
-
-      if (isAdmin) {
-        html += '<button class="btn btn-danger" onclick="verwijderGerechtUitMk(' + mk.id + ',' + gerId + ',event)" style="padding:4px 8px;font-size:13px">✕</button>';
-      }
-
-      html += '</div>';
-    });
-  });
-
-  return html;
-}
-
-// Gerecht toevoegen aan menukaart via zoekbalk
-async function voegGerechtToeAanMk(mkId) {
-  const btn = document.getElementById('mk-ger-search-btn');
-  const gerId = parseInt(btn?.dataset.selectedId);
-  if (!gerId) { toast('Selecteer eerst een gerecht'); return; }
-  const mk = menukaarten.find(m => m.id == mkId);
-  if (!mk) return;
-  if (mk.gerechten.includes(gerId)) { toast('Gerecht staat al in deze menukaart'); return; }
-  snapshot('Gerecht toegevoegd aan menukaart');
-  mk.gerechten.push(gerId);
-  await sbSaveMk(mk);
-  openMkDetail(menukaarten.findIndex(m => m.id == mkId));
-  toast('Gerecht toegevoegd');
-}
-
-// Gerecht verwijderen uit menukaart
-async function verwijderGerechtUitMk(mkId, gerId, event) {
-  if (event) event.stopPropagation();
-  const mk = menukaarten.find(m => m.id == mkId);
-  if (!mk) return;
-  snapshot('Gerecht verwijderd uit menukaart');
-  mk.gerechten = mk.gerechten.filter(id => id != gerId);
-  if (mk.prijzenIncl) delete mk.prijzenIncl[gerId];
-  await sbSaveMk(mk);
-  openMkDetail(menukaarten.findIndex(m => m.id == mkId));
-  toast('Gerecht verwijderd');
-}
-
-// Verkoopprijs incl. BTW instellen per gerecht in menukaart
-async function setMkPrijsIncl(mkId, gerId, prijsIncl) {
-  const mk = menukaarten.find(m => m.id == mkId);
-  if (!mk) return;
-  if (!mk.prijzenIncl) mk.prijzenIncl = {};
-  mk.prijzenIncl[gerId] = parseFloat(prijsIncl) || 0;
-  // Bereken ook excl. BTW voor backwards compatibility
-  const ger = gerechten.find(g => g.id == gerId);
-  const btw = parseFloat(ger?.btw || 9);
-  if (!mk.prijzen) mk.prijzen = {};
-  mk.prijzen[gerId] = mk.prijzenIncl[gerId] / (1 + btw/100);
-  await sbSaveMk(mk);
-  // Update marge live in de rij
-  const vpExcl = mk.prijzen[gerId];
-  const marge = vpExcl > 0 && ger ? ((1 - ger.kostprijs/vpExcl)*100) : null;
-  const margeColor = marge === null ? 'var(--muted)' : marge >= 65 ? 'var(--green)' : marge >= 50 ? '#c4a060' : 'var(--danger)';
-  const el = document.getElementById(`mk-marge-${gerId}`);
-  if (el) { el.textContent = marge !== null ? marge.toFixed(1)+'%' : '—'; el.style.color = margeColor; }
-}
-
-// FINANCIEEL MODAL
-let finGerIdx = -1;
-
-function openFinView(idx, event) {
-  if (event) event.stopPropagation();
-  if (isReadOnly()) {
-    openFinReadonly(idx);
-  } else {
-    openFinModal(idx, event);
-  }
-}
-
-function openFinReadonly(idx) {
-  const ger    = gerechten[idx];
-  const vp     = ger.verkoopprijs || 0;
-  const btw    = parseFloat(ger.btw || 9);
-  const vpIncl = vp * (1 + btw/100);
-  const marge  = vp > 0 ? ((1 - ger.kostprijs/vp)*100) : null;
-  const inkoop = vp > 0 ? (ger.kostprijs/vp*100) : null;
-  const doelm  = ger.doelmarge || 30;
-  const margeColor = marge === null ? 'var(--muted)' : marge >= doelm ? 'var(--green)' : marge >= doelm-15 ? '#c4a060' : 'var(--danger)';
-
-  // Maak altijd een verse modal aan
-  let ro = document.getElementById('modal-fin-readonly');
-  if (!ro) {
-    ro = document.createElement('div');
-    ro.className = 'modal-overlay';
-    ro.id = 'modal-fin-readonly';
-    document.body.appendChild(ro);
-    ro.addEventListener('click', e => { if (e.target === ro) closeFinReadonly(); });
-  }
-
-  const margeSection = marge !== null
-    ? `<div style="margin-top:20px;padding:16px;background:var(--surface2);border-radius:2px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <span style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">Brutomarge</span>
-          <span style="font-family:'Courier Prime',monospace;font-size:22px;font-weight:700;color:${margeColor}">${marge.toFixed(1)}%</span>
-        </div>
-        <div class="marge-bar"><div class="marge-fill" style="width:${Math.min(Math.max(marge,0),100)}%"></div></div>
-        <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:var(--muted)">
-          <span>Inkoop: ${inkoop.toFixed(1)}%</span>
-          <span>Winst/portie: € ${(vp-ger.kostprijs).toFixed(2).replace('.',',')}</span>
-        </div>
-      </div>`
-    : `<div style="font-size:13px;color:var(--muted);font-style:italic;padding:16px 0;text-align:center">Nog geen verkoopprijs ingesteld door de admin</div>`;
-
-  ro.innerHTML = `<div class="modal" style="width:460px">
-    <div class="modal-title">💰 Prijsoverzicht — ${ger.naam}</div>
-    <div style="background:var(--surface2);border-radius:2px;padding:14px 18px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
-      <span style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">Kostprijs / portie</span>
-      <span style="font-family:'Libre Baskerville',serif;font-size:22px;color:var(--red)">€ ${ger.kostprijs.toFixed(2).replace('.',',')}</span>
-    </div>
-    <table style="width:100%;border-collapse:collapse"><tbody>
-      ${row('Verkoopprijs excl. BTW', vp ? '€ '+vp.toFixed(2).replace('.',',') : '—')}
-      ${row('BTW', btw+'%')}
-      ${row('Verkoopprijs incl. BTW', vp ? '€ '+vpIncl.toFixed(2).replace('.',',') : '—')}
-      ${row('Doelmarge', doelm+'%')}
-      ${ger.waste ? row('Waste %', ger.waste+'%') : ''}
-      ${ger.inkooppct ? row('Inkoop %', ger.inkooppct+'%') : ''}
-    </tbody></table>
-    ${margeSection}
-    <div class="modal-actions">
-      <button class="btn btn-primary" onclick="closeFinReadonly()">Sluiten</button>
-    </div>
-  </div>`;
-
-  ro.classList.add('open');
-}
-
-function row(label, value) {
-  return `<tr><td style="padding:10px 0;border-bottom:1px solid #ede8df;font-size:14px;color:var(--text-light)">${label}</td><td style="padding:10px 0;border-bottom:1px solid #ede8df;font-size:14px;font-family:monospace;text-align:right;font-weight:700;color:#1a1a1a">${value}</td></tr>`;
-}
-
-function closeFinReadonly() {
-  const roModal = document.getElementById('modal-fin-readonly');
-  if (roModal) roModal.classList.remove('open');
-}
-
-function openFinModal(idx, event) {
-  if (event) event.stopPropagation();
-  finGerIdx = idx;
-  const ger = gerechten[idx];
-  document.getElementById('fin-modal-title').textContent = `Prijs instellen — ${ger.naam}`;
-  document.getElementById('fin-kostprijs').textContent = `€ ${ger.kostprijs.toFixed(2).replace('.',',')}`;
-  const btw = parseFloat(ger.btw || 9);
-  document.getElementById('fin-btw').value = ger.btw || '9';
-  document.getElementById('fin-doelmarge').value = ger.doelmarge || 30;
-  document.getElementById('fin-waste-pct').value = ger.waste || 0;
-  // Zet incl. BTW veld
-  const vp = ger.verkoopprijs || 0;
-  const vpIncl = vp > 0 ? vp * (1 + btw/100) : '';
-  document.getElementById('fin-vp-incl-input').value = vpIncl ? vpIncl.toFixed(2) : '';
-  document.getElementById('fin-vp').value = vp || '';
-  updateFinVanIncl();
-  openModal('modal-fin');
-}
-
-// Wordt aangeroepen als incl. BTW invoer of waste verandert
-function updateFinVanIncl() {
-  const vpIncl = parseFloat(document.getElementById('fin-vp-incl-input').value) || 0;
-  const btw    = parseFloat(document.getElementById('fin-btw').value) || 9;
-  const waste  = parseFloat(document.getElementById('fin-waste-pct').value) || 0;
-  const kp     = gerechten[finGerIdx]?.kostprijs || 0;
-
-  // Kostprijs + waste
-  const kpMetWaste = kp * (1 + waste / 100);
-  const wasteEl = document.getElementById('fin-kp-met-waste');
-  if (wasteEl) {
-    if (waste > 0) {
-      wasteEl.innerHTML = '<strong>€ ' + kpMetWaste.toFixed(2).replace('.',',') + '</strong> <span style="font-size:11px;color:var(--muted)">(+' + waste + '%)</span>';
-    } else {
-      wasteEl.textContent = '€ ' + kp.toFixed(2).replace('.',',');
-    }
-  }
-
-  // Bereken excl. BTW
-  const vpExcl   = vpIncl > 0 ? vpIncl / (1 + btw / 100) : 0;
-  const btwBedrag = vpIncl - vpExcl;
-
-  // Update hidden veld (excl. BTW — wordt opgeslagen)
-  document.getElementById('fin-vp').value = vpExcl > 0 ? vpExcl.toFixed(4) : '';
-
-  // Update display velden
-  document.getElementById('fin-vp-excl-display').textContent = vpExcl > 0 ? `€ ${vpExcl.toFixed(2).replace('.',',')}` : '—';
-  document.getElementById('fin-btw-bedrag').textContent      = vpExcl > 0 ? `€ ${btwBedrag.toFixed(2).replace('.',',')}` : '—';
-
-  // Marge berekend op kostprijs + waste
-  updateFinModal(kpMetWaste);
-}
-
-function updateFinModal(kpOverride) {
-  const kp   = kpOverride !== undefined ? kpOverride : (gerechten[finGerIdx]?.kostprijs || 0);
-  const vp   = parseFloat(document.getElementById('fin-vp').value) || 0;
-  const doel = parseFloat(document.getElementById('fin-doelmarge').value) || 30;
-  const btw  = parseFloat(document.getElementById('fin-btw').value) || 9;
-
-  // Inkoop% = kostprijs / verkoopprijs excl. BTW * 100
-  const inkoop = vp > 0 ? (kp / vp * 100) : null;
-  const margePct = document.getElementById('fin-marge-pct');
-  const margeBar = document.getElementById('fin-marge-bar');
-  const advies = document.getElementById('fin-advies');
-  const doelLabel = document.getElementById('fin-doelmarge-label');
-  if (doelLabel) doelLabel.textContent = 'Doel: ' + doel + '%';
-
-  if (inkoop !== null) {
-    // Groen = laag inkoop% (goed), rood = hoog inkoop% (slecht)
-    const margeColor = inkoop <= doel ? 'var(--green)' : inkoop <= doel + 15 ? '#c4a060' : 'var(--danger)';
-    margePct.textContent = inkoop.toFixed(1) + '%';
-    margePct.style.color = margeColor;
-    margeBar.style.width = Math.min(Math.max(inkoop, 0), 100) + '%';
-    const aanbevolenIncl = (kp / (doel / 100)) * (1 + btw / 100);
-    if (inkoop <= doel) {
-      advies.style.background = 'rgba(46,92,46,0.08)';
-      advies.innerHTML = '<span style="color:var(--green);font-weight:700;font-size:12px">✓ Doel inkoop% gehaald</span><br><span style="font-size:12px;color:var(--text-light)">Winst per portie (na waste): <strong>€ ' + (vp - kp).toFixed(2).replace('.', ',') + '</strong></span>';
-    } else if (inkoop <= doel + 15) {
-      advies.style.background = 'rgba(196,160,96,0.1)';
-      advies.innerHTML = '<span style="color:#c4a060;font-weight:700;font-size:12px">⚠ Inkoop% boven doelstelling</span><br><span style="font-size:12px;color:var(--text-light)">Aanbevolen prijs incl. BTW: <strong>€ ' + aanbevolenIncl.toFixed(2).replace('.', ',') + '</strong></span>';
-    } else {
-      advies.style.background = 'rgba(139,32,32,0.08)';
-      advies.innerHTML = '<span style="color:var(--danger);font-weight:700;font-size:12px">✕ Inkoop% te hoog</span><br><span style="font-size:12px;color:var(--text-light)">Aanbevolen prijs incl. BTW: <strong>€ ' + aanbevolenIncl.toFixed(2).replace('.', ',') + '</strong></span>';
-    }
-  } else {
-    margePct.textContent = '—';
-    margePct.style.color = 'var(--muted)';
-    margeBar.style.width = '0%';
-    advies.style.background = 'transparent';
-    advies.innerHTML = '';
-  }
-}
-
-function berekenVanInkoop() {
-  const kp = gerechten[finGerIdx]?.kostprijs || 0;
-  const pct = parseFloat(document.getElementById('fin-inkoop-pct').value) || 30;
-  const wastePct = parseFloat(document.getElementById('fin-waste-pct').value) || 0;
-  const marge = 100 - pct;
-
-  // Waste = % van kostprijs, opgeteld bij kostprijs
-  // Nieuwe kostprijs = kostprijs + (kostprijs * waste%)
-  const wasteEuro = kp * (wastePct / 100);
-  const kpMetWaste = kp + wasteEuro;
-
-  const el = document.getElementById('fin-kp-waste');
-  if (wastePct > 0) {
-    el.innerHTML = `€ ${kpMetWaste.toFixed(2).replace('.',',')} <span style="font-size:11px;color:var(--muted)">(+€ ${wasteEuro.toFixed(2).replace('.',',')})</span>`;
-  } else {
-    el.textContent = `€ ${kp.toFixed(2).replace('.',',')}`;
-  }
-  document.getElementById('fin-inkoop-marge').textContent = marge.toFixed(1) + '%';
-
-  if (kpMetWaste > 0 && pct > 0 && pct < 100) {
-    const voorgesteld = kpMetWaste / (pct / 100);
-    const rounded = Math.ceil(voorgesteld * 2) / 2;
-    document.getElementById('fin-inkoop-prijs').textContent = `€ ${rounded.toFixed(2).replace('.',',')}`;
-    document.getElementById('fin-inkoop-prijs').dataset.value = rounded.toFixed(2);
-  } else {
-    document.getElementById('fin-inkoop-prijs').textContent = '—';
-    document.getElementById('fin-inkoop-prijs').dataset.value = '';
-  }
-}
-
-function gebruikVoorgestelePrijs() {
-  const val = document.getElementById('fin-inkoop-prijs').dataset.value;
-  if (!val) return;
-  // Round to nearest 0.50
-  const rounded = Math.ceil(parseFloat(val) * 2) / 2;
-  document.getElementById('fin-vp').value = rounded.toFixed(2);
-  updateFinModal();
-}
-
-let finSaveTimer = null;
-function autoSaveFin() {
-  if (finSaveTimer) clearTimeout(finSaveTimer);
-  finSaveTimer = setTimeout(() => saveFinancieel(true), 600);
-}
-
-async function saveFinancieel(silent=false) {
-  if (finGerIdx < 0) return;
-  if (!silent) snapshot('Prijs bijgewerkt');
-  gerechten[finGerIdx].verkoopprijs = parseFloat(document.getElementById('fin-vp').value) || 0;
-  gerechten[finGerIdx].btw          = document.getElementById('fin-btw').value;
-  gerechten[finGerIdx].doelmarge    = parseFloat(document.getElementById('fin-doelmarge').value) || 30;
-  gerechten[finGerIdx].waste        = parseFloat(document.getElementById('fin-waste-pct').value) || 0;
-  await sbSaveGer(gerechten[finGerIdx]);
-  if (!silent) { renderGerCards(); document.getElementById('modal-fin').classList.remove('open'); toast('Prijs opgeslagen'); }
-}
-
-// PRELOAD BOKALL
-const BOKALL_DATA=[
-  {naam:'Aioli Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:6.78,sverlies:0},
-  {naam:'Beurre Café de Paris Bokall',categorie:'Zuivel',eenheid:'kg',prijs:11.82/0.5,sverlies:0},
-  {naam:'Bonen mix cereali Bokall',categorie:'Droge waren',eenheid:'kg',prijs:10.44,sverlies:0},
-  {naam:'Boter citroen tijm Bokall',categorie:'Zuivel',eenheid:'kg',prijs:10.34/0.5,sverlies:0},
-  {naam:'Boter kruiden Bokall',categorie:'Zuivel',eenheid:'kg',prijs:17.66/0.5,sverlies:0},
-  {naam:'Brisket gegaard Bokall',categorie:'Vlees & Vis',eenheid:'kg',prijs:26.29,sverlies:0},
-  {naam:'Burgersaus vegan De Eendracht',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:19.51/2,sverlies:0},
-  {naam:'Cassoulet Bokall',categorie:'Droge waren',eenheid:'kg',prijs:8.56,sverlies:0},
-  {naam:'Compote rode ui Bokall',categorie:'Groenten',eenheid:'kg',prijs:9.02,sverlies:0},
-  {naam:'Confit de canard Bokall',categorie:'Vlees & Vis',eenheid:'kg',prijs:28.02/1.6,sverlies:0},
-  {naam:'Crème artisjok Bokall',categorie:'Groenten',eenheid:'kg',prijs:11.77,sverlies:0},
-  {naam:'Crème basilicum vegan Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:6.37/0.7,sverlies:0},
-  {naam:'Crème dille vegan Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:7.09/0.7,sverlies:0},
-  {naam:'Crème dragon vegan Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:5.69/0.7,sverlies:0},
-  {naam:'Crème kerrie vegan Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:6.79/0.7,sverlies:0},
-  {naam:'Crème knoflook citroen vegan Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:6.58/0.7,sverlies:0},
-  {naam:'Crème limoen vegan Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:6.06/0.7,sverlies:0},
-  {naam:'Crème mierikswortel vegan Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:8.17/0.7,sverlies:0},
-  {naam:'Crème mosterd vegan Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:5.37/0.7,sverlies:0},
-  {naam:'Crème truffel vegan Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:12.91/0.7,sverlies:0},
-  {naam:'Crème wortel citrus Bokall',categorie:'Groenten',eenheid:'kg',prijs:9.73,sverlies:0},
-  {naam:'Dressing caesar Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:10.01,sverlies:0},
-  {naam:'Dressing gerookte biet Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:8.52,sverlies:0},
-  {naam:'Dressing limoen Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:8.94,sverlies:0},
-  {naam:'Dressing/vinaigrette mosterd Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:7.62,sverlies:0},
-  {naam:'Jam bosvruchten citrus Bokall',categorie:'Overig',eenheid:'kg',prijs:10.50,sverlies:0},
-  {naam:'Jam bramen-kaneel Bokall',categorie:'Overig',eenheid:'kg',prijs:16.81,sverlies:0},
-  {naam:'Jam frambozen-verveine Bokall',categorie:'Overig',eenheid:'kg',prijs:19.31,sverlies:0},
-  {naam:'Jus ballen Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:5.25,sverlies:0},
-  {naam:'Jus kalf Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:11.35,sverlies:0},
-  {naam:'Jus lam Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:20.56,sverlies:0},
-  {naam:'Jus port Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:17.88,sverlies:0},
-  {naam:'Jus truffel Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:12.43,sverlies:0},
-  {naam:'Knolselderij geroosterd Bokall',categorie:'Groenten',eenheid:'kg',prijs:15.79,sverlies:0},
-  {naam:'Lak spareribs Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:9.70,sverlies:0},
-  {naam:'Mayonaise Bokall',categorie:'Oliën & Sauzen',eenheid:'liter',prijs:66.69/10,sverlies:0},
-  {naam:'Mayonaise tonijn Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:8.05,sverlies:0},
-  {naam:'Mousseline aardappel Bokall',categorie:'Groenten',eenheid:'kg',prijs:7.08,sverlies:0},
-  {naam:'Pesto paprika zonnebloempit Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:11.04,sverlies:0},
-  {naam:'Puree zoete aardappel vegan Bokall',categorie:'Groenten',eenheid:'kg',prijs:12.74,sverlies:0},
-  {naam:'Ragout gevogelte/kip Bokall',categorie:'Vlees & Vis',eenheid:'kg',prijs:16.76,sverlies:0},
-  {naam:'Ragout pompoen Bokall',categorie:'Groenten',eenheid:'kg',prijs:10.70,sverlies:0},
-  {naam:'Rillettes spicy makreel Bokall',categorie:'Vlees & Vis',eenheid:'kg',prijs:16.10,sverlies:0},
-  {naam:'Rillettes eend Bokall',categorie:'Vlees & Vis',eenheid:'kg',prijs:25.48,sverlies:0},
-  {naam:'Rillettes zalm Bokall',categorie:'Vlees & Vis',eenheid:'kg',prijs:20.43,sverlies:0},
-  {naam:'Risotto parelgort vegan Bokall',categorie:'Droge waren',eenheid:'kg',prijs:7.30,sverlies:0},
-  {naam:'Rode kool Bokall',categorie:'Groenten',eenheid:'kg',prijs:6.56,sverlies:0},
-  {naam:'Rollade lam/schouder Bokall',categorie:'Vlees & Vis',eenheid:'kg',prijs:28.12,sverlies:0},
-  {naam:'Salade parelgort/paddenstoelen Bokall',categorie:'Groenten',eenheid:'kg',prijs:15.23,sverlies:0},
-  {naam:'Saus antiboise Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:13.42,sverlies:0},
-  {naam:'Saus BBQ Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:8.68,sverlies:0},
-  {naam:'Saus beurre blanc Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:14.03,sverlies:0},
-  {naam:'Saus beurre noir vegan Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:10.14,sverlies:0},
-  {naam:'Saus champagne room Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:27.46,sverlies:0},
-  {naam:'Saus champignonroom Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:8.10,sverlies:0},
-  {naam:'Saus cocktail Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:9.93,sverlies:0},
-  {naam:'Saus hollandaise Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:18.8625,sverlies:0},
-  {naam:'Saus peper Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:18.40,sverlies:0},
-  {naam:'Saus pinda-sate Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:5.725,sverlies:0},
-  {naam:'Saus remoulade vegan Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:8.78,sverlies:0},
-  {naam:'Saus romesco Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:19.35,sverlies:0},
-  {naam:'Saus stroganoff Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:9.32,sverlies:0},
-  {naam:'Saus tonnato Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:12.97,sverlies:0},
-  {naam:'Saus vegan kaas Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:18.46,sverlies:0},
-  {naam:'Saus venkel Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:14.38,sverlies:0},
-  {naam:'Saus voor aanmaak makreel Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:6.78,sverlies:0},
-  {naam:'Saus voor stoof lamsschouder Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:11.16,sverlies:0},
-  {naam:'Saus witte wijn basis Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:9.07,sverlies:0},
-  {naam:'Saus zwolse mosterdroom Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:10.14,sverlies:0},
-  {naam:'Saus topinamboer Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:12.69,sverlies:0},
-  {naam:'Soep aardpeer Bokall',categorie:'Overig',eenheid:'kg',prijs:10.14,sverlies:0},
-  {naam:'Soep asperge Bokall',categorie:'Overig',eenheid:'kg',prijs:8.52,sverlies:0},
-  {naam:'Soep bisque garnaal Bokall',categorie:'Overig',eenheid:'kg',prijs:8.575,sverlies:0},
-  {naam:'Soep erwten Bokall',categorie:'Overig',eenheid:'kg',prijs:7.754,sverlies:0},
-  {naam:'Soep knolselderij truffel Bokall',categorie:'Overig',eenheid:'kg',prijs:10.03,sverlies:0},
-  {naam:'Soep mosterd Bokall',categorie:'Overig',eenheid:'kg',prijs:10.03,sverlies:0},
-  {naam:'Soep pompoen-linzen Bokall',categorie:'Overig',eenheid:'kg',prijs:9.09,sverlies:0},
-  {naam:'Soep spitskool-mosterd Bokall',categorie:'Overig',eenheid:'kg',prijs:9.12,sverlies:0},
-  {naam:'Soep uien Bokall',categorie:'Overig',eenheid:'kg',prijs:6.775,sverlies:0},
-  {naam:'Soep venkel Bokall',categorie:'Overig',eenheid:'kg',prijs:9.53,sverlies:0},
-  {naam:'Soep kreeft romig Bokall',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:12.38,sverlies:0},
-  {naam:'Stoof barigoule artisjok vegan Bokall',categorie:'Groenten',eenheid:'kg',prijs:9.12,sverlies:0},
-  {naam:'Stoof gans Bokall',categorie:'Vlees & Vis',eenheid:'kg',prijs:25.42,sverlies:0},
-  {naam:'Stoof goulash groenten vegan Bokall',categorie:'Groenten',eenheid:'kg',prijs:10.39,sverlies:0},
-  {naam:'Stoof hachee aubergine vegan Bokall',categorie:'Groenten',eenheid:'kg',prijs:18.04,sverlies:0},
-  {naam:'Stoof hachee wildzwijn Bokall',categorie:'Vlees & Vis',eenheid:'kg',prijs:26.44,sverlies:0},
-  {naam:'Stoof hert Bokall',categorie:'Vlees & Vis',eenheid:'kg',prijs:19.63,sverlies:0},
-  {naam:'Stoof lamsschouder gegaard Bokall',categorie:'Vlees & Vis',eenheid:'stuk',prijs:28.53,sverlies:0},
-  {naam:'Stoof oesterzwam bourguignon vegan Bokall',categorie:'Groenten',eenheid:'kg',prijs:16.20,sverlies:0},
-  {naam:'Stoof rendang spitskool vegan Bokall',categorie:'Groenten',eenheid:'kg',prijs:10.14,sverlies:0},
-  {naam:'Stoof varkenswang Bokall',categorie:'Vlees & Vis',eenheid:'kg',prijs:25.475,sverlies:0},
-  {naam:'Wortel beurre noisette Bokall',categorie:'Groenten',eenheid:'kg',prijs:8.66,sverlies:0},
-  {naam:'Zuurkool Bokall',categorie:'Groenten',eenheid:'kg',prijs:10.56,sverlies:0},
-];
-
-// Laad Bokall data — alleen ontbrekende toevoegen (seed via Supabase bij eerste gebruik)
-{
-  const bestaand=new Set(ingredienten.map(i=>i.naam));
-  const nieuw=BOKALL_DATA.filter(i=>!bestaand.has(i.naam));
-  if (nieuw.length>0) {
-    const startId=ingredienten.length>0?Math.max(...ingredienten.map(i=>i.id))+1:1000;
-    nieuw.forEach((ing,j)=>ingredienten.push({...ing,id:startId+j}));
-  }
-  if (ingredienten.length===0) {
-    ingredienten=BOKALL_DATA.map((ing,i)=>({...ing,id:1000+i}));
-  }
-}
-
-
-
-// ==================== PRELOAD LEVERANCIER 2 ====================
-const LEVERANCIER2_DATA = [
-  {naam:'Van Gilse Kristalsuiker',categorie:'Droge waren',eenheid:'kg',prijs:1.2,sverlies:0},
-  {naam:'Maldon Zee Zout Flakes',categorie:'Kruiden & Specerijen',eenheid:'kg',prijs:16.72,sverlies:0},
-  {naam:'Van Gilse Poedersuiker',categorie:'Droge waren',eenheid:'kg',prijs:4.56,sverlies:0},
-  {naam:'La Baleine Zeezout Fijn',categorie:'Kruiden & Specerijen',eenheid:'kg',prijs:1.664,sverlies:0},
-  {naam:'Apollo Kaneel A Gemalen',categorie:'Kruiden & Specerijen',eenheid:'kg',prijs:27.45,sverlies:0},
-  {naam:'Verstegen Steranijs',categorie:'Kruiden & Specerijen',eenheid:'kg',prijs:119.6842,sverlies:0},
-  {naam:'Apollo Jeneverbessen',categorie:'Kruiden & Specerijen',eenheid:'kg',prijs:35.7,sverlies:0},
-  {naam:'Apollo Peper Zwart Heel',categorie:'Kruiden & Specerijen',eenheid:'kg',prijs:42.0,sverlies:0},
-  {naam:'Verstegen Laurierblad',categorie:'Kruiden & Specerijen',eenheid:'kg',prijs:302.8571,sverlies:0},
-  {naam:'Sosa Tomato Powder',categorie:'Droge waren',eenheid:'kg',prijs:50.7556,sverlies:0},
-  {naam:"Grand'Italia Spaghetti",categorie:'Droge waren',eenheid:'kg',prijs:2.96,sverlies:0},
-  {naam:'Soubry Patisseriebloem',categorie:'Droge waren',eenheid:'kg',prijs:1.9883,sverlies:0},
-  {naam:'Lu Bastogne',categorie:'Droge waren',eenheid:'kg',prijs:8.8462,sverlies:0},
-  {naam:'Eat Natural Granola Boekweit',categorie:'Droge waren',eenheid:'kg',prijs:12.475,sverlies:0},
-  {naam:'Deepblue Tonijn In Olie',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:8.827,sverlies:0},
-  {naam:'Nestor Paprika Rood Gegrild',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:3.4583,sverlies:0},
-  {naam:'Mackays Lemon Curd',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:11.4118,sverlies:0},
-  {naam:'Deepblue Ansjovisfilets In Olie',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:20.4833,sverlies:0},
-  {naam:'Canisius Rinse Appelstroop',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:5.2222,sverlies:0},
-  {naam:'Yin Dee Gembersiroop',categorie:'Oliën & Sauzen',eenheid:'liter',prijs:4.9,sverlies:0},
-  {naam:'Suboro Karamelsaus Vanille',categorie:'Oliën & Sauzen',eenheid:'liter',prijs:24.74,sverlies:0},
-  {naam:'Polenghi Limoensap',categorie:'Oliën & Sauzen',eenheid:'liter',prijs:2.96,sverlies:0},
-  {naam:'La Sevillana Olijven Groen Gesneden',categorie:'Oliën & Sauzen',eenheid:'liter',prijs:4.8663,sverlies:0},
-  {naam:'Delicious Kappertjes Surfines',categorie:'Oliën & Sauzen',eenheid:'liter',prijs:5.7917,sverlies:0},
-  {naam:'Kuhne Franse Mosterd',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:2.3,sverlies:0},
-  {naam:'Capsi Sweet Chillisaus',categorie:'Oliën & Sauzen',eenheid:'liter',prijs:4.5143,sverlies:0},
-  {naam:'Heinz Tomatenketchup',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:3.6544,sverlies:0},
-  {naam:'Remia Like Mayo 70% Vegan',categorie:'Oliën & Sauzen',eenheid:'liter',prijs:6.025,sverlies:0},
-  {naam:'Ista Uitjes Op Balsamico Azijn',categorie:'Oliën & Sauzen',eenheid:'liter',prijs:6.3176,sverlies:0},
-  {naam:'Kesbeke Amsterdamse Uien',categorie:'Oliën & Sauzen',eenheid:'liter',prijs:6.0377,sverlies:0},
-  {naam:'Kuhne Tafel Natuur Azijn Blank',categorie:'Oliën & Sauzen',eenheid:'liter',prijs:0.45,sverlies:0},
-  {naam:'Kesbeke Augurken D',categorie:'Oliën & Sauzen',eenheid:'liter',prijs:3.16,sverlies:0},
-  {naam:'Uyttewaal Augurkenblokjes',categorie:'Oliën & Sauzen',eenheid:'liter',prijs:3.6377,sverlies:0},
-  {naam:'Sabroso Olijfolie Pomace',categorie:'Oliën & Sauzen',eenheid:'liter',prijs:4.11,sverlies:0},
-  {naam:'Oilio Zonnebloemolie',categorie:'Oliën & Sauzen',eenheid:'liter',prijs:1.68,sverlies:0},
-  {naam:'Van Wijck Pijnboompitten',categorie:'Droge waren',eenheid:'kg',prijs:52.2556,sverlies:0},
-  {naam:'Van Wijck Hazelnoten Wit',categorie:'Droge waren',eenheid:'kg',prijs:26.7222,sverlies:0},
-  {naam:'Van Wijck Zonnebloempitten',categorie:'Droge waren',eenheid:'kg',prijs:3.3778,sverlies:0},
-  {naam:'Van Wijck Horeca Mix',categorie:'Droge waren',eenheid:'kg',prijs:5.8133,sverlies:0},
-  {naam:'Van Wijck Walnoten Gepeld',categorie:'Droge waren',eenheid:'kg',prijs:13.15,sverlies:0},
-  {naam:'Poussin Gevlinderd Citroen/Tijm Sous Vide',categorie:'Vlees & Vis',eenheid:'stuk',prijs:6.91,sverlies:0},
-  {naam:'Kalfs Gehakt',categorie:'Vlees & Vis',eenheid:'kg',prijs:15.63,sverlies:0},
-  {naam:'Lams Procureur Gepekeld Geconfijt',categorie:'Vlees & Vis',eenheid:'stuk',prijs:13.95,sverlies:0},
-  {naam:'Zalm Gerookt Frisee/Zalmsnippers',categorie:'Vlees & Vis',eenheid:'kg',prijs:25.56,sverlies:0},
-  {naam:'Kabeljauw Filet Met Vel Geportioneerd',categorie:'Vlees & Vis',eenheid:'stuk',prijs:2.28,sverlies:0},
-  {naam:'Tonijn Filet Premium',categorie:'Vlees & Vis',eenheid:'kg',prijs:28.9514,sverlies:0},
-  {naam:'Forelkuit Orange',categorie:'Vlees & Vis',eenheid:'kg',prijs:123.9,sverlies:0},
-  {naam:'Chaupain Bol Meergranen Glutenvrij 70g',categorie:'Droge waren',eenheid:'stuk',prijs:1.5655,sverlies:0},
-  {naam:'Desem En Zo Kletzenbrood',categorie:'Droge waren',eenheid:'kg',prijs:8.36,sverlies:0},
-  {naam:'Broodheeren Bol Klassiek Vegan 40g',categorie:'Droge waren',eenheid:'stuk',prijs:0.5617,sverlies:0},
-  {naam:'Chaupain Casino Sandwichbrood Wit 1000g',categorie:'Droge waren',eenheid:'stuk',prijs:1.98,sverlies:0},
-  {naam:'Broodheeren Bun Klassiek 70g Sesam',categorie:'Droge waren',eenheid:'stuk',prijs:0.396,sverlies:0},
-  {naam:'Chaupain Croissant Roomboter 70g',categorie:'Droge waren',eenheid:'stuk',prijs:0.6275,sverlies:0},
-  {naam:'Chaupain Brood Meergranen Glutenvrij 350g',categorie:'Droge waren',eenheid:'stuk',prijs:2.076,sverlies:0},
-  {naam:'Frites Uit Zuyd Verse Friet 14mm',categorie:'Groenten',eenheid:'kg',prijs:3.2,sverlies:0},
-  {naam:'Special Seafood Blinis',categorie:'Droge waren',eenheid:'kg',prijs:12.0375,sverlies:0},
-  {naam:'Konings Yoghurt Griekse Stijl 10%',categorie:'Zuivel',eenheid:'kg',prijs:2.99,sverlies:0},
-  {naam:'Debic Cream Plus Mascarpone',categorie:'Zuivel',eenheid:'liter',prijs:6.43,sverlies:0},
-  {naam:'Debic Cheesecake',categorie:'Zuivel',eenheid:'liter',prijs:7.55,sverlies:0},
-  {naam:'Violife Sour Cream Vegan',categorie:'Zuivel',eenheid:'kg',prijs:9.0,sverlies:0},
-  {naam:"Grand'Or Roomboter Kluit Ongezouten",categorie:'Zuivel',eenheid:'kg',prijs:5.734,sverlies:0},
-  {naam:'Bettine Geitenkaas Naturel 1kg',categorie:'Zuivel',eenheid:'stuk',prijs:12.26,sverlies:0},
-  {naam:'Violife Greek White Feta Vegan 150g',categorie:'Zuivel',eenheid:'kg',prijs:13.7333,sverlies:0},
-  {naam:'Wilmersburger Cheddar Vegan 500g',categorie:'Zuivel',eenheid:'kg',prijs:11.5,sverlies:0},
-  {naam:'Borrelkaas Blokjes Oud 500g',categorie:'Zuivel',eenheid:'kg',prijs:20.12,sverlies:0},
-  {naam:'Kaasvariatie Cheddar 500g',categorie:'Zuivel',eenheid:'kg',prijs:8.4,sverlies:0},
-  {naam:'Akropolis Witte Kaasblokjes In Olie 1500g',categorie:'Zuivel',eenheid:'kg',prijs:10.7133,sverlies:0},
-  {naam:'Eriks Burrata Kaas 100g',categorie:'Zuivel',eenheid:'stuk',prijs:1.27,sverlies:0},
-  {naam:'Belas Feta 200g',categorie:'Zuivel',eenheid:'kg',prijs:18.0,sverlies:0},
-  {naam:'Montebourg Creme Fraiche 30%',categorie:'Zuivel',eenheid:'liter',prijs:5.2,sverlies:0},
-  {naam:'Louman Ossenworst Gerookt 640g',categorie:'Vlees & Vis',eenheid:'kg',prijs:20.9062,sverlies:0},
-  {naam:'Woorts Amsterdamse Ossenworst',categorie:'Vlees & Vis',eenheid:'kg',prijs:17.93,sverlies:0},
-  {naam:'Soleggiato Groene Knoflook Olijven 800g',categorie:'Oliën & Sauzen',eenheid:'kg',prijs:11.1875,sverlies:0},
-  {naam:'Topking Vlammetjes',categorie:'Overig',eenheid:'stuk',prijs:0.3268,sverlies:0},
-  {naam:'Topking Kaasstengel Jonge Kaas 15g',categorie:'Overig',eenheid:'stuk',prijs:0.2983,sverlies:0},
-  {naam:'Vegetarische Slager Gehaktbal 17g',categorie:'Vlees & Vis',eenheid:'kg',prijs:13.365,sverlies:0},
-  {naam:'Snack With Benefits Bloemkool Bites 1500g',categorie:'Overig',eenheid:'kg',prijs:11.6667,sverlies:0},
-  {naam:'Tapas Club Albondigas 750g',categorie:'Vlees & Vis',eenheid:'kg',prijs:17.1733,sverlies:0},
-  {naam:'Vergers Boiron Passievrucht Puree',categorie:'Overig',eenheid:'kg',prijs:11.22,sverlies:0},
-  {naam:'Aviko Sweet Potato Fries 2270g',categorie:'Groenten',eenheid:'kg',prijs:4.3084,sverlies:0},
-  {naam:'Bonduelle Tuinerwtjes Extra Fijn 2500g',categorie:'Groenten',eenheid:'kg',prijs:4.072,sverlies:0},
-  {naam:'Salud Avocado Dices 500g',categorie:'Groenten',eenheid:'kg',prijs:10.86,sverlies:0},
-  {naam:'Ozosweet Brownies Glutenvrij 70g',categorie:'Overig',eenheid:'stuk',prijs:2.357,sverlies:0},
-  {naam:'Traiteur De Paris Creme Brulee 90g',categorie:'Overig',eenheid:'stuk',prijs:2.37,sverlies:0},
-  {naam:'Sparckitchen Celeriac Fennel Burger 130g',categorie:'Vlees & Vis',eenheid:'stuk',prijs:1.9017,sverlies:0},
-  {naam:'Alsaveur Flammkuchen Petit 60g',categorie:'Overig',eenheid:'stuk',prijs:0.812,sverlies:0},
-  {naam:'Chaupain Quiche Mediterrane Groenten 150g',categorie:'Overig',eenheid:'stuk',prijs:2.1587,sverlies:0},
-  {naam:'De Pastafabriek Gnocchi Naturel',categorie:'Droge waren',eenheid:'kg',prijs:10.05,sverlies:0},
-  {naam:'Asperges Groen',categorie:'Groenten',eenheid:'kg',prijs:14.1333,sverlies:0},
-  {naam:'Bospeen',categorie:'Groenten',eenheid:'stuk',prijs:2.72,sverlies:0},
-  {naam:'Little Gem Per Pakje',categorie:'Groenten',eenheid:'stuk',prijs:0.525,sverlies:0},
-  {naam:'Sjalotten Banaan',categorie:'Groenten',eenheid:'kg',prijs:0.7,sverlies:0},
-  {naam:'Paprika Mix 3 Stuks',categorie:'Groenten',eenheid:'stuk',prijs:1.3033,sverlies:0},
-  {naam:'Tomaten (B)',categorie:'Groenten',eenheid:'kg',prijs:6.29,sverlies:0},
-  {naam:'Spitskool',categorie:'Groenten',eenheid:'stuk',prijs:4.23,sverlies:0},
-  {naam:'Paprika Mini Stoplicht',categorie:'Groenten',eenheid:'kg',prijs:14.95,sverlies:0},
-  {naam:'Bieten Geel',categorie:'Groenten',eenheid:'kg',prijs:1.55,sverlies:0},
-  {naam:'Bieten Rood',categorie:'Groenten',eenheid:'kg',prijs:0.64,sverlies:0},
-  {naam:'Snijbonen',categorie:'Groenten',eenheid:'kg',prijs:4.24,sverlies:0},
-  {naam:'Trostomaat Pomodori',categorie:'Groenten',eenheid:'kg',prijs:1.15,sverlies:0},
-  {naam:'Trostomaten',categorie:'Groenten',eenheid:'kg',prijs:1.43,sverlies:0},
-  {naam:'Witlof',categorie:'Groenten',eenheid:'kg',prijs:1.48,sverlies:0},
-  {naam:'Spinazie Baby 125g',categorie:'Groenten',eenheid:'kg',prijs:13.92,sverlies:0},
-  {naam:'Rucola Sla 125g',categorie:'Groenten',eenheid:'kg',prijs:11.04,sverlies:0},
-  {naam:'Haricot Verts Schoon 250g',categorie:'Groenten',eenheid:'kg',prijs:11.28,sverlies:0},
-  {naam:'Komkommer',categorie:'Groenten',eenheid:'stuk',prijs:0.85,sverlies:0},
-  {naam:'Doperwten Schoon 200g',categorie:'Groenten',eenheid:'kg',prijs:21.6,sverlies:0},
-  {naam:'Peulen 250g',categorie:'Groenten',eenheid:'kg',prijs:11.4,sverlies:0},
-  {naam:'Witlof Sous Vide 500g',categorie:'Groenten',eenheid:'kg',prijs:9.74,sverlies:0},
-  {naam:'Radijs',categorie:'Groenten',eenheid:'kg',prijs:3.99,sverlies:0},
-  {naam:'Sla',categorie:'Groenten',eenheid:'stuk',prijs:1.85,sverlies:0},
-  {naam:'Aardappel Roseval 5kg',categorie:'Groenten',eenheid:'kg',prijs:1.9,sverlies:0},
-  {naam:'Bonken Geschild 2500g',categorie:'Groenten',eenheid:'kg',prijs:2.144,sverlies:0},
-  {naam:'Kriel Fijn Gewassen',categorie:'Groenten',eenheid:'kg',prijs:2.27,sverlies:0},
-  {naam:'Uien Rood',categorie:'Groenten',eenheid:'kg',prijs:1.32,sverlies:0},
-  {naam:'Aardbeien 500g',categorie:'Groenten',eenheid:'kg',prijs:13.0,sverlies:0},
-  {naam:'Appels Granny Smith',categorie:'Groenten',eenheid:'kg',prijs:0.48,sverlies:0},
-  {naam:'Limes 4500g',categorie:'Groenten',eenheid:'kg',prijs:2.8733,sverlies:0},
-  {naam:'Passievrucht 2kg',categorie:'Groenten',eenheid:'kg',prijs:10.975,sverlies:0},
-  {naam:'Bosbessen 125g',categorie:'Groenten',eenheid:'kg',prijs:23.12,sverlies:0},
-  {naam:'Bramen 125g',categorie:'Groenten',eenheid:'kg',prijs:34.4,sverlies:0},
-  {naam:'Frambozen 125g',categorie:'Groenten',eenheid:'kg',prijs:31.28,sverlies:0},
-  {naam:'Watermeloen',categorie:'Groenten',eenheid:'stuk',prijs:5.65,sverlies:0},
-  {naam:'Citroen',categorie:'Groenten',eenheid:'stuk',prijs:0.26,sverlies:0},
-  {naam:'Sla Frisee Extra',categorie:'Groenten',eenheid:'stuk',prijs:2.34,sverlies:0},
-  {naam:'Oesterzwammen Grijs Klasse 1',categorie:'Groenten',eenheid:'kg',prijs:2.64,sverlies:0},
-  {naam:'Koppert Cress Tuinkers Per Bakje',categorie:'Groenten',eenheid:'stuk',prijs:1.7,sverlies:0},
-  {naam:'Uien Rood Ringen 1kg',categorie:'Groenten',eenheid:'kg',prijs:3.48,sverlies:0},
-  {naam:'Bieten Rood Brunoise 10mm 1kg',categorie:'Groenten',eenheid:'kg',prijs:6.06,sverlies:0},
-  {naam:'Knolselderij Julienne 3mm 1kg',categorie:'Groenten',eenheid:'kg',prijs:7.21,sverlies:0},
-  {naam:'Spinazie Fijn Gewassen 450g',categorie:'Groenten',eenheid:'kg',prijs:6.6667,sverlies:0},
-  {naam:'Kriel Gewassen 1kg',categorie:'Groenten',eenheid:'kg',prijs:4.02,sverlies:0},
-  {naam:'Aardappel Roseval Partjes 1kg',categorie:'Groenten',eenheid:'kg',prijs:6.38,sverlies:0},
-  {naam:'Basilicum 70g',categorie:'Kruiden & Specerijen',eenheid:'kg',prijs:28.5714,sverlies:0},
-  {naam:'Dille 70g',categorie:'Kruiden & Specerijen',eenheid:'kg',prijs:30.7143,sverlies:0},
-  {naam:'Dragon 70g',categorie:'Kruiden & Specerijen',eenheid:'kg',prijs:30.0,sverlies:0},
-  {naam:'Koriander 70g',categorie:'Kruiden & Specerijen',eenheid:'kg',prijs:27.8571,sverlies:0},
-  {naam:'Munt 70g',categorie:'Kruiden & Specerijen',eenheid:'kg',prijs:27.8571,sverlies:0},
-  {naam:'Tijm 70g',categorie:'Kruiden & Specerijen',eenheid:'kg',prijs:27.8571,sverlies:0},
-  {naam:'Bieslook 70g',categorie:'Kruiden & Specerijen',eenheid:'kg',prijs:30.0,sverlies:0},
-  {naam:'Detectaplast Pleister Doos 100st',categorie:'Overig',eenheid:'stuk',prijs:0.1819,sverlies:0},
-  {naam:'Hevel Vacuumzak 150x250mm 100st',categorie:'Overig',eenheid:'stuk',prijs:0.0758,sverlies:0},
-  {naam:'Hevel Vacuumzak 250x300mm 100st',categorie:'Overig',eenheid:'stuk',prijs:0.1531,sverlies:0},
-  {naam:'Sier Prikker Bamboe 12cm 250st',categorie:'Overig',eenheid:'stuk',prijs:0.0123,sverlies:0},
-  {naam:'Hendi Slagroompatronen 50st',categorie:'Overig',eenheid:'stuk',prijs:0.369,sverlies:0},
-];
-{
-  const bestaand = new Set(ingredienten.map(i => i.naam));
-  const nieuw = LEVERANCIER2_DATA.filter(i => !bestaand.has(i.naam));
-  if (nieuw.length > 0) {
-    const startId = ingredienten.length > 0 ? Math.max(...ingredienten.map(i => i.id)) + 1 : 2000;
-    nieuw.forEach((ing, j) => ingredienten.push({...ing, id: startId + j}));
-
-  }
-}
-
-
-// EXTRA VLEES
-{
-  const bestaand = new Set(ingredienten.map(i => i.naam));
-  const extra = [
-    {naam:'Kalfsmuis Rose Gegaard Vitello',categorie:'Vlees & Vis',eenheid:'kg',prijs:28.95,sverlies:0},
-    {naam:'Veluwse Eendenfilet Sous-Vide',categorie:'Vlees & Vis',eenheid:'kg',prijs:23.5,sverlies:0},
-  ];
-  const nieuw = extra.filter(i => !bestaand.has(i.naam));
-  if (nieuw.length > 0) {
-    const startId = ingredienten.length > 0 ? Math.max(...ingredienten.map(i => i.id)) + 1 : 3000;
-    nieuw.forEach((ing, j) => ingredienten.push({...ing, id: startId + j}));
-
-  }
-}
-
-
-// EXTRA ZALM
-{
-  const bestaand = new Set(ingredienten.map(i => i.naam));
-  const extra = [
-    {naam:'Bawykov Gerookte Zalm 1/1 Zijde',categorie:'Vlees & Vis',eenheid:'kg',prijs:33.50,sverlies:0},
-  ];
-  const nieuw = extra.filter(i => !bestaand.has(i.naam));
-  if (nieuw.length > 0) {
-    const startId = ingredienten.length > 0 ? Math.max(...ingredienten.map(i => i.id)) + 1 : 3000;
-    nieuw.forEach((ing, j) => ingredienten.push({...ing, id: startId + j}));
-
-  }
-}
-
-
-// EXTRA KOEKEN
-{
-  const bestaand = new Set(ingredienten.map(i => i.naam));
-  const extra = [
-    {naam:'Apple of My Pie Cookie',categorie:'Droge waren',eenheid:'stuk',prijs:50.00/48,sverlies:0},
-    {naam:'Chocolate Chip Cookie',categorie:'Droge waren',eenheid:'stuk',prijs:44.64/48,sverlies:0},
-    {naam:'Cinnamon Buddy Cookie',categorie:'Droge waren',eenheid:'stuk',prijs:44.64/48,sverlies:0},
-    {naam:'Lemon Cookie',categorie:'Droge waren',eenheid:'stuk',prijs:44.64/48,sverlies:0},
-  ];
-  const nieuw = extra.filter(i => !bestaand.has(i.naam));
-  if (nieuw.length > 0) {
-    const startId = ingredienten.length > 0 ? Math.max(...ingredienten.map(i => i.id)) + 1 : 3000;
-    nieuw.forEach((ing, j) => ingredienten.push({...ing, id: startId + j}));
-
-  }
-}
-
-
-// KROKET EN CO
-{
-  const bestaand = new Set(ingredienten.map(i => i.naam));
-  const extra = [
-    {naam:'Aardappelschil Piccalilly Kroketje 40g',categorie:'Overig',eenheid:'stuk',prijs:0.5175,sverlies:0},
-    {naam:'Aardappelschil Piccalilly Kroketje 30g',categorie:'Overig',eenheid:'stuk',prijs:0.3881,sverlies:0},
-    {naam:'Arancini Spinazie Bitterbal 30g',categorie:'Overig',eenheid:'stuk',prijs:0.3219,sverlies:0},
-    {naam:'Aspergekroket 30g',categorie:'Overig',eenheid:'stuk',prijs:0.4709,sverlies:0},
-    {naam:'Bami Sate Schijf',categorie:'Overig',eenheid:'stuk',prijs:11.2,sverlies:0},
-    {naam:'Garnalenkroket 80g',categorie:'Vlees & Vis',eenheid:'stuk',prijs:1.4821,sverlies:0},
-    {naam:'Garnalenkroket 40g',categorie:'Vlees & Vis',eenheid:'stuk',prijs:0.8175,sverlies:0},
-    {naam:'Garnalenkroket 30g',categorie:'Vlees & Vis',eenheid:'stuk',prijs:0.6131,sverlies:0},
-    {naam:'Geitenkaas Spinazie Kroket 85g',categorie:'Overig',eenheid:'stuk',prijs:0.87,sverlies:0},
-    {naam:'Kaashapje 25g',categorie:'Overig',eenheid:'stuk',prijs:0.3181,sverlies:0},
-    {naam:'Kabeljauw Piccalilly Kroket 60g',categorie:'Vlees & Vis',eenheid:'stuk',prijs:0.7844,sverlies:0},
-    {naam:'Kalfschnitzel',categorie:'Vlees & Vis',eenheid:'stuk',prijs:3.95,sverlies:0},
-    {naam:'Kalfskroket 85g',categorie:'Vlees & Vis',eenheid:'stuk',prijs:0.3812,sverlies:0},
-    {naam:'Kreeftkroket 30g',categorie:'Vlees & Vis',eenheid:'stuk',prijs:0.4872,sverlies:0},
-    {naam:'Kreeftkroket 40g',categorie:'Vlees & Vis',eenheid:'stuk',prijs:0.6496,sverlies:0},
-    {naam:'Rundvleesbitterbal 30g',categorie:'Vlees & Vis',eenheid:'stuk',prijs:0.2811,sverlies:0},
-    {naam:'Sate Bitterbal 30g',categorie:'Overig',eenheid:'stuk',prijs:10.8,sverlies:0},
-    {naam:'Truffel Knolselderij Kroketje 40g',categorie:'Overig',eenheid:'stuk',prijs:0.5446,sverlies:0},
-    {naam:'Truffelbitterbal 30g',categorie:'Overig',eenheid:'stuk',prijs:0.3569,sverlies:0},
-    {naam:'Truffelknolselderij Kroketje 30g',categorie:'Overig',eenheid:'stuk',prijs:0.4084,sverlies:0},
-    {naam:'Vega Oesterzwamkroket 85g',categorie:'Groenten',eenheid:'stuk',prijs:0.855,sverlies:0},
-    {naam:'Vegan Tomaat Basilicum Bitterbal 30g',categorie:'Groenten',eenheid:'stuk',prijs:0.325,sverlies:0},
-    {naam:'Zuurkool Piccalilly Kroket/Bitterbal',categorie:'Overig',eenheid:'stuk',prijs:11.5,sverlies:0},
-  ];
-  const nieuw = extra.filter(i => !bestaand.has(i.naam));
-  if (nieuw.length > 0) {
-    const startId = ingredienten.length > 0 ? Math.max(...ingredienten.map(i => i.id)) + 1 : 4000;
-    nieuw.forEach((ing, j) => ingredienten.push({...ing, id: startId + j}));
-
-  }
-}
-
-
-// LINDENHOFF & OVERIG
-{
-  const bestaand = new Set(ingredienten.map(i => i.naam));
-  const extra = [
-    {naam:'Boter Neutraal Rol Dun 700g',categorie:'Zuivel',eenheid:'kg',prijs:15.4429,sverlies:0},
-    {naam:'Achterham Lindenhoff Dik Gesneden 250g',categorie:'Vlees & Vis',eenheid:'kg',prijs:39.16,sverlies:0},
-    {naam:'Achterham Lindenhoff Gesneden 250g',categorie:'Vlees & Vis',eenheid:'kg',prijs:39.16,sverlies:0},
-    {naam:'Blauwklaver Kaas',categorie:'Zuivel',eenheid:'kg',prijs:26.61,sverlies:0},
-    {naam:"Bleu d'Evert Kaas",categorie:'Zuivel',eenheid:'kg',prijs:19.9,sverlies:0},
-    {naam:'Boerenkaas Oud 1jr',categorie:'Zuivel',eenheid:'kg',prijs:15.88,sverlies:0},
-    {naam:'Boterpapier Lindenhoff',categorie:'Overig',eenheid:'stuk',prijs:0.02,sverlies:0},
-    {naam:'Brioche Bol',categorie:'Droge waren',eenheid:'stuk',prijs:0.845,sverlies:0},
-    {naam:'Bunkerkaas Twente Geit',categorie:'Zuivel',eenheid:'kg',prijs:26.95,sverlies:0},
-    {naam:'Cherry Trostomaat',categorie:'Groenten',eenheid:'kg',prijs:10.48,sverlies:0},
-    {naam:'Dagverse Freiland Eieren',categorie:'Zuivel',eenheid:'stuk',prijs:0.3887,sverlies:0},
-    {naam:'Desembrood 1kg Gesneden 4st',categorie:'Droge waren',eenheid:'stuk',prijs:5.3775,sverlies:0},
-    {naam:'Gele Biet Bio',categorie:'Groenten',eenheid:'kg',prijs:3.22,sverlies:0},
-    {naam:'Gesneden Boerenkaas Jong 500g',categorie:'Zuivel',eenheid:'kg',prijs:20.36,sverlies:0},
-    {naam:'Hooibergham Gesneden 250g',categorie:'Vlees & Vis',eenheid:'kg',prijs:48.76,sverlies:0},
-    {naam:'Kalf Sukade Rose Gegaard',categorie:'Vlees & Vis',eenheid:'kg',prijs:40.15,sverlies:0},
-    {naam:'Kalf Vitello Eendracht Gesneden 250g',categorie:'Vlees & Vis',eenheid:'kg',prijs:29.4,sverlies:0},
-    {naam:'Kip Dijfilet Ilper Met Vel Vers',categorie:'Vlees & Vis',eenheid:'kg',prijs:8.95,sverlies:0},
-    {naam:'Landbrood 1kg 4st Gesneden',categorie:'Droge waren',eenheid:'stuk',prijs:4.385,sverlies:0},
-    {naam:'Mantuanella Classico 18mnd',categorie:'Zuivel',eenheid:'kg',prijs:18.77,sverlies:0},
-    {naam:'Ossenworst Rauw Gesneden 250g',categorie:'Vlees & Vis',eenheid:'kg',prijs:46.4,sverlies:0},
-    {naam:'Pastrami Kalf Lindenhoff Gesneden 250g',categorie:'Vlees & Vis',eenheid:'kg',prijs:33.92,sverlies:0},
-    {naam:'Paté en Croute Eendracht',categorie:'Vlees & Vis',eenheid:'kg',prijs:37.41,sverlies:0},
-    {naam:'Picolini Basilicum',categorie:'Oliën & Sauzen',eenheid:'stuk',prijs:2.79,sverlies:0},
-    {naam:'Remeker Ryp Bio 8-10mnd',categorie:'Zuivel',eenheid:'kg',prijs:30.41,sverlies:0},
-    {naam:'Rund Entrecote DD Eendracht 180g',categorie:'Vlees & Vis',eenheid:'kg',prijs:46.49,sverlies:0},
-    {naam:"Rund Gehakt Esgo L'Hoff 8mm",categorie:'Vlees & Vis',eenheid:'kg',prijs:19.33,sverlies:0},
-    {naam:'Rund Haas Puntjes',categorie:'Vlees & Vis',eenheid:'kg',prijs:26.73,sverlies:0},
-    {naam:'Rund Muis',categorie:'Vlees & Vis',eenheid:'kg',prijs:19.74,sverlies:0},
-    {naam:'Rund Ribeye D.Doel',categorie:'Vlees & Vis',eenheid:'kg',prijs:39.31,sverlies:0},
-    {naam:'Rustiek Stokbrood 400g 12st',categorie:'Droge waren',eenheid:'stuk',prijs:2.5233,sverlies:0},
-    {naam:'Terrine Gevogelte Eendracht',categorie:'Vlees & Vis',eenheid:'kg',prijs:35.56,sverlies:0},
-    {naam:'Varken Buik Gerookt Gesneden 500g',categorie:'Vlees & Vis',eenheid:'kg',prijs:25.84,sverlies:0},
-    {naam:'Varken Nek Gegaard Eendracht',categorie:'Vlees & Vis',eenheid:'kg',prijs:30.63,sverlies:0},
-    {naam:'Witte Ossekop 175g',categorie:'Vlees & Vis',eenheid:'kg',prijs:27.0286,sverlies:0},
-    {naam:'Witte Pissenlit Molsla',categorie:'Groenten',eenheid:'kg',prijs:21.76,sverlies:0},
-    {naam:'Zeeuws Spek Lindenhoff Gesneden 250g',categorie:'Vlees & Vis',eenheid:'kg',prijs:40.44,sverlies:0},
-    {naam:'Rund Tournedos Simmentaler',categorie:'Vlees & Vis',eenheid:'kg',prijs:73.49,sverlies:0},
-  ];
-  const nieuw = extra.filter(i => !bestaand.has(i.naam));
-  if (nieuw.length > 0) {
-    const startId = ingredienten.length > 0 ? Math.max(...ingredienten.map(i => i.id)) + 1 : 5000;
-    nieuw.forEach((ing, j) => ingredienten.push({...ing, id: startId + j}));
-
-  }
-}
-
-
-// APPELTAART
-{
-  const bestaand = new Set(ingredienten.map(i => i.naam));
-  const extra = [
-    {naam:'Dichte Appeltaart (punt)',categorie:'Overig',eenheid:'stuk',prijs:round(16.38/10,4),sverlies:0},
-  ];
-  // inline round
-  function round(v,d){return Math.round(v*Math.pow(10,d))/Math.pow(10,d);}
-  const nieuw = extra.filter(i => !bestaand.has(i.naam));
-  if (nieuw.length > 0) {
-    const startId = ingredienten.length > 0 ? Math.max(...ingredienten.map(i => i.id)) + 1 : 6000;
-    nieuw.forEach((ing, j) => ingredienten.push({...ing, id: startId + j}));
-
-  }
-}
-
-
-// ==================== LEVERANCIER MIGRATIE ====================
-{
-  // Koppel leverancier op basis van naam-patronen
-  const bokallPatterns = ['Bokall','De Eendracht','Burgersaus'];
-  const vhcNames = new Set([
-    'Van Gilse Kristalsuiker','Maldon Zee Zout Flakes','Van Gilse Poedersuiker',
-    'La Baleine Zeezout Fijn','Deepblue Tonijn In Olie','Nestor Paprika Rood Gegrild',
-    'Mackays Lemon Curd','Deepblue Ansjovisfilets In Olie','Canisius Rinse Appelstroop',
-    'Apollo Kaneel A Gemalen','Verstegen Steranijs','Apollo Jeneverbessen',
-    'Apollo Peper Zwart Heel','Verstegen Laurierblad','Yin Dee Gembersiroop',
-    'Sosa Tomato Powder','Suboro Karamelsaus Vanille','Polenghi Limoensap',
-    'La Sevillana Olijven Groen Gesneden','Delicious Kappertjes Surfines',
-    'Eat Natural Granola Boekweit','Kuhne Franse Mosterd','Capsi Sweet Chillisaus',
-    'Heinz Tomatenketchup','Remia Like Mayo 70% Vegan','Ista Uitjes Op Balsamico Azijn',
-    'Kesbeke Amsterdamse Uien','Kuhne Tafel Natuur Azijn Blank','Kesbeke Augurken D',
-    'Uyttewaal Augurkenblokjes','Grand\'Italia Spaghetti','Soubry Patisseriebloem',
-    'Sabroso Olijfolie Pomace','Oilio Zonnebloemolie','Lu Bastogne',
-    'Van Wijck Pijnboompitten','Van Wijck Hazelnoten Wit','Van Wijck Zonnebloempitten',
-    'Van Wijck Horeca Mix','Van Wijck Walnoten Gepeld',
-    'Poussin Gevlinderd Citroen/Tijm Sous Vide','Kalfs Gehakt','Lams Procureur Gepekeld Geconfijt',
-    'Zalm Gerookt Frisee/Zalmsnippers','Kabeljauw Filet Met Vel Geportioneerd',
-    'Tonijn Filet Premium','Forelkuit Orange',
-    'Chaupain Bol Meergranen Glutenvrij 70g','Desem En Zo Kletzenbrood',
-    'Broodheeren Bol Klassiek Vegan 40g','Chaupain Casino Sandwichbrood Wit 1000g',
-    'Broodheeren Bun Klassiek 70g Sesam','Chaupain Croissant Roomboter 70g',
-    'Chaupain Brood Meergranen Glutenvrij 350g','Frites Uit Zuyd Verse Friet 14mm',
-    'Special Seafood Blinis','Konings Yoghurt Griekse Stijl 10%',
-    'Debic Cream Plus Mascarpone','Debic Cheesecake','Violife Sour Cream Vegan',
-    'Grand\'Or Roomboter Kluit Ongezouten','Bettine Geitenkaas Naturel 1kg',
-    'Violife Greek White Feta Vegan 150g','Wilmersburger Cheddar Vegan 500g',
-    'Borrelkaas Blokjes Oud 500g','Kaasvariatie Cheddar 500g',
-    'Akropolis Witte Kaasblokjes In Olie 1500g','Eriks Burrata Kaas 100g',
-    'Belas Feta 200g','Montebourg Creme Fraiche 30%','Soleggiato Groene Knoflook Olijven',
-    'Louman Ossenworst Gerookt 640g','Woorts Amsterdamse Ossenworst',
-    'Topking Vlammetjes','Topking Kaasstengel Jonge Kaas 15g',
-    'Vegetarische Slager Gehaktbal 17g','Snack With Benefits Bloemkool Bites 1500g',
-    'Tapas Club Albondigas 750g','Vergers Boiron Passievrucht Puree',
-    'Aviko Sweet Potato Fries 2270g','Bonduelle Tuinerwtjes Extra Fijn 2500g',
-    'Salud Avocado Dices 500g','Ozosweet Brownies Glutenvrij 70g',
-    'Traiteur De Paris Creme Brulee 90g','Sparckitchen Celeriac Fennel Burger 130g',
-    'Alsaveur Flammkuchen Petit 60g','Chaupain Quiche Mediterrane Groenten 150g',
-    'De Pastafabriek Gnocchi Naturel','Asperges Groen','Bospeen',
-    'Little Gem Per Pakje','Sjalotten Banaan','Paprika Mix 3 Stuks','Tomaten (B)',
-    'Spitskool','Paprika Mini Stoplicht','Bieten Geel','Bieten Rood','Snijbonen',
-    'Trostomaat Pomodori','Trostomaten','Witlof','Spinazie Baby 125g','Rucola Sla 125g',
-    'Haricot Verts Schoon 250g','Komkommer','Doperwten Schoon 200g','Peulen 250g',
-    'Witlof Sous Vide 500g','Radijs','Sla','Aardappel Roseval 5kg','Bonken Geschild 2500g',
-    'Kriel Fijn Gewassen','Uien Rood','Aardbeien 500g','Appels Granny Smith',
-    'Limes 4500g','Passievrucht 2kg','Bosbessen 125g','Bramen 125g','Frambozen 125g',
-    'Watermeloen','Citroen','Sla Frisee Extra','Oesterzwammen Grijs Klasse 1',
-    'Koppert Cress Tuinkers Per Bakje','Uien Rood Ringen 1kg','Bieten Rood Brunoise 10mm 1kg',
-    'Knolselderij Julienne 3mm 1kg','Spinazie Fijn Gewassen 450g','Kriel Gewassen 1kg',
-    'Aardappel Roseval Partjes 1kg','Basilicum 70g','Dille 70g','Dragon 70g',
-    'Koriander 70g','Munt 70g','Tijm 70g','Bieslook 70g',
-    'Detectaplast Pleister Doos 100st','Hevel Vacuumzak 150x250mm 100st',
-    'Hevel Vacuumzak 250x300mm 100st','Sier Prikker Bamboe 12cm 250st',
-    'Hendi Slagroompatronen 50st','Cherry Trostomaat'
-  ]);
-  const kroketNames = new Set([
-    'Aardappelschil Piccalilly Kroketje 40g','Aardappelschil Piccalilly Kroketje 30g',
-    'Arancini Spinazie Bitterbal 30g','Aspergekroket 30g','Bami Sate Schijf',
-    'Garnalenkroket 80g','Garnalenkroket 40g','Garnalenkroket 30g',
-    'Geitenkaas Spinazie Kroket 85g','Kaashapje 25g','Kabeljauw Piccalilly Kroket 60g',
-    'Kalfschnitzel','Kalfskroket 85g','Kreeftkroket 30g','Kreeftkroket 40g',
-    'Rundvleesbitterbal 30g','Sate Bitterbal 30g','Truffel Knolselderij Kroketje 40g',
-    'Truffelbitterbal 30g','Truffelknolselderij Kroketje 30g','Vega Oesterzwamkroket 85g',
-    'Vegan Tomaat Basilicum Bitterbal 30g','Zuurkool Piccalilly Kroket/Bitterbal'
-  ]);
-  const dynamiteNames = new Set([
-    'Apple of My Pie Cookie','Chocolate Chip Cookie','Cinnamon Buddy Cookie','Lemon Cookie'
-  ]);
-  const bawykovNames = new Set(['Bawykov Gerookte Zalm 1/1 Zijde']);
-  const driessenNames = new Set([
-    'Kalfsmuis Rose Gegaard Vitello','Veluwse Eendenfilet Sous-Vide',
-    'Kalfsmuis Rose Gegaard Vitello'
-  ]);
-  const femkeNames = new Set(['Dichte Appeltaart (punt)']);
-  const lindenhoffNames = new Set([
-    'Boter Neutraal Rol Dun 700g','Achterham Lindenhoff Dik Gesneden 250g',
-    'Achterham Lindenhoff Gesneden 250g','Blauwklaver Kaas','Bleu d\'Evert Kaas',
-    'Boerenkaas Oud 1jr','Boterpapier Lindenhoff','Brioche Bol',
-    'Bunkerkaas Twente Geit','Dagverse Freiland Eieren',
-    'Desembrood 1kg Gesneden 4st','Gele Biet Bio','Gesneden Boerenkaas Jong 500g',
-    'Hooibergham Gesneden 250g','Kalf Sukade Rose Gegaard',
-    'Kalf Vitello Eendracht Gesneden 250g','Kip Dijfilet Ilper Met Vel Vers',
-    'Landbrood 1kg 4st Gesneden','Mantuanella Classico 18mnd',
-    'Ossenworst Rauw Gesneden 250g','Pastrami Kalf Lindenhoff Gesneden 250g',
-    'Paté en Croute Eendracht','Picolini Basilicum','Remeker Ryp Bio 8-10mnd',
-    'Rund Entrecote DD Eendracht 180g','Rund Gehakt Esgo L\'Hoff 8mm',
-    'Rund Haas Puntjes','Rund Muis','Rund Ribeye D.Doel',
-    'Rustiek Stokbrood 400g 12st','Terrine Gevogelte Eendracht',
-    'Varken Buik Gerookt Gesneden 500g','Varken Nek Gegaard Eendracht',
-    'Witte Ossekop 175g','Witte Pissenlit Molsla',
-    'Zeeuws Spek Lindenhoff Gesneden 250g','Rund Tournedos Simmentaler'
-  ]);
-
-  let changed = false;
-  ingredienten.forEach(ing => {
-    if (ing.leverancier) return; // al ingesteld
-    if (bokallPatterns.some(p => ing.naam.includes(p))) {
-      ing.leverancier = 'Bokall'; ing.categorie = 'Bokall';
-    } else if (vhcNames.has(ing.naam)) {
-      ing.leverancier = 'VHC'; ing.categorie = 'VHC';
-    } else if (lindenhoffNames.has(ing.naam)) {
-      ing.leverancier = 'Lindenhoff'; ing.categorie = 'Lindenhoff';
-    } else if (kroketNames.has(ing.naam)) {
-      ing.leverancier = 'Kroket en Co'; ing.categorie = 'Kroket en Co';
-    } else if (dynamiteNames.has(ing.naam)) {
-      ing.leverancier = 'Dynamite Cookies'; ing.categorie = 'Dynamite Cookies';
-    } else if (bawykovNames.has(ing.naam)) {
-      ing.leverancier = 'Bawykov'; ing.categorie = 'Bawykov';
-    } else if (driessenNames.has(ing.naam)) {
-      ing.leverancier = 'Van Driessenfood'; ing.categorie = 'Van Driessenfood';
-    } else if (femkeNames.has(ing.naam)) {
-      ing.leverancier = 'Femke Patissier'; ing.categorie = 'Femke Patissier';
-    } else {
-      ing.leverancier = 'Overig'; ing.categorie = 'Overig';
-    }
-    changed = true;
-  });
-  // Leverancier-tags worden bij initieel laden vanuit Supabase al correct ingesteld
-}
-
-
-// SCHMIDT ZEEVIS
-{
-  const bestaand = new Set(ingredienten.map(i => i.naam));
-  const extra = [
-    {naam:'Kabeljauwfilet Skinpack 130g',categorie:'Schmidt Zeevis',leverancier:'Schmidt Zeevis',eenheid:'kg',prijs:28.50,sverlies:0},
-    {naam:'Tarbot Schoon Z/V Skinpack 275g',categorie:'Schmidt Zeevis',leverancier:'Schmidt Zeevis',eenheid:'stuk',prijs:14.60,sverlies:0},
-    {naam:'Visbakolie Smedesbloem 10L',categorie:'Schmidt Zeevis',leverancier:'Schmidt Zeevis',eenheid:'liter',prijs:27.00/10,sverlies:0},
-    {naam:'Zalmfilet Z/V Skinpack 140g',categorie:'Schmidt Zeevis',leverancier:'Schmidt Zeevis',eenheid:'kg',prijs:21.60,sverlies:0},
-  ];
-  const nieuw = extra.filter(i => !bestaand.has(i.naam));
-  if (nieuw.length > 0) {
-    const startId = ingredienten.length > 0 ? Math.max(...ingredienten.map(i => i.id)) + 1 : 7000;
-    nieuw.forEach((ing, j) => ingredienten.push({...ing, id: startId + j}));
-    // Preload data wordt al geladen vanuit Supabase — geen lokale save nodig
-  }
-}
-
-
-// Seed helper — verzamelt ALLE preload-ingrediënten voor Supabase upload
-function getSeedIngredienten() {
-  const all = [];
-  const seen = new Set();
-
-  const add = (items, leverancierOverride) => items.forEach(i => {
-    if (seen.has(i.naam)) return;
-    seen.add(i.naam);
-    const prijs = typeof i.prijs === 'number' ? i.prijs : Math.round(eval(String(i.prijs)) * 10000) / 10000;
-    const lev = i.leverancier || leverancierOverride || berekenLeverancier(i.naam);
-    all.push({ naam: i.naam, categorie: lev, leverancier: lev, eenheid: i.eenheid, prijs: Math.round(prijs * 10000) / 10000, sverlies: i.sverlies || 0 });
-  });
-
-  if (typeof BOKALL_DATA !== 'undefined') add(BOKALL_DATA, 'Bokall');
-  if (typeof LEVERANCIER2_DATA !== 'undefined') add(LEVERANCIER2_DATA, null);
-
-  // Extra vlees
-  add([
-    {naam:'Kalfsmuis Rose Gegaard Vitello',eenheid:'kg',prijs:28.95},
-    {naam:'Veluwse Eendenfilet Sous-Vide',eenheid:'kg',prijs:23.5},
-  ], 'Van Driessenfood');
-
-  // Extra zalm
-  add([{naam:'Bawykov Gerookte Zalm 1/1 Zijde',eenheid:'kg',prijs:33.50}], 'Bawykov');
-
-  // Koeken
-  add([
-    {naam:'Apple of My Pie Cookie',eenheid:'stuk',prijs:50.00/48},
-    {naam:'Chocolate Chip Cookie',eenheid:'stuk',prijs:44.64/48},
-    {naam:'Cinnamon Buddy Cookie',eenheid:'stuk',prijs:44.64/48},
-    {naam:'Lemon Cookie',eenheid:'stuk',prijs:44.64/48},
-  ], 'Dynamite Cookies');
-
-  // Kroket en Co
-  add([
-    {naam:'Aardappelschil Piccalilly Kroketje 40g',eenheid:'stuk',prijs:0.5175},
-    {naam:'Aardappelschil Piccalilly Kroketje 30g',eenheid:'stuk',prijs:0.3881},
-    {naam:'Arancini Spinazie Bitterbal 30g',eenheid:'stuk',prijs:0.3219},
-    {naam:'Aspergekroket 30g',eenheid:'stuk',prijs:0.4709},
-    {naam:'Bami Sate Schijf',eenheid:'stuk',prijs:11.2},
-    {naam:'Garnalenkroket 80g',eenheid:'stuk',prijs:1.4821},
-    {naam:'Garnalenkroket 40g',eenheid:'stuk',prijs:0.8175},
-    {naam:'Garnalenkroket 30g',eenheid:'stuk',prijs:0.6131},
-    {naam:'Geitenkaas Spinazie Kroket 85g',eenheid:'stuk',prijs:0.87},
-    {naam:'Kaashapje 25g',eenheid:'stuk',prijs:0.3181},
-    {naam:'Kabeljauw Piccalilly Kroket 60g',eenheid:'stuk',prijs:0.7844},
-    {naam:'Kalfschnitzel',eenheid:'stuk',prijs:3.95},
-    {naam:'Kalfskroket 85g',eenheid:'stuk',prijs:0.3812},
-    {naam:'Kreeftkroket 30g',eenheid:'stuk',prijs:0.4872},
-    {naam:'Kreeftkroket 40g',eenheid:'stuk',prijs:0.6496},
-    {naam:'Rundvleesbitterbal 30g',eenheid:'stuk',prijs:0.2811},
-    {naam:'Sate Bitterbal 30g',eenheid:'stuk',prijs:10.8},
-    {naam:'Truffel Knolselderij Kroketje 40g',eenheid:'stuk',prijs:0.5446},
-    {naam:'Truffelbitterbal 30g',eenheid:'stuk',prijs:0.3569},
-    {naam:'Truffelknolselderij Kroketje 30g',eenheid:'stuk',prijs:0.4084},
-    {naam:'Vega Oesterzwamkroket 85g',eenheid:'stuk',prijs:0.855},
-    {naam:'Vegan Tomaat Basilicum Bitterbal 30g',eenheid:'stuk',prijs:0.325},
-    {naam:'Zuurkool Piccalilly Kroket/Bitterbal',eenheid:'stuk',prijs:11.5},
-  ], 'Kroket en Co');
-
-  // Lindenhoff & Overig
-  add([
-    {naam:'Boter Neutraal Rol Dun 700g',eenheid:'kg',prijs:15.4429},
-    {naam:'Achterham Lindenhoff Dik Gesneden 250g',eenheid:'kg',prijs:39.16},
-    {naam:'Achterham Lindenhoff Gesneden 250g',eenheid:'kg',prijs:39.16},
-    {naam:'Blauwklaver Kaas',eenheid:'kg',prijs:26.61},
-    {naam:"Bleu d'Evert Kaas",eenheid:'kg',prijs:19.9},
-    {naam:'Boerenkaas Oud 1jr',eenheid:'kg',prijs:15.88},
-    {naam:'Boterpapier Lindenhoff',eenheid:'stuk',prijs:0.02},
-    {naam:'Brioche Bol',eenheid:'stuk',prijs:0.845},
-    {naam:'Bunkerkaas Twente Geit',eenheid:'kg',prijs:26.95},
-    {naam:'Cherry Trostomaat',eenheid:'kg',prijs:10.48},
-    {naam:'Dagverse Freiland Eieren',eenheid:'stuk',prijs:0.3887},
-    {naam:'Desembrood 1kg Gesneden 4st',eenheid:'stuk',prijs:5.3775},
-    {naam:'Gele Biet Bio',eenheid:'kg',prijs:3.22},
-    {naam:'Gesneden Boerenkaas Jong 500g',eenheid:'kg',prijs:20.36},
-    {naam:'Hooibergham Gesneden 250g',eenheid:'kg',prijs:48.76},
-    {naam:'Kalf Sukade Rose Gegaard',eenheid:'kg',prijs:40.15},
-    {naam:'Kalf Vitello Eendracht Gesneden 250g',eenheid:'kg',prijs:29.4},
-    {naam:'Kip Dijfilet Ilper Met Vel Vers',eenheid:'kg',prijs:8.95},
-    {naam:'Landbrood 1kg 4st Gesneden',eenheid:'stuk',prijs:4.385},
-    {naam:'Mantuanella Classico 18mnd',eenheid:'kg',prijs:18.77},
-    {naam:'Ossenworst Rauw Gesneden 250g',eenheid:'kg',prijs:46.4},
-    {naam:'Pastrami Kalf Lindenhoff Gesneden 250g',eenheid:'kg',prijs:33.92},
-    {naam:'Paté en Croute Eendracht',eenheid:'kg',prijs:37.41},
-    {naam:'Picolini Basilicum',eenheid:'stuk',prijs:2.79},
-    {naam:'Remeker Ryp Bio 8-10mnd',eenheid:'kg',prijs:30.41},
-    {naam:'Rund Entrecote DD Eendracht 180g',eenheid:'kg',prijs:46.49},
-    {naam:"Rund Gehakt Esgo L'Hoff 8mm",eenheid:'kg',prijs:19.33},
-    {naam:'Rund Haas Puntjes',eenheid:'kg',prijs:26.73},
-    {naam:'Rund Muis',eenheid:'kg',prijs:19.74},
-    {naam:'Rund Ribeye D.Doel',eenheid:'kg',prijs:39.31},
-    {naam:'Rustiek Stokbrood 400g 12st',eenheid:'stuk',prijs:2.5233},
-    {naam:'Terrine Gevogelte Eendracht',eenheid:'kg',prijs:35.56},
-    {naam:'Varken Buik Gerookt Gesneden 500g',eenheid:'kg',prijs:25.84},
-    {naam:'Varken Nek Gegaard Eendracht',eenheid:'kg',prijs:30.63},
-    {naam:'Witte Ossekop 175g',eenheid:'kg',prijs:27.0286},
-    {naam:'Witte Pissenlit Molsla',eenheid:'kg',prijs:21.76},
-    {naam:'Zeeuws Spek Lindenhoff Gesneden 250g',eenheid:'kg',prijs:40.44},
-    {naam:'Rund Tournedos Simmentaler',eenheid:'kg',prijs:73.49},
-  ], 'Lindenhoff');
-
-  // Appeltaart
-  add([{naam:'Dichte Appeltaart (punt)',eenheid:'stuk',prijs:16.38/10}], 'Femke Patissier');
-
-  // Schmidt Zeevis
-  add([
-    {naam:'Kabeljauwfilet Skinpack 130g',eenheid:'kg',prijs:28.50},
-    {naam:'Tarbot Schoon Z/V Skinpack 275g',eenheid:'stuk',prijs:14.60},
-    {naam:'Visbakolie Smedesbloem 10L',eenheid:'liter',prijs:27.00/10},
-    {naam:'Zalmfilet Z/V Skinpack 140g',eenheid:'kg',prijs:21.60},
-  ], 'Schmidt Zeevis');
-
-  return all;
-}
-
-// Handmatige seed — uploadt alle ontbrekende ingrediënten naar Supabase
-async function seedAlleIngredienten() {
-  const btn = document.getElementById('seed-btn');
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ Bezig…'; }
-  try {
-    const alleData = getSeedIngredienten();
-    const bestaandeNamen = new Set(ingredienten.map(i => i.naam));
-    const nieuw = alleData.filter(i => !bestaandeNamen.has(i.naam));
-
-    if (nieuw.length === 0) {
-      toast('Alle ingrediënten staan al in de database!', false);
-      if (btn) { btn.disabled = false; btn.textContent = '✓ Al up-to-date'; }
-      return;
-    }
-
-    // Upload in batches van 50
-    for (let i = 0; i < nieuw.length; i += 50) {
-      await sbFetch('ingredienten', 'POST', nieuw.slice(i, i + 50));
-    }
-
-    // Herlaad
-    const ing = await sbFetch('ingredienten', 'GET', null, '?order=id');
-    ingredienten = ing || [];
-    renderIngredienten();
-    toast(`${nieuw.length} ingrediënten geïmporteerd!`, false);
-    if (btn) { btn.disabled = false; btn.textContent = '✓ Geïmporteerd'; }
-  } catch(e) {
-    console.error('Seed mislukt:', e);
-    toast('Fout bij importeren: ' + e.message);
-    if (btn) { btn.disabled = false; btn.textContent = '⬆ Importeer alle ingrediënten'; }
-  }
-}
-
-function berekenLeverancier(naam) {
-  if (['Bokall','De Eendracht','Burgersaus'].some(p => naam.includes(p))) return 'Bokall';
-  return 'VHC';
-}
-
-// BROWSER NAVIGATIE
-window.addEventListener('popstate', e => {
-  const state = e.state;
-
-  // Sluit open modal als die er is
-  if (_openModalId) {
-    const el = document.getElementById(_openModalId);
-    if (el) el.classList.remove('open');
-    _openModalId = null;
-    return;
-  }
-
-  // Sluit inkooplijst modal als die open is
-  const inkoopModal = document.getElementById('modal-inkooplijst');
-  if (inkoopModal && inkoopModal.classList.contains('open')) {
-    sluitInkoopModal();
-    return;
-  }
-
-  // Sluit eventuele andere open modals
-  const openModals = document.querySelectorAll('.modal-overlay.open');
-  if (openModals.length) {
-    openModals.forEach(m => m.classList.remove('open'));
-    return;
-  }
-
-  if (!state) {
-    showPage('menukaart', null, false);
-    return;
-  }
-  if (state.modal) {
-    // State was een modal — die is al gesloten hierboven
-    return;
-  }
-  if (state.detail === 'hf') {
-    showPage('halffabricaten', null, false);
-    if (state.idx >= 0) openHfDetail(state.idx);
-  } else if (state.detail === 'ger') {
-    showPage('gerechten', null, false);
-    if (state.idx >= 0) openGerDetail(state.idx);
-  } else if (state.detail === 'mk') {
-    showPage('menukaart', null, false);
-    if (state.idx >= 0) openMkDetail(state.idx);
-  } else if (state.page) {
-    showPage(state.page, null, false);
-  }
-});
-
-// INIT — laad data vanuit Supabase, dan render
-(async () => {
-  await loadAllData();
-  await loadGerCats();
-  await loadInkooplijsten();
-  checkSession();
-  renderIngredienten();
-  renderHfCards();
-  renderGerCards();
-  renderMkOverview();
-  // Herstel pagina op basis van hash bij laden
-  const hash = window.location.hash.replace('#','');
-  const paginas = ['menukaart','gerechten','recepturen','ingredienten'];
-  if (hash && paginas.includes(hash)) {
-    history.replaceState({ page: hash }, '', '#' + hash);
-    showPage(hash, null, false);
-  } else {
-    history.replaceState({ page: 'menukaart' }, '', '#menukaart');
-  }
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.querySelector('.nav-tab').classList.add('active');
-
-  document.querySelectorAll('.modal-overlay').forEach(overlay=>{
-    overlay.addEventListener('click',e=>{
-      if(e.target===overlay) {
-        const modalId = overlay.id;
-        if (modalId === 'modal-inkooplijst') {
-          sluitInkoopModal();
-        } else {
-          closeModal(modalId);
-        }
-      }
-    });
-  });
-  document.getElementById('hf-opbrengst').addEventListener('input',()=>recalcModalDisplay('hf-comps-ing'));
-  document.getElementById('ger-porties').addEventListener('input',()=>recalcModalDisplay('ger-comps-ing'));
-})();
 </script>
 </body>
 </html>
