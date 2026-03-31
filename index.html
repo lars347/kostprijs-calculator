@@ -1185,7 +1185,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // SUPABASE CONFIG
 // ══════════════════════════════════════════════════════════════════════════════
-const APP_VERSION = 'v1.3.5';
+const APP_VERSION = 'v1.3.6';
 const SUPABASE_URL = 'https://mfexgibreooozqozzcow.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mZXhnaWJyZW9vb3pxb3p6Y293Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NzI2NjIsImV4cCI6MjA5MDA0ODY2Mn0.ufKbZhtfakH7TqA8SYAmw4NPnVLR96WjS5FmLmZn528';
 
@@ -1263,6 +1263,14 @@ async function loadAllData() {
     if (ingredienten.length === 0) {
       await seedDatabaseIfEmpty();
     }
+
+    // Render alle pagina's na laden
+    renderIngredienten();
+    renderHfCards();
+    renderGerCards();
+    renderMkOverview();
+    renderUsers();
+
   } catch(e) {
     console.error('Laden mislukt:', e);
     alert('Kan geen verbinding maken met de database. Controleer je internetverbinding.');
@@ -2134,6 +2142,7 @@ function showPage(id, btn, pushHistory = true) {
   if (id==='menukaart') renderMkOverview();
   if (id==='recepturen') renderHfCards();
   if (id==='gerechten') renderGerCards();
+  if (id==='ingredienten') renderIngredienten();
 }
 
 function toast(msg, showUndo=true) {
