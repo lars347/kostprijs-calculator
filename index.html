@@ -303,6 +303,7 @@
     </div>
     <div style="display:flex;gap:8px">
       <button class="btn btn-ghost" id="vhc-sync-btn" onclick="openModal('modal-vhc-sync');vhcUpdateBookmarklet();vhcTerug()" style="display:none">🔄 VHC Sync</button>
+      <button class="btn btn-ghost" id="ing-import-btn" onclick="openIngImportModal()" style="display:none">📥 VHC Importeren</button>
       <button class="btn btn-primary" onclick="openIngModal()">+ Toevoegen</button>
     </div>
   </div>
@@ -1035,6 +1036,67 @@
   </div>
 </div>
 
+<!-- VHC INGREDIENTEN IMPORT MODAL -->
+<div class="modal-overlay" id="modal-ing-import">
+  <div class="modal" style="width:620px;max-height:90vh;display:flex;flex-direction:column">
+    <div class="modal-title">📥 Ingrediënten importeren vanuit VHC</div>
+
+    <!-- STAP 1: Upload + plak tekst -->
+    <div id="iim-stap-1" style="flex:1;overflow-y:auto">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.7">
+        Upload het VHC XLSX-bestand én plak de VHC producttekst. De prijzen worden automatisch gekoppeld op SKU.
+      </div>
+
+      <!-- XLSX Upload -->
+      <div id="iim-upload-zone" onclick="document.getElementById('iim-xlsx-input').click()"
+           style="border:2px dashed var(--border);border-radius:6px;padding:20px;text-align:center;cursor:pointer;background:var(--surface2);margin-bottom:10px"
+           ondragover="event.preventDefault();this.style.borderColor='var(--red)'"
+           ondragleave="this.style.borderColor='var(--border)'"
+           ondrop="event.preventDefault();this.style.borderColor='var(--border)';iimVerwerkXlsx(event.dataTransfer.files[0])">
+        <div style="font-size:26px;margin-bottom:6px">📄</div>
+        <div style="font-size:13px;font-weight:600;color:var(--text)" id="iim-upload-label">Klik of sleep VHC XLSX hier</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px">Export bestellijst → XLSX op de VHC website</div>
+        <input type="file" id="iim-xlsx-input" accept=".xlsx" style="display:none" onchange="iimVerwerkXlsx(this.files[0])">
+      </div>
+      <div id="iim-xlsx-status" style="display:none;border-radius:4px;padding:8px 12px;font-size:13px;margin-bottom:14px"></div>
+
+      <!-- VHC Tekst plakken -->
+      <div style="background:#f8f4ef;border:1px solid #e0d5c5;border-radius:6px;padding:14px;margin-bottom:14px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red);margin-bottom:8px">VHC Prijstekst plakken</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.6">
+          Ga naar je VHC bestellijst → zet de weergave op <strong>kleine regelweergave</strong> → selecteer alles (Ctrl+A) → kopieer (Ctrl+C) → plak hier.
+          <br>Elke product staat dan op 3 regels: <em>naam / SKU / prijs</em>.
+        </div>
+        <textarea id="iim-vhc-tekst" rows="6" placeholder="Plak hier de VHC producttekst (Ctrl+V)..."
+          style="width:100%;border:1px solid var(--border);border-radius:4px;padding:8px;font-size:12px;font-family:monospace;resize:vertical;box-sizing:border-box;background:white"></textarea>
+        <div id="iim-vhc-status" style="display:none;margin-top:8px;font-size:12px;color:var(--muted)"></div>
+      </div>
+    </div>
+
+    <!-- STAP 2: Overzicht / bevestiging -->
+    <div id="iim-stap-2" style="display:none;flex:1;overflow-y:auto">
+      <div id="iim-rapport" style="font-size:13px"></div>
+    </div>
+
+    <!-- STAP 3: Bezig met opslaan -->
+    <div id="iim-stap-3" style="display:none;text-align:center;padding:40px 0">
+      <div style="font-size:32px;margin-bottom:12px">⏳</div>
+      <div style="font-size:15px;font-weight:600" id="iim-bezig-tekst">Bezig met opslaan…</div>
+      <div style="margin-top:16px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;width:80%;margin-left:auto;margin-right:auto">
+        <div id="iim-progress-bar" style="height:100%;width:0%;background:var(--red);transition:width 0.4s;border-radius:2px"></div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-ing-import')">Sluiten</button>
+      <button class="btn btn-ghost" id="iim-terug-btn" onclick="iimNaarStap1()" style="display:none">← Terug</button>
+      <button class="btn btn-primary" id="iim-volgende-btn" onclick="iimAnalyseer()">Analyseer →</button>
+      <button class="btn btn-primary" id="iim-opslaan-btn" onclick="iimOpslaan()" style="display:none">💾 Opslaan in database</button>
+    </div>
+  </div>
+</div>
+
+
 <!-- SPIEKBRIEFJES SELECTIE MODAL -->
 <div class="modal-overlay" id="modal-spiek">
   <div class="modal" style="width:440px">
@@ -1123,7 +1185,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // SUPABASE CONFIG
 // ══════════════════════════════════════════════════════════════════════════════
-const APP_VERSION = 'v1.3.4';
+const APP_VERSION = 'v1.3.5';
 const SUPABASE_URL = 'https://mfexgibreooozqozzcow.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mZXhnaWJyZW9vb3pxb3p6Y293Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NzI2NjIsImV4cCI6MjA5MDA0ODY2Mn0.ufKbZhtfakH7TqA8SYAmw4NPnVLR96WjS5FmLmZn528';
 
@@ -1510,11 +1572,15 @@ function applyRole(role) {
     document.body.setAttribute('data-role', role);
     if (ingTab) ingTab.style.display = 'none';
     if (vhcBtn) vhcBtn.style.display = 'none';
+    const impBtn2 = document.getElementById('ing-import-btn');
+    if (impBtn2) impBtn2.style.display = 'none';
     applyChefRestrictions();
   } else {
     document.body.setAttribute('data-role', 'admin');
     if (ingTab) ingTab.style.display = '';
     if (vhcBtn) vhcBtn.style.display = '';
+    const impBtn = document.getElementById('ing-import-btn');
+    if (impBtn) impBtn.style.display = '';
   }
 }
 
@@ -3624,6 +3690,348 @@ function vhcTerug() {
   document.getElementById('vhc-print-btn').style.display = 'none';
   vhcUpdateBookmarklet();
 }
+
+
+// ============================================================
+// VHC INGREDIENTEN IMPORT
+// ============================================================
+let _iimXlsxData = [];   // [{sku, naam, salesUnit, eenheid}]
+let _iimVhcPrijzen = {}; // {sku: prijs}
+let _iimAnalyse = null;  // resultaat van analyse
+
+function openIngImportModal() {
+  _iimXlsxData = [];
+  _iimVhcPrijzen = {};
+  _iimAnalyse = null;
+  iimNaarStap1();
+  // Reset velden
+  const lbl = document.getElementById('iim-upload-label');
+  if (lbl) lbl.textContent = 'Klik of sleep VHC XLSX hier';
+  const zone = document.getElementById('iim-upload-zone');
+  if (zone) zone.style.borderColor = 'var(--border)';
+  const st = document.getElementById('iim-xlsx-status');
+  if (st) { st.style.display = 'none'; st.textContent = ''; }
+  const ta = document.getElementById('iim-vhc-tekst');
+  if (ta) ta.value = '';
+  const vs = document.getElementById('iim-vhc-status');
+  if (vs) { vs.style.display = 'none'; vs.textContent = ''; }
+  openModal('modal-ing-import');
+}
+
+function iimNaarStap1() {
+  document.getElementById('iim-stap-1').style.display = '';
+  document.getElementById('iim-stap-2').style.display = 'none';
+  document.getElementById('iim-stap-3').style.display = 'none';
+  document.getElementById('iim-terug-btn').style.display = 'none';
+  document.getElementById('iim-volgende-btn').style.display = '';
+  document.getElementById('iim-opslaan-btn').style.display = 'none';
+}
+
+function iimVerwerkXlsx(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    if (typeof XLSX === 'undefined') {
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+      script.onload = () => iimParseerXlsx(e.target.result, file.name);
+      document.head.appendChild(script);
+    } else {
+      iimParseerXlsx(e.target.result, file.name);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function iimParseerXlsx(buffer, bestandsnaam) {
+  try {
+    const wb = XLSX.read(buffer, { type: 'array' });
+    const sheet = wb.Sheets[wb.SheetNames[0]];
+    const data = XLSX.utils.sheet_to_json(sheet);
+    _iimXlsxData = data.map(row => ({
+      sku: String(row.Sku || row.SKU || row.sku || '').trim(),
+      naam: (row.ProductName || row.productname || row.naam || row.Name || '').trim(),
+      salesUnit: (row.salesUnit || row.SalesUnit || '').trim(),
+      eenheid: parseerEenheid(row.salesUnit || row.SalesUnit || '')
+    })).filter(r => r.sku && r.naam);
+
+    const statusEl = document.getElementById('iim-xlsx-status');
+    const zoneEl = document.getElementById('iim-upload-zone');
+    const labelEl = document.getElementById('iim-upload-label');
+    if (_iimXlsxData.length === 0) {
+      statusEl.style.cssText = 'display:block;background:#fff0f0;border:1px solid #f0b0b0;border-radius:4px;padding:8px 12px;font-size:13px;color:#900;margin-bottom:14px';
+      statusEl.textContent = '❌ Geen producten gevonden — controleer het XLSX bestand.';
+      return;
+    }
+    if (labelEl) labelEl.textContent = '✅ ' + bestandsnaam;
+    if (zoneEl) zoneEl.style.borderColor = '#27ae60';
+    statusEl.style.cssText = 'display:block;background:#e8f8ef;border:1px solid #a8dfc0;border-radius:4px;padding:8px 12px;font-size:13px;color:#1a7a45;margin-bottom:14px';
+    statusEl.textContent = '✅ ' + _iimXlsxData.length + ' producten geladen uit "' + bestandsnaam + '"';
+  } catch(err) { toast('Fout bij lezen XLSX: ' + err.message); }
+}
+
+function iimParseerVhcTekst(tekst) {
+  // Elke 3 regels: naam / sku (getal) / prijs (€ x,xx)
+  const regels = tekst.split('\n').map(r => r.trim()).filter(r => r.length > 0);
+  const prijzen = {};
+  let i = 0;
+  while (i < regels.length) {
+    const r1 = regels[i];
+    const r2 = regels[i+1] || '';
+    const r3 = regels[i+2] || '';
+    // r2 moet puur numeriek zijn (SKU), r3 moet een prijs zijn (€ x,xx)
+    const skuMatch = r2.match(/^\d{5,10}$/);
+    const prijsMatch = r3.match(/€\s*([\d]+[,.][\d]{2})/);
+    if (skuMatch && prijsMatch) {
+      const sku = r2.trim();
+      const prijs = parseFloat(prijsMatch[1].replace(',', '.'));
+      if (!isNaN(prijs) && prijs > 0) prijzen[sku] = prijs;
+      i += 3;
+    } else {
+      i += 1; // schuif op bij niet-herkenbaar blok
+    }
+  }
+  return prijzen;
+}
+
+function iimAnalyseer() {
+  // Valideer XLSX
+  if (_iimXlsxData.length === 0) {
+    toast('Upload eerst het VHC XLSX bestand');
+    return;
+  }
+  // Parseer VHC tekst als ingevuld
+  const tekst = (document.getElementById('iim-vhc-tekst')?.value || '').trim();
+  if (tekst) {
+    _iimVhcPrijzen = iimParseerVhcTekst(tekst);
+    const aantalPrijzen = Object.keys(_iimVhcPrijzen).length;
+    const vsEl = document.getElementById('iim-vhc-status');
+    if (vsEl) {
+      vsEl.style.display = '';
+      vsEl.textContent = aantalPrijzen > 0
+        ? '✅ ' + aantalPrijzen + ' prijzen herkend uit de VHC tekst'
+        : '⚠️ Geen prijzen herkend — controleer of je de kleine regelweergave hebt gebruikt';
+      vsEl.style.color = aantalPrijzen > 0 ? '#1a7a45' : '#856404';
+    }
+    if (aantalPrijzen === 0) return; // stop zodat gebruiker kan corrigeren
+  } else {
+    _iimVhcPrijzen = {};
+  }
+
+  // Bouw analyse op
+  const ingOpSku = {};
+  for (const ing of ingredienten) {
+    if (ing.sku) ingOpSku[String(ing.sku).trim()] = ing;
+  }
+
+  const nieuweItems = [];     // in xlsx, niet in db
+  const bijwerkenItems = [];  // in xlsx + db, prijs of info veranderd
+  const geenPrijsItems = [];  // in xlsx, geen prijs in vhc tekst
+
+  for (const prod of _iimXlsxData) {
+    const prijs = _iimVhcPrijzen[prod.sku];
+    const bestaand = ingOpSku[prod.sku];
+    if (bestaand) {
+      // Bestaand ingredient — check of prijs of eenheid veranderd is
+      const oud = bestaand.prijs || 0;
+      const nieuwPrijs = prijs !== undefined ? prijs : oud;
+      bijwerkenItems.push({
+        ing: bestaand,
+        sku: prod.sku,
+        naam: prod.naam,
+        eenheid: prod.eenheid || bestaand.eenheid,
+        nieuwPrijs,
+        oudPrijs: oud,
+        heeftPrijs: prijs !== undefined,
+        prijsGewijzigd: prijs !== undefined && Math.abs(prijs - oud) > 0.001
+      });
+    } else {
+      if (prijs !== undefined) {
+        nieuweItems.push({ sku: prod.sku, naam: prod.naam, eenheid: prod.eenheid, salesUnit: prod.salesUnit, prijs, nieuw: true });
+      } else {
+        geenPrijsItems.push({ sku: prod.sku, naam: prod.naam, eenheid: prod.eenheid, salesUnit: prod.salesUnit, prijs: null, nieuw: true });
+      }
+    }
+  }
+
+  _iimAnalyse = { nieuweItems, bijwerkenItems, geenPrijsItems };
+  iimToonRapport();
+}
+
+function iimToonRapport() {
+  const { nieuweItems, bijwerkenItems, geenPrijsItems } = _iimAnalyse;
+  const heeftNieuwe = nieuweItems.length > 0;
+  const heeftBijwerken = bijwerkenItems.filter(b => b.prijsGewijzigd || !b.heeftPrijs === false).length > 0;
+  const prijsWijzigingen = bijwerkenItems.filter(b => b.prijsGewijzigd);
+
+  let html = '';
+
+  // Sectie: Nieuwe ingrediënten
+  if (nieuweItems.length > 0) {
+    html += `<div style="margin-bottom:18px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#1a7a45">
+          ✅ Nieuw aanmaken (${nieuweItems.length})
+        </div>
+        <label style="font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="checkbox" id="iim-check-nieuw" checked onchange="iimToggleGroep('nieuw',this.checked)"> Alles selecteren
+        </label>
+      </div>
+      <div style="border:1px solid #a8dfc0;border-radius:6px;overflow:hidden">
+        <div style="display:grid;grid-template-columns:24px 1fr 80px 70px 80px;gap:6px;padding:6px 10px;background:#e8f8ef;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#1a7a45">
+          <div></div><div>Naam</div><div>Eenheid</div><div>Prijs</div><div>SKU</div>
+        </div>`;
+    for (let i = 0; i < nieuweItems.length; i++) {
+      const p = nieuweItems[i];
+      html += `<div style="display:grid;grid-template-columns:24px 1fr 80px 70px 80px;gap:6px;padding:7px 10px;border-top:1px solid #e0f0e8;align-items:center;background:white">
+        <input type="checkbox" class="iim-cb-nieuw" data-idx="${i}" checked>
+        <div style="font-size:12px;font-weight:600">${p.naam}</div>
+        <div style="font-size:12px;color:var(--muted)">${p.eenheid || '—'}</div>
+        <div style="font-size:12px;font-family:monospace">€ ${p.prijs.toFixed(2).replace('.',',')}</div>
+        <div style="font-size:11px;color:var(--muted);font-family:monospace">${p.sku}</div>
+      </div>`;
+    }
+    html += '</div></div>';
+  }
+
+  // Sectie: Prijswijzigingen bestaande ingrediënten
+  if (prijsWijzigingen.length > 0) {
+    html += `<div style="margin-bottom:18px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#856404">
+          💰 Prijs bijwerken (${prijsWijzigingen.length})
+        </div>
+        <label style="font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="checkbox" id="iim-check-bijw" checked onchange="iimToggleGroep('bijw',this.checked)"> Alles selecteren
+        </label>
+      </div>
+      <div style="border:1px solid #ffc107;border-radius:6px;overflow:hidden">
+        <div style="display:grid;grid-template-columns:24px 1fr 90px 90px 70px;gap:6px;padding:6px 10px;background:#fff8e1;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#856404">
+          <div></div><div>Naam</div><div>Oude prijs</div><div>Nieuwe prijs</div><div>Verschil</div>
+        </div>`;
+    for (let i = 0; i < prijsWijzigingen.length; i++) {
+      const p = prijsWijzigingen[i];
+      const diff = p.nieuwPrijs - p.oudPrijs;
+      const kleur = diff > 0 ? '#c0392b' : '#27ae60';
+      const pijl = diff > 0 ? '▲' : '▼';
+      html += `<div style="display:grid;grid-template-columns:24px 1fr 90px 90px 70px;gap:6px;padding:7px 10px;border-top:1px solid #fff0b0;align-items:center;background:white">
+        <input type="checkbox" class="iim-cb-bijw" data-idx="${i}" checked>
+        <div style="font-size:12px;font-weight:600">${p.ing.naam}</div>
+        <div style="font-size:12px;font-family:monospace;color:var(--muted)">€ ${p.oudPrijs.toFixed(2).replace('.',',')}</div>
+        <div style="font-size:12px;font-family:monospace;font-weight:700">€ ${p.nieuwPrijs.toFixed(2).replace('.',',')}</div>
+        <div style="font-size:12px;font-weight:700;color:${kleur}">${pijl} € ${Math.abs(diff).toFixed(2).replace('.',',')}</div>
+      </div>`;
+    }
+    html += '</div></div>';
+  }
+
+  // Sectie: Geen prijs gevonden → vraag wat doen
+  if (geenPrijsItems.length > 0) {
+    html += `<div style="margin-bottom:18px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#c0392b">
+          ⚠️ Geen prijs gevonden (${geenPrijsItems.length})
+        </div>
+        <label style="font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="checkbox" id="iim-check-geenprijs" onchange="iimToggleGroep('geenprijs',this.checked)"> Toch importeren (zonder prijs)
+        </label>
+      </div>
+      <div style="border:1px solid #f5c6cb;border-radius:6px;overflow:hidden">`;
+    for (let i = 0; i < geenPrijsItems.length; i++) {
+      const p = geenPrijsItems[i];
+      html += `<div style="display:grid;grid-template-columns:24px 1fr 80px 80px;gap:6px;padding:7px 10px;${i>0?'border-top:1px solid #fde8ea;':''}align-items:center;background:white">
+        <input type="checkbox" class="iim-cb-geenprijs" data-idx="${i}">
+        <div style="font-size:12px;font-weight:600">${p.naam}</div>
+        <div style="font-size:12px;color:var(--muted)">${p.eenheid || '—'}</div>
+        <div style="font-size:11px;color:var(--muted);font-family:monospace">${p.sku}</div>
+      </div>`;
+    }
+    html += '</div></div>';
+  }
+
+  if (!heeftNieuwe && prijsWijzigingen.length === 0 && geenPrijsItems.length === 0) {
+    html = '<div style="text-align:center;padding:40px;color:var(--muted)">✅ Alles is al up-to-date in de database</div>';
+  }
+
+  document.getElementById('iim-rapport').innerHTML = html;
+  document.getElementById('iim-stap-1').style.display = 'none';
+  document.getElementById('iim-stap-2').style.display = '';
+  document.getElementById('iim-stap-3').style.display = 'none';
+  document.getElementById('iim-terug-btn').style.display = '';
+  document.getElementById('iim-volgende-btn').style.display = 'none';
+  document.getElementById('iim-opslaan-btn').style.display = '';
+}
+
+function iimToggleGroep(groep, aan) {
+  document.querySelectorAll('.iim-cb-' + groep).forEach(cb => cb.checked = aan);
+}
+
+async function iimOpslaan() {
+  const { nieuweItems, bijwerkenItems, geenPrijsItems } = _iimAnalyse;
+  const prijsWijzigingen = bijwerkenItems.filter(b => b.prijsGewijzigd);
+
+  // Verzamel geselecteerde items
+  const teNieuwen = nieuweItems.filter((_, i) => {
+    const cb = document.querySelector(`.iim-cb-nieuw[data-idx="${i}"]`);
+    return cb && cb.checked;
+  });
+  const teBijwerken = prijsWijzigingen.filter((_, i) => {
+    const cb = document.querySelector(`.iim-cb-bijw[data-idx="${i}"]`);
+    return cb && cb.checked;
+  });
+  const teGeenPrijs = geenPrijsItems.filter((_, i) => {
+    const cb = document.querySelector(`.iim-cb-geenprijs[data-idx="${i}"]`);
+    return cb && cb.checked;
+  });
+
+  const totaal = teNieuwen.length + teBijwerken.length + teGeenPrijs.length;
+  if (totaal === 0) { toast('Niets geselecteerd om op te slaan'); return; }
+
+  // Toon voortgangsscherm
+  document.getElementById('iim-stap-2').style.display = 'none';
+  document.getElementById('iim-stap-3').style.display = '';
+  document.getElementById('iim-terug-btn').style.display = 'none';
+  document.getElementById('iim-opslaan-btn').style.display = 'none';
+
+  const bar = document.getElementById('iim-progress-bar');
+  const bezig = document.getElementById('iim-bezig-tekst');
+  let gedaan = 0;
+
+  function updateBar() {
+    gedaan++;
+    const pct = Math.round((gedaan / totaal) * 100);
+    if (bar) bar.style.width = pct + '%';
+  }
+
+  // Sla nieuwe op
+  for (const p of teNieuwen) {
+    if (bezig) bezig.textContent = 'Aanmaken: ' + p.naam + '…';
+    await sbSaveIng({ id: null, naam: p.naam, eenheid: p.eenheid, prijs: p.prijs, sku: p.sku, leverancier: 'VHC', categorie: 'VHC', sverlies: 0 }, true);
+    updateBar();
+  }
+  // Sla zonder prijs op (als geselecteerd)
+  for (const p of teGeenPrijs) {
+    if (bezig) bezig.textContent = 'Aanmaken: ' + p.naam + '…';
+    await sbSaveIng({ id: null, naam: p.naam, eenheid: p.eenheid, prijs: 0, sku: p.sku, leverancier: 'VHC', categorie: 'VHC', sverlies: 0 }, true);
+    updateBar();
+  }
+  // Bijwerken bestaande
+  for (const p of teBijwerken) {
+    if (bezig) bezig.textContent = 'Bijwerken: ' + p.ing.naam + '…';
+    const bijgewerkt = { ...p.ing, prijs: p.nieuwPrijs, sku: p.sku, eenheid: p.eenheid };
+    await sbSaveIng(bijgewerkt, true);
+    updateBar();
+  }
+
+  if (bar) bar.style.width = '100%';
+  if (bezig) bezig.textContent = '✅ Klaar!';
+  document.getElementById('iim-bezig-tekst').textContent = '✅ ' + gedaan + ' ingrediënten opgeslagen!';
+
+  await loadAllData();
+  toast(gedaan + ' ingrediënten geïmporteerd');
+  setTimeout(() => closeModal('modal-ing-import'), 1200);
+}
+
 
 function vhcVerwerkXlsx(file) {
   if (!file) return;
