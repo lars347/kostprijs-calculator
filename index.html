@@ -1185,7 +1185,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // SUPABASE CONFIG
 // ══════════════════════════════════════════════════════════════════════════════
-const APP_VERSION = 'v1.3.8';
+const APP_VERSION = 'v1.4.0';
 const SUPABASE_URL = 'https://mfexgibreooozqozzcow.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mZXhnaWJyZW9vb3pxb3p6Y293Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NzI2NjIsImV4cCI6MjA5MDA0ODY2Mn0.ufKbZhtfakH7TqA8SYAmw4NPnVLR96WjS5FmLmZn528';
 
@@ -3660,42 +3660,44 @@ let _vhcXlsxData = [];
 let _vhcPrijzen = {};
 
 // Parseer VHC salesUnit naar basiseenheid + prijsfactor
-// Geeft {eenheid, factor, omschrijving} terug
-// factor = hoeveelheid in basiseenheid per verpakking
-// prijs per basiseenheid = verpakkingsprijs / factor
+// Regel: altijd omrekenen naar kg, l, of stuk
+//   gram  → kg  (/ 1000)
+//   ml    → l   (/ 1000)
+//   cl    → l   (/ 100)
+//   kilo  → kg  (× hoeveelheid)
+//   liter → l   (× hoeveelheid)
+//   stuks → prijs per stuk (÷ aantal)
+// Verpakkingstype (Blik/Pot/Fles/etc.) doet er niet toe — alleen de inhoudseenheid telt.
 function parseerSalesUnit(salesUnit) {
   const s = (salesUnit || '').trim();
-  // Patroon: "[Verpakking] [getal] [eenheid]"  bijv. "Pak 1 Kilo", "Doos 5 Kilo", "Bak 500 Gram"
   const match = s.match(/^(\S+)\s+([\d.,]+)\s+(.+)$/i);
   if (!match) return { eenheid: 'stuk', factor: 1, omschrijving: s };
 
   const hoeveelheid = parseFloat(match[2].replace(',', '.'));
-  const eenheidRaw = match[3].toLowerCase().trim();
+  const eenheidRaw  = match[3].toLowerCase().trim();
 
-  // Normaliseer naar basiseenheid + factor
   if (eenheidRaw === 'kilo' || eenheidRaw === 'kg') {
     return { eenheid: 'kg', factor: hoeveelheid, omschrijving: hoeveelheid + ' kg' };
   }
   if (eenheidRaw === 'gram' || eenheidRaw === 'g') {
-    // Gram → kg: factor in kg
-    return { eenheid: 'kg', factor: hoeveelheid / 1000, omschrijving: hoeveelheid + ' g' };
+    return { eenheid: 'kg', factor: hoeveelheid / 1000, omschrijving: hoeveelheid + ' g → kg' };
   }
   if (eenheidRaw === 'liter' || eenheidRaw === 'l') {
     return { eenheid: 'l', factor: hoeveelheid, omschrijving: hoeveelheid + ' l' };
   }
   if (eenheidRaw === 'centiliter' || eenheidRaw === 'cl') {
-    return { eenheid: 'l', factor: hoeveelheid / 100, omschrijving: hoeveelheid + ' cl' };
+    return { eenheid: 'l', factor: hoeveelheid / 100, omschrijving: hoeveelheid + ' cl → l' };
   }
   if (eenheidRaw === 'milliliter' || eenheidRaw === 'ml') {
-    return { eenheid: 'l', factor: hoeveelheid / 1000, omschrijving: hoeveelheid + ' ml' };
+    return { eenheid: 'l', factor: hoeveelheid / 1000, omschrijving: hoeveelheid + ' ml → l' };
   }
-  if (eenheidRaw === 'stuks' || eenheidRaw === 'stuk' || eenheidRaw === 'stuck') {
+  if (eenheidRaw === 'stuks' || eenheidRaw === 'stuk') {
     return { eenheid: 'stuk', factor: hoeveelheid, omschrijving: hoeveelheid + ' stuks' };
   }
   if (eenheidRaw === 'pak') {
     return { eenheid: 'pak', factor: hoeveelheid, omschrijving: hoeveelheid + ' pak' };
   }
-  // Onbekend → geef hoeveelheid en eenheid letterlijk terug
+  // Onbekend
   return { eenheid: eenheidRaw, factor: hoeveelheid, omschrijving: hoeveelheid + ' ' + eenheidRaw };
 }
 
