@@ -3681,10 +3681,6 @@ function openMkDetail(idx) {
   history.pushState({ page: 'menukaart', detail: 'mk', idx }, '', '#menukaart-detail-' + idx);
 }
 
-  document.getElementById('mk-overview').style.display = 'none';
-  document.getElementById('mk-detail').classList.add('open');
-  history.pushState({ page: 'menukaart', detail: 'mk', idx }, '', '#menukaart-detail-' + idx);
-}
 
 // ── Financieel modal (prijs instellen per gerecht) ────────────────────────────
 let _finGerIdx = -1;
