@@ -1552,12 +1552,7 @@ async function doLogin() {
   const password = document.getElementById('auth-password').value;
   const errorEl  = document.getElementById('auth-error');
   const box      = document.querySelector('.auth-box');
-
-  if (!username) {
-    errorEl.textContent = 'Vul je gebruikersnaam in.';
-    errorEl.classList.add('show');
-    return;
-  }
+  const btn      = box.querySelector('.auth-btn');
 
   function showError(msg) {
     errorEl.textContent = msg;
@@ -1572,8 +1567,16 @@ async function doLogin() {
     }, 60);
     document.getElementById('auth-password').value = '';
     document.getElementById('auth-password').focus();
+    if (btn) { btn.disabled = false; btn.textContent = 'Inloggen'; }
   }
 
+  if (!username) { showError('Vul je gebruikersnaam in.'); return; }
+  if (!password) { showError('Vul je wachtwoord in.'); return; }
+
+  errorEl.classList.remove('show');
+  if (btn) { btn.disabled = true; btn.textContent = 'Bezig…'; }
+
+  // ── Stap 1: probeer via de Edge Function ──────────────────────────────────
   try {
     const res = await fetch(SUPABASE_URL + '/functions/v1/login', {
       method: 'POST',
@@ -1584,23 +1587,71 @@ async function doLogin() {
       },
       body: JSON.stringify({ username, password })
     });
-    const data = await res.json();
-    if (!res.ok || !data.user) {
-      showError(data.error || 'Gebruikersnaam of wachtwoord is onjuist.');
+
+    let data = null;
+    try { data = await res.json(); } catch(jsonErr) {
+      // Server stuurde geen geldig JSON terug
+      data = null;
+    }
+
+    if (res.ok && data && data.user) {
+      // ✅ Inloggen gelukt via server
+      const user = data.user;
+      currentUser = user;
+      localStorage.setItem('eendracht_session', JSON.stringify({ username: user.username, role: user.role }));
+      document.getElementById('auth-overlay').classList.remove('open');
+      applyRole(user.role);
+      updateNavUser(user);
+      if (btn) { btn.disabled = false; btn.textContent = 'Inloggen'; }
+      toast(`Welkom, ${user.username}!`, false);
+      await loadAllData();
       return;
     }
-    const user = data.user;
-    errorEl.classList.remove('show');
-    currentUser = user;
-    localStorage.setItem('eendracht_session', JSON.stringify({ username: user.username, role: user.role }));
-    document.getElementById('auth-overlay').classList.remove('open');
-    applyRole(user.role);
-    updateNavUser(user);
-    toast(`Welkom, ${user.username}!`, false);
-    await loadAllData();
-  } catch(e) {
-    showError('Verbindingsfout. Probeer opnieuw.');
+
+    // Server bereikbaar maar login mislukt — toon de server-foutmelding
+    if (data && data.error) {
+      showError(data.error);
+      return;
+    }
+
+    // Server gaf een foutcode terug zonder body — val terug op lokaal
+  } catch(networkErr) {
+    // Geen verbinding — val terug op lokaal
   }
+
+  // ── Stap 2: lokale fallback (als server niet bereikbaar is) ───────────────
+  const lowerInput = username.toLowerCase();
+  const localUser = _sbUsers.find(u => u.username.toLowerCase() === lowerInput);
+
+  if (!localUser) {
+    showError('Gebruiker niet gevonden. Controleer je gebruikersnaam.');
+    return;
+  }
+
+  // Vergelijk wachtwoord: probeer gehashte vergelijking, daarna plaintext
+  let wachtwoordKlopt = false;
+  try {
+    const inputHash = await hashWachtwoord(password);
+    wachtwoordKlopt = (localUser.password_hash && localUser.password_hash === inputHash)
+                   || (localUser.password && localUser.password === password);
+  } catch(hashErr) {
+    wachtwoordKlopt = (localUser.password && localUser.password === password);
+  }
+
+  if (!wachtwoordKlopt) {
+    showError('Gebruikersnaam of wachtwoord is onjuist.');
+    return;
+  }
+
+  // ✅ Lokaal inloggen gelukt
+  currentUser = localUser;
+  localStorage.setItem('eendracht_session', JSON.stringify({ username: localUser.username, role: localUser.role }));
+  document.getElementById('auth-overlay').classList.remove('open');
+  applyRole(localUser.role);
+  updateNavUser(localUser);
+  if (btn) { btn.disabled = false; btn.textContent = 'Inloggen'; }
+  toast(`Welkom, ${localUser.naam || localUser.username}! (offline modus)`, false);
+  await loadAllData();
 }
 
 function doLogout() {
@@ -2006,10 +2057,23 @@ function openUsersModal() {
 }
 
 function checkSession() {
-  const session = localStorage.getItem('eendracht_session');
-  if (session) {
-    const s = JSON.parse(session);
-    const user = _sbUsers.find(u => u.username.toLowerCase() === s.username.toLowerCase());
+  let session = null;
+  try {
+    const raw = localStorage.getItem('eendracht_session');
+    if (raw) session = JSON.parse(raw);
+  } catch(e) {
+    localStorage.removeItem('eendracht_session');
+  }
+
+  if (session && session.username) {
+    // Zoek de gebruiker in de geladen lijst
+    let user = _sbUsers.find(u => u.username.toLowerCase() === session.username.toLowerCase());
+
+    // Als _sbUsers nog leeg is (server onbereikbaar), herstel sessie op basis van opgeslagen info
+    if (!user && session.username && session.role) {
+      user = { username: session.username, role: session.role, naam: session.username };
+    }
+
     if (user) {
       currentUser = user;
       document.getElementById('auth-overlay').classList.remove('open');
@@ -5047,15 +5111,43 @@ async function getPrijsHistorie(ingId) {
 // ── App initialisatie ─────────────────────────────────────────────────────────
 (async function initApp() {
   // Laad gebruikers eerst (nodig voor checkSession)
+  let serverBereikbaar = false;
   try {
     const res = await fetch(SUPABASE_URL + '/functions/v1/gebruikers-laden', {
       headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
     });
-    _sbUsers = await res.json() || [];
-  } catch(e) { console.warn('Gebruikers laden mislukt:', e); }
+    let geladen = null;
+    try { geladen = await res.json(); } catch(jsonErr) { geladen = null; }
+    if (Array.isArray(geladen) && geladen.length > 0) {
+      _sbUsers = geladen;
+      serverBereikbaar = true;
+    } else if (geladen !== null) {
+      // Lege array is ook geldig (geen gebruikers aangemaakt)
+      _sbUsers = geladen || [];
+      serverBereikbaar = true;
+    }
+  } catch(e) {
+    console.warn('Gebruikers laden mislukt (server onbereikbaar):', e);
+  }
+
+  // Als server niet bereikbaar was, zorg dat default gebruikers altijd beschikbaar zijn
+  if (!serverBereikbaar && _sbUsers.length === 0) {
+    _sbUsers = DEFAULT_USERS.map((u, i) => ({ ...u, id: i + 1 }));
+  }
 
   // Check of er een sessie is
   checkSession();
+
+  // Toon offline waarschuwing op loginscherm als server niet bereikbaar was
+  if (!serverBereikbaar && !currentUser) {
+    const errEl = document.getElementById('auth-error');
+    if (errEl) {
+      errEl.textContent = 'Server tijdelijk niet bereikbaar. Je kunt inloggen met je lokale gegevens.';
+      errEl.classList.add('show');
+      errEl.style.background = 'rgba(46,92,46,0.08)';
+      errEl.style.color = 'var(--green)';
+    }
+  }
 
   // Als er een sessie was en gebruiker is ingelogd, laad alle data
   if (currentUser) {
