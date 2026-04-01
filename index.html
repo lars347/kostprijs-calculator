@@ -302,7 +302,6 @@
       </div>
     </div>
     <div style="display:flex;gap:8px">
-      <button class="btn btn-ghost" id="vhc-sync-btn" onclick="openModal('modal-vhc-sync');vhcUpdateBookmarklet();vhcTerug()" style="display:none">🔄 VHC Sync</button>
       <button class="btn btn-ghost" id="ing-import-btn" onclick="openIngImportModal()" style="display:none">📥 VHC Importeren</button>
       <button class="btn btn-primary" onclick="openIngModal()">+ Toevoegen</button>
     </div>
@@ -1578,18 +1577,15 @@ function updateNavUser(user) {
 
 function applyRole(role) {
   const ingTab = document.getElementById('nav-tab-ingredienten');
-  const vhcBtn = document.getElementById('vhc-sync-btn');
   if (role === 'medewerker' || role === 'chef') {
     document.body.setAttribute('data-role', role);
     if (ingTab) ingTab.style.display = 'none';
-    if (vhcBtn) vhcBtn.style.display = 'none';
     const impBtn2 = document.getElementById('ing-import-btn');
     if (impBtn2) impBtn2.style.display = 'none';
     applyChefRestrictions();
   } else {
     document.body.setAttribute('data-role', 'admin');
     if (ingTab) ingTab.style.display = '';
-    if (vhcBtn) vhcBtn.style.display = '';
     const impBtn = document.getElementById('ing-import-btn');
     if (impBtn) impBtn.style.display = '';
   }
@@ -3187,9 +3183,311 @@ function renderMkOverview() {
   if (isReadOnly()) applyChefRestrictions();
 }
 
+// ── Menukaart detail ─────────────────────────────────────────────────────────
+function openMkDetail(idx) {
+  if (idx < 0 || idx >= menukaarten.length) return;
+  openMkDetailIdx = idx;
+  const mk = menukaarten[idx];
+  const rows = mk.gerechten.map(gid => {
+    const ger = gerechten.find(g => g.id == gid);
+    if (!ger) return '';
+    const vp = mk.prijzen?.[gid] || ger.verkoopprijs || 0;
+    const inkoop = vp > 0 ? (ger.kostprijs / vp * 100) : null;
+    const kleur = inkoop === null ? 'var(--muted)' : inkoop <= 35 ? 'var(--green)' : inkoop <= 50 ? '#c4a060' : 'var(--danger)';
+    return `<tr>
+      <td><strong>${ger.naam}</strong></td>
+      <td style="color:var(--muted);font-size:13px">${ger.categorie||'—'}</td>
+      ${kanFinancieelZien() ? `<td class="mono">€ ${ger.kostprijs.toFixed(2).replace('.',',')}</td>
+      <td class="mono">€ ${vp ? vp.toFixed(2).replace('.',',') : '—'}</td>
+      <td class="mono" style="color:${kleur};font-weight:700">${inkoop !== null ? inkoop.toFixed(1)+'%' : '—'}</td>` : ''}
+      <td style="text-align:right">
+        ${!isReadOnly() ? `<button class="btn btn-primary" onclick="openFinModal(gerechten.findIndex(g=>g.id==${gid}),event)" style="padding:4px 10px;font-size:10px;margin-right:4px">💰 Prijs instellen</button>` :
+          kanFinancieelZien() ? `<button class="btn btn-ghost" onclick="openFinView(gerechten.findIndex(g=>g.id==${gid}),event)" style="padding:4px 10px;font-size:10px;margin-right:4px">💰 Prijsoverzicht</button>` : ''}
+        <button class="btn btn-ghost" onclick="openGerDetail(gerechten.findIndex(g=>g.id==${gid}))" style="padding:4px 10px;font-size:10px">Bekijken</button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  // Gerechten toevoegen sectie (alleen admin)
+  const addSection = !isReadOnly() ? `
+    <div class="panel" style="margin-top:18px">
+      <div class="panel-title">Gerechten beheren</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;max-height:300px;overflow-y:auto;padding:4px 0">
+        ${gerechten.map((ger,i) => {
+          const actief = mk.gerechten.includes(ger.id);
+          return `<label style="display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--border);border-radius:2px;cursor:pointer;background:${actief?'#fdf0f0':'var(--surface)'}">
+            <input type="checkbox" ${actief?'checked':''} onchange="toggleGerInMk(${mk.id},${ger.id})">
+            <span style="font-size:13px">${ger.naam}</span>
+          </label>`;
+        }).join('')}
+      </div>
+    </div>` : '';
+
+  document.getElementById('mk-detail-content').innerHTML = `
+    <div class="detail-header" style="margin-bottom:20px">
+      <div>
+        <div class="detail-title">${mk.naam}</div>
+        ${mk.omschrijving ? `<div style="font-size:13px;color:var(--muted);margin-top:4px">${mk.omschrijving}</div>` : ''}
+      </div>
+      ${!isReadOnly() ? `<div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="openMkModal(${idx})">✎ Bewerken</button>
+        <button class="btn btn-ghost" onclick="openRecepturenModal(${idx})">📋 Recepturen</button>
+        <button class="btn btn-ghost" onclick="openInkooplijstModal(${idx})">🛒 Bestellijst</button>
+      </div>` : `<div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="openInkooplijstModal(${idx})">🛒 Bestellijst</button>
+      </div>`}
+    </div>
+    <div class="scrollable">
+      <table>
+        <thead><tr>
+          <th>Gerecht</th><th>Categorie</th>
+          ${kanFinancieelZien() ? '<th>Kostprijs</th><th>Verkoopprijs</th><th>Inkoop%</th>' : ''}
+          <th></th>
+        </tr></thead>
+        <tbody>${rows || `<tr><td colspan="6" style="text-align:center;color:var(--muted);font-style:italic;padding:20px">Nog geen gerechten toegevoegd</td></tr>`}</tbody>
+      </table>
+    </div>
+    ${addSection}`;
+
+  document.getElementById('mk-overview').style.display = 'none';
+  document.getElementById('mk-detail').classList.add('open');
+  history.pushState({ page: 'menukaart', detail: 'mk', idx }, '', '#menukaart-detail-'+idx);
+}
+
+// ── Financieel modal ──────────────────────────────────────────────────────────
+let finGerIdx = -1;
+let finSaveTimer = null;
+
+function openFinModal(idx, e) {
+  if (e) e.stopPropagation();
+  if (idx < 0 || idx >= gerechten.length) return;
+  finGerIdx = idx;
+  const ger = gerechten[idx];
+  document.getElementById('fin-modal-title').textContent = 'Prijs instellen — ' + ger.naam;
+  document.getElementById('fin-kostprijs').textContent = '€ ' + ger.kostprijs.toFixed(2).replace('.',',');
+  document.getElementById('fin-waste-pct').value = ger.waste || 0;
+  document.getElementById('fin-doelmarge').value = ger.doelmarge || 30;
+  const btw = document.getElementById('fin-btw');
+  btw.value = ger.btw || '9';
+  const vpIncl = ger.verkoopprijs ? ger.verkoopprijs * (1 + (parseFloat(ger.btw)||9)/100) : '';
+  document.getElementById('fin-vp-incl-input').value = vpIncl ? vpIncl.toFixed(2) : '';
+  document.getElementById('fin-vp').value = ger.verkoopprijs || '';
+  updateFinVanIncl();
+  openModal('modal-fin');
+}
+
+function openFinView(idx, e) {
+  if (e) e.stopPropagation();
+  // Chef mag alleen bekijken — open als read-only (zelfde modal, knop opslaan verbergen)
+  openFinModal(idx, e);
+  document.getElementById('fin-modal-title').textContent = 'Prijsoverzicht — ' + gerechten[idx]?.naam;
+}
+
+function updateFinVanIncl() {
+  const btw = parseFloat(document.getElementById('fin-btw')?.value) || 9;
+  const incl = parseFloat(document.getElementById('fin-vp-incl-input')?.value) || 0;
+  const excl = incl > 0 ? incl / (1 + btw/100) : 0;
+  const btwBedrag = incl - excl;
+  document.getElementById('fin-vp-excl-display').textContent = excl > 0 ? '€ ' + excl.toFixed(2).replace('.',',') : '—';
+  document.getElementById('fin-btw-bedrag').textContent = btwBedrag > 0 ? '€ ' + btwBedrag.toFixed(2).replace('.',',') : '—';
+  document.getElementById('fin-vp').value = excl > 0 ? excl.toFixed(4) : '';
+  if (finGerIdx >= 0) {
+    const kp = gerechten[finGerIdx]?.kostprijs || 0;
+    const waste = parseFloat(document.getElementById('fin-waste-pct')?.value) || 0;
+    const kpMet = kp * (1 + waste/100);
+    document.getElementById('fin-kp-met-waste').textContent = waste > 0 ? '€ ' + kpMet.toFixed(2).replace('.',',') : '—';
+    const doelPct = parseFloat(document.getElementById('fin-doelmarge')?.value) || 30;
+    document.getElementById('fin-doelmarge-label').textContent = 'Doel: ' + doelPct + '%';
+    if (excl > 0) {
+      const inkoop = kpMet / excl * 100;
+      const kleur = inkoop <= doelPct ? 'var(--green)' : inkoop <= doelPct+15 ? '#c4a060' : 'var(--danger)';
+      document.getElementById('fin-marge-pct').textContent = inkoop.toFixed(1) + '%';
+      document.getElementById('fin-marge-pct').style.color = kleur;
+      document.getElementById('fin-marge-bar').style.width = Math.min(inkoop,100) + '%';
+      document.getElementById('fin-advies').innerHTML = inkoop <= doelPct
+        ? `<span style="color:var(--green);font-weight:700">✓ Binnen doelstelling</span>`
+        : `<span style="color:var(--danger);font-weight:700">⚠ Boven doelinkooppercentage</span>`;
+    } else {
+      document.getElementById('fin-marge-pct').textContent = '—';
+      document.getElementById('fin-marge-bar').style.width = '0%';
+      document.getElementById('fin-advies').innerHTML = '';
+    }
+  }
+}
+
+function autoSaveFin() {
+  clearTimeout(finSaveTimer);
+  finSaveTimer = setTimeout(async () => { await flushFin(); }, 1200);
+}
+
+async function saveFinancieel() {
+  clearTimeout(finSaveTimer);
+  await flushFin();
+  renderGerCards();
+  if (openGerDetailIdx >= 0) openGerDetail(openGerDetailIdx);
+  if (openMkDetailIdx >= 0) openMkDetail(openMkDetailIdx);
+  closeModal('modal-fin');
+  toast('Prijs opgeslagen');
+}
+
 // (renderMkOverview does not auto-refresh detail to avoid infinite loop with toggleGer)
 // Re-apply chef restrictions after render
 function postRenderChef() { if (isReadOnly()) applyChefRestrictions(); }
+
+// ── Menukaart detail ──────────────────────────────────────────────────────────
+function openMkDetail(idx) {
+  if (idx < 0 || idx >= menukaarten.length) return;
+  openMkDetailIdx = idx;
+  const mk = menukaarten[idx];
+  const isChef = isReadOnly();
+
+  const rows = mk.gerechten.map(gid => {
+    const ger = gerechten.find(g => g.id == gid);
+    if (!ger) return '';
+    const vp = mk.prijzen?.[gid] || ger.verkoopprijs || 0;
+    const inkoop = vp > 0 ? (ger.kostprijs / vp * 100) : null;
+    const kleur = inkoop === null ? 'var(--muted)' : inkoop <= 35 ? 'var(--green)' : inkoop <= 50 ? '#c4a060' : 'var(--danger)';
+    const gerIdx = gerechten.indexOf(ger);
+    return `<tr>
+      <td><strong style="cursor:pointer;color:var(--red);text-decoration:underline;text-underline-offset:2px" onclick="closeDetail('mk');setTimeout(()=>openGerDetail(${gerIdx}),100)">${ger.naam}</strong></td>
+      <td style="color:var(--muted);font-size:13px">${ger.categorie||'—'}</td>
+      ${kanFinancieelZien() ? `<td class="mono">€ ${ger.kostprijs.toFixed(2).replace('.',',')}</td>
+      <td><input type="number" value="${vp||''}" placeholder="0,00" min="0" step="0.50" style="width:90px;height:30px;font-size:13px" onchange="setMkPrijs('${mk.id}','${gid}',this.value)"></td>
+      <td class="mono" style="color:${kleur};font-weight:700" id="mk-marge-${gid}">${inkoop !== null ? inkoop.toFixed(1)+'%' : '—'}</td>` : ''}
+      ${!isChef ? `<td><button class="btn btn-danger" onclick="toggleGerInMk('${mk.id}','${gid}')">✕</button></td>` : '<td></td>'}
+    </tr>`;
+  }).join('');
+
+  // Gerechten die nog niet in de menukaart zitten (alleen admin)
+  const beschikbaar = !isChef ? gerechten.filter(g => !mk.gerechten.includes(g.id)).map((g, i) => {
+    const gIdx = gerechten.indexOf(g);
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 12px;border-bottom:1px solid #ede8df">
+      <span style="font-size:13px">${g.naam} <span style="color:var(--muted);font-size:11px">${g.categorie||''}</span></span>
+      <button class="btn btn-ghost" style="font-size:11px;padding:3px 10px" onclick="toggleGerInMk('${mk.id}','${g.id}')">+ Toevoegen</button>
+    </div>`;
+  }).join('') : '';
+
+  document.getElementById('mk-detail-content').innerHTML = `
+    <div class="detail-header" style="margin-bottom:20px">
+      <div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:4px">Menukaart</div>
+        <div class="detail-title">${mk.naam}</div>
+        ${mk.omschrijving ? `<div style="font-size:13px;color:var(--muted);margin-top:6px">${mk.omschrijving}</div>` : ''}
+      </div>
+      ${!isChef ? `<div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="openMkModal(${idx})">✎ Bewerken</button>
+        <button class="btn btn-ghost" onclick="openRecepturenModal(${idx})">📋 Recepturen</button>
+        <button class="btn btn-ghost" onclick="openInkooplijstModal(${idx})">🛒 Bestellijst</button>
+      </div>` : `<div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="openRecepturenModal(${idx})">📋 Recepturen</button>
+        <button class="btn btn-ghost" onclick="openInkooplijstModal(${idx})">🛒 Bestellijst</button>
+      </div>`}
+    </div>
+    <div class="panel">
+      <div class="panel-title">Gerechten (${mk.gerechten.length})</div>
+      ${mk.gerechten.length ? `<div class="scrollable"><table>
+        <thead><tr>
+          <th>Naam</th><th>Categorie</th>
+          ${kanFinancieelZien() ? '<th>Kostprijs</th><th>Menukaartprijs</th><th>Inkoop %</th>' : ''}
+          <th></th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>` : '<div style="padding:16px;color:var(--muted);font-style:italic">Nog geen gerechten toegevoegd</div>'}
+    </div>
+    ${!isChef && beschikbaar ? `<div class="panel" style="margin-top:16px">
+      <div class="panel-title">Gerecht toevoegen</div>
+      <div style="max-height:240px;overflow-y:auto;border:1px solid var(--border);border-radius:2px">${beschikbaar || '<div style="padding:12px;color:var(--muted);font-style:italic;font-size:13px">Alle gerechten staan al in deze menukaart</div>'}</div>
+    </div>` : ''}
+  `;
+
+  document.getElementById('mk-overview').style.display = 'none';
+  document.getElementById('mk-detail').classList.add('open');
+  history.pushState({ page: 'menukaart', detail: 'mk', idx }, '', '#menukaart-detail-' + idx);
+}
+
+// ── Financieel modal (prijs instellen per gerecht) ────────────────────────────
+let _finGerIdx = -1;
+
+function openFinModal(gerIdx, e) {
+  if (e) e.stopPropagation();
+  _finGerIdx = gerIdx;
+  const ger = gerechten[gerIdx];
+  document.getElementById('fin-modal-title').textContent = 'Prijs instellen — ' + ger.naam;
+  document.getElementById('fin-kostprijs').textContent = '€ ' + ger.kostprijs.toFixed(2).replace('.', ',');
+  document.getElementById('fin-waste-pct').value = ger.waste || 0;
+  document.getElementById('fin-doelmarge').value = ger.doelmarge || 30;
+  const btw = ger.btw || 9;
+  document.getElementById('fin-btw').value = btw;
+  const vpIncl = ger.verkoopprijs ? (ger.verkoopprijs * (1 + btw / 100)) : '';
+  document.getElementById('fin-vp-incl-input').value = vpIncl ? vpIncl.toFixed(2) : '';
+  updateFinVanIncl();
+  openModal('modal-fin');
+}
+
+function openFinView(gerIdx, e) {
+  if (e) e.stopPropagation();
+  openFinModal(gerIdx, e);
+  // Zet modal in readonly modus voor chef
+  document.querySelector('#modal-fin .btn-primary').style.display = isReadOnly() ? 'none' : '';
+}
+
+function updateFinVanIncl() {
+  const vpIncl = parseFloat(document.getElementById('fin-vp-incl-input').value) || 0;
+  const btw = parseFloat(document.getElementById('fin-btw').value) || 9;
+  const gerIdx = _finGerIdx;
+  const ger = gerIdx >= 0 ? gerechten[gerIdx] : null;
+  const waste = parseFloat(document.getElementById('fin-waste-pct').value) || 0;
+  const kp = ger ? ger.kostprijs * (1 + waste / 100) : 0;
+  const doelInkoop = parseFloat(document.getElementById('fin-doelmarge').value) || 30;
+
+  const vpExcl = vpIncl / (1 + btw / 100);
+  const btwBedrag = vpIncl - vpExcl;
+  document.getElementById('fin-vp-excl-display').textContent = vpExcl > 0 ? '€ ' + vpExcl.toFixed(2).replace('.', ',') : '—';
+  document.getElementById('fin-btw-bedrag').textContent = btwBedrag > 0 ? '€ ' + btwBedrag.toFixed(2).replace('.', ',') : '—';
+  document.getElementById('fin-vp').value = vpExcl.toFixed(4);
+  document.getElementById('fin-kp-met-waste').textContent = waste > 0 ? '€ ' + kp.toFixed(2).replace('.', ',') : '—';
+  document.getElementById('fin-doelmarge-label').textContent = 'Doel: ' + doelInkoop + '%';
+
+  const inkoop = vpExcl > 0 ? (kp / vpExcl * 100) : null;
+  document.getElementById('fin-marge-pct').textContent = inkoop !== null ? inkoop.toFixed(1) + '%' : '—';
+  const bar = document.getElementById('fin-marge-bar');
+  if (bar) { bar.style.width = Math.min(inkoop || 0, 100) + '%'; bar.style.background = inkoop <= doelInkoop ? 'var(--green)' : inkoop <= doelInkoop + 15 ? '#c4a060' : 'var(--danger)'; }
+  const advies = document.getElementById('fin-advies');
+  if (advies) {
+    if (!vpIncl) { advies.innerHTML = ''; return; }
+    const ok = inkoop !== null && inkoop <= doelInkoop;
+    advies.style.background = ok ? '#d4edda' : '#fff3cd';
+    advies.style.color = ok ? '#155724' : '#856404';
+    advies.innerHTML = ok ? `✅ Inkoop% (${inkoop.toFixed(1)}%) ligt binnen doel (${doelInkoop}%)` : `⚠️ Inkoop% (${inkoop !== null ? inkoop.toFixed(1) : '—'}%) ligt boven doel (${doelInkoop}%). Minimale VP excl. BTW: € ${kp > 0 ? (kp / (doelInkoop / 100)).toFixed(2).replace('.', ',') : '—'}`;
+  }
+}
+
+let _finAutoSaveTimer = null;
+function autoSaveFin() {
+  clearTimeout(_finAutoSaveTimer);
+  _finAutoSaveTimer = setTimeout(() => { /* auto-save indien gewenst */ }, 1500);
+}
+
+async function saveFinancieel() {
+  const gerIdx = _finGerIdx;
+  if (gerIdx < 0) return;
+  const ger = gerechten[gerIdx];
+  const vp = parseFloat(document.getElementById('fin-vp').value) || 0;
+  const btw = parseFloat(document.getElementById('fin-btw').value) || 9;
+  const waste = parseFloat(document.getElementById('fin-waste-pct').value) || 0;
+  const doelmarge = parseFloat(document.getElementById('fin-doelmarge').value) || 30;
+  snapshot('Verkoopprijs gewijzigd');
+  ger.verkoopprijs = vp;
+  ger.btw = btw;
+  ger.waste = waste;
+  ger.doelmarge = doelmarge;
+  await sbSaveGer(ger);
+  renderGerCards();
+  if (openGerDetailIdx >= 0) openGerDetail(openGerDetailIdx);
+  if (openMkDetailIdx >= 0) openMkDetail(openMkDetailIdx);
+  closeModal('modal-fin');
+  toast('Prijs opgeslagen');
+}
 
 function filterRecepturen() {
   const q   = (document.getElementById('hf-search')?.value || '').toLowerCase();
@@ -3216,6 +3514,41 @@ function filterGerechten() {
 }
 
 let _recepturenMkIdx = -1;
+
+function openRecepturenModal(mkIdx) {
+  _recepturenMkIdx = mkIdx;
+  const mk = menukaarten[mkIdx];
+  document.getElementById('recepturen-modal-title').textContent = '📋 Recepturen — ' + mk.naam;
+  const lijst = document.getElementById('recepturen-lijst');
+  if (!mk.gerechten.length) { lijst.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-style:italic">Geen gerechten in deze menukaart</div>'; }
+  else {
+    lijst.innerHTML = mk.gerechten.map(gid => {
+      const ger = gerechten.find(g => g.id == gid); if (!ger) return '';
+      const compIng = (ger.compIng||[]).map(c => { const src = ingredienten.find(x=>x.id==c.sourceId); return `<tr><td style="padding:4px 8px;font-size:12px">${src?.naam||'—'}</td><td style="padding:4px 8px;font-size:12px;font-family:monospace">${c.hoeveelheid} ${c.eenheid}</td></tr>`; }).join('');
+      const compHf = (ger.compHf||[]).map(c => { const src = recepturen.find(x=>x.id==c.sourceId); return `<tr><td style="padding:4px 8px;font-size:12px"><em style="color:var(--red)">${src?.naam||'—'}</em> <span style="font-size:10px;color:var(--muted)">(REC)</span></td><td style="padding:4px 8px;font-size:12px;font-family:monospace">${c.hoeveelheid} ${c.eenheid}</td></tr>`; }).join('');
+      return `<div style="margin-bottom:20px;border:1px solid var(--border);border-radius:2px;overflow:hidden">
+        <div style="background:var(--surface2);padding:10px 14px;font-weight:700;font-family:'Libre Baskerville',serif">${ger.naam} <span style="font-size:11px;color:var(--muted);font-family:'Source Sans 3',sans-serif;font-weight:400">${ger.porties} portie${ger.porties>1?'s':''}</span></div>
+        <table style="width:100%;border-collapse:collapse"><thead><tr><th style="padding:6px 8px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);text-align:left">Ingrediënt/Receptuur</th><th style="padding:6px 8px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);text-align:left">Hoeveelheid</th></tr></thead><tbody>${compIng}${compHf}</tbody></table>
+      </div>`;
+    }).join('');
+  }
+  openModal('modal-recepturen');
+}
+
+function printRecepturen() {
+  const mkIdx = _recepturenMkIdx;
+  if (mkIdx < 0) return;
+  const mk = menukaarten[mkIdx];
+  const win = window.open('', '_recepturen_print');
+  const body = mk.gerechten.map(gid => {
+    const ger = gerechten.find(g => g.id == gid); if (!ger) return '';
+    const rows = [...(ger.compIng||[]).map(c => { const src=ingredienten.find(x=>x.id==c.sourceId); return `<tr><td>${src?.naam||'—'}</td><td>${c.hoeveelheid} ${c.eenheid}</td></tr>`; }), ...(ger.compHf||[]).map(c => { const src=recepturen.find(x=>x.id==c.sourceId); return `<tr><td><em>${src?.naam||'—'}</em> (rec)</td><td>${c.hoeveelheid} ${c.eenheid}</td></tr>`; })].join('');
+    return `<h2>${ger.naam} <small>${ger.porties} portie${ger.porties>1?'s':''}</small></h2><table><tr><th>Ingrediënt</th><th>Hoeveelheid</th></tr>${rows}</table>`;
+  }).join('');
+  win.document.write(`<!DOCTYPE html><html><head><title>Recepturen ${mk.naam}</title><style>body{font-family:Arial,sans-serif;padding:20px;font-size:12px}h1{font-size:15px;margin-bottom:16px}h2{font-size:13px;margin:14px 0 4px;border-bottom:1px solid #ccc;padding-bottom:4px}small{font-size:11px;color:#666;font-weight:400}table{width:100%;border-collapse:collapse;margin-bottom:8px}th{text-align:left;font-size:10px;text-transform:uppercase;color:#888;padding:3px 6px;border-bottom:1px solid #ddd}td{padding:3px 6px;border-bottom:1px solid #f0f0f0}</style></head><body><h1>📋 Recepturen — ${mk.naam}</h1>${body}</body></html>`);
+  win.document.close();
+  setTimeout(() => win.print(), 400);
+}
 
 
 // ══════════════════════════════════════════════════════════════════════════════
