@@ -146,7 +146,7 @@
 
   /* MARGE BAR */
   .marge-bar { height: 6px; background: #e8e0d4; border-radius: 3px; overflow: hidden; margin-top: 8px; }
-  .marge-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--danger), #c4a060, var(--green)); transition: width 0.3s; }
+  .marge-fill { height: 100%; border-radius: 3px; background: var(--green); transition: width 0.3s, background 0.3s; }
 
   /* MENUKAART */
   .menukaart-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px; margin-bottom: 28px; }
@@ -303,6 +303,7 @@
     </div>
     <div style="display:flex;gap:8px">
       <button class="btn btn-ghost" id="ing-import-btn" onclick="openIngImportModal()" style="display:none">📥 VHC Importeren</button>
+      <button class="btn btn-ghost" onclick="openInOneImportModal()">📋 InOne importeren</button>
       <button class="btn btn-primary" onclick="openIngModal()">+ Toevoegen</button>
     </div>
   </div>
@@ -670,20 +671,31 @@
     <!-- Verborgen veld -->
     <input type="hidden" id="fin-vp">
 
-    <!-- Inkoop% indicator -->
-    <div style="margin:16px 0">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <!-- Inkoop kleurenbalk -->
+    <div style="margin:16px 0" id="fin-advies">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
         <span style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">Inkoop %</span>
-        <span style="font-family:'Courier Prime',monospace;font-size:18px;font-weight:700" id="fin-marge-pct">—</span>
+        <span style="font-family:'Courier Prime',monospace;font-size:20px;font-weight:700" id="fin-marge-pct">—</span>
       </div>
-      <div class="marge-bar"><div class="marge-fill" id="fin-marge-bar" style="width:0%"></div></div>
-      <div style="display:flex;justify-content:space-between;margin-top:4px">
-        <span style="font-size:10px;color:var(--muted)">0%</span>
-        <span id="fin-doelmarge-label" style="font-size:10px;color:var(--muted)">Doel: 30%</span>
-        <span style="font-size:10px;color:var(--muted)">100%</span>
+      <div id="fin-kleurenbalk-wrap" style="display:none">
+        <div style="position:relative;height:32px;border-radius:6px;overflow:visible;margin-bottom:8px;background:linear-gradient(to right, #2e7d32 0%, #66bb6a 25%, #ffca28 45%, #ef6c00 65%, #c62828 100%);">
+          <!-- Doelstreep -->
+          <div id="fin-doel-streep" style="position:absolute;top:-5px;bottom:-5px;width:3px;background:rgba(255,255,255,0.95);border-radius:2px;box-shadow:0 0 5px rgba(0,0,0,0.35)"></div>
+          <!-- Huidige inkoop marker -->
+          <div id="fin-inkoop-marker" style="position:absolute;top:50%;transform:translate(-50%,-50%);width:22px;height:22px;border-radius:50%;background:white;border:3px solid #333;box-shadow:0 2px 8px rgba(0,0,0,0.3);transition:left 0.3s ease"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+          <span style="font-size:10px;font-weight:700;color:var(--green)">✓ Goed</span>
+          <span id="fin-doelmarge-label" style="font-size:10px;color:var(--muted)">Doel: 30%</span>
+          <span style="font-size:10px;font-weight:700;color:var(--danger)">✗ Slecht</span>
+        </div>
+        <div style="margin-top:8px;padding:8px 12px;border-radius:3px;background:var(--surface2)">
+          <span id="fin-advies-tekst" style="font-size:12px;font-weight:600;color:var(--text)"></span>
+        </div>
       </div>
+      <!-- Lege staat -->
+      <div id="fin-balk-leeg" style="height:6px;background:var(--surface2);border-radius:3px"><div id="fin-marge-bar" style="display:none"></div></div>
     </div>
-    <div style="padding:12px 16px;border-radius:2px;margin-bottom:4px" id="fin-advies"></div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('modal-fin')">Annuleren</button>
       <button class="btn btn-primary" onclick="saveFinancieel()">Opslaan</button>
@@ -923,6 +935,44 @@
     <div class="modal-actions">
       <button class="btn btn-ghost" id="inkoop-terug-btn" onclick="toonAdminInkoopOverzicht()" style="display:none">← Overzicht</button>
       <button class="btn btn-ghost" onclick="sluitInkoopModal()">Sluiten</button>
+    </div>
+  </div>
+</div>
+
+<!-- INONE IMPORT MODAL -->
+<div class="modal-overlay" id="modal-inone-import">
+  <div class="modal" style="width:580px;max-height:90vh;display:flex;flex-direction:column">
+    <div class="modal-title">📋 InOne Importeren</div>
+
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6">
+      Plak hieronder de tekst vanuit InOne. Ingrediënten worden automatisch aangemaakt of bijgewerkt op basis van naam.
+    </div>
+
+    <!-- Leverancier selectie -->
+    <div class="input-group" style="margin-bottom:16px">
+      <label>Leverancier</label>
+      <select id="inone-leverancier" style="height:38px">
+        <option>Bokall</option><option>VHC</option><option>Lindenhoff</option>
+        <option>Kroket en Co</option><option>Dynamite Cookies</option>
+        <option>Bawykov</option><option>Van Driessenfood</option>
+        <option>Femke Patissier</option><option>Schmidt Zeevis</option><option>Overig</option>
+      </select>
+    </div>
+
+    <!-- Plak tekst veld -->
+    <div style="margin-bottom:16px;flex:1;display:flex;flex-direction:column">
+      <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-light);margin-bottom:8px">InOne tekst plakken</div>
+      <textarea id="inone-tekst" placeholder="Plak hier de InOne tekst…&#10;&#10;Voorbeeld:&#10;Boter neutraal rol dun 700 gr.&#10;€ 8,42 per Stuks&#10;22202&#10;Aantal&#10;Stuks&#10;&#10;Achterham lindenhoff dik gesn.250gr&#10;€ 9,15 per Stuks&#10;19405&#10;Aantal&#10;Stuks"
+        style="flex:1;min-height:200px;background:#faf7f2;border:1px solid var(--border);border-radius:2px;color:var(--text);font-family:'Source Sans 3',sans-serif;font-size:13px;padding:10px 12px;outline:none;resize:vertical;line-height:1.6;transition:border-color 0.2s"
+        onfocus="this.style.borderColor='var(--red)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+    </div>
+
+    <!-- Resultaat weergave -->
+    <div id="inone-resultaat" style="display:none;margin-bottom:16px;max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:2px;background:#fafaf8"></div>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-inone-import')">Annuleren</button>
+      <button class="btn btn-primary" onclick="verwerkInOneTekst()">📥 Importeren</button>
     </div>
   </div>
 </div>
@@ -1185,7 +1235,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // SUPABASE CONFIG
 // ══════════════════════════════════════════════════════════════════════════════
-const APP_VERSION = 'v1.4.0';
+const APP_VERSION = 'v1.5.0';
 const SUPABASE_URL = 'https://mfexgibreooozqozzcow.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mZXhnaWJyZW9vb3pxb3p6Y293Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NzI2NjIsImV4cCI6MjA5MDA0ODY2Mn0.ufKbZhtfakH7TqA8SYAmw4NPnVLR96WjS5FmLmZn528';
 
@@ -2567,6 +2617,157 @@ function recalcModal(containerId) {
   recalcModalDisplay(containerId);
 }
 
+// INONE IMPORT
+function openInOneImportModal() {
+  document.getElementById('inone-tekst').value = '';
+  document.getElementById('inone-resultaat').style.display = 'none';
+  document.getElementById('inone-resultaat').innerHTML = '';
+  document.getElementById('modal-inone-import').classList.add('open');
+}
+
+function parseInOneTekst(tekst) {
+  // Elke product-blok heeft het patroon:
+  // Naam
+  // € X,XX per Eenheid
+  // SKU (getal)
+  // Aantal
+  // Eenheid
+  const regels = tekst.split('\n').map(r => r.trim()).filter(r => r.length > 0);
+  const producten = [];
+  let i = 0;
+
+  function inoneEenheidNaarApp(str) {
+    const s = (str || '').toLowerCase().trim();
+    if (s === 'kg' || s === 'kilogram') return 'kg';
+    if (s === 'gram' || s === 'gr' || s === 'g') return 'g';
+    if (s === 'liter' || s === 'l') return 'liter';
+    if (s === 'ml' || s === 'milliliter') return 'ml';
+    return 'stuk'; // stuks, stuk, piece, etc.
+  }
+
+  while (i < regels.length) {
+    // Zoek naar een prijsregel: begint met € en bevat 'per'
+    if (/^€\s*[\d,.]+\s+per\s+/i.test(regels[i])) {
+      // De naam staat op de regel daarvoor
+      const naam = i > 0 ? regels[i - 1] : null;
+      if (!naam || /^€/.test(naam) || /^\d+$/.test(naam) || naam.toLowerCase() === 'aantal') {
+        i++; continue;
+      }
+      // Parse prijs
+      const prijsMatch = regels[i].match(/€\s*([\d,.]+)/);
+      const prijs = prijsMatch ? parseFloat(prijsMatch[1].replace(',', '.')) : null;
+      // Parse eenheid uit "per Stuks" / "per Kg" etc.
+      const eenheidMatch = regels[i].match(/per\s+(\S+)/i);
+      const eenheid = inoneEenheidNaarApp(eenheidMatch ? eenheidMatch[1] : 'stuk');
+      if (prijs !== null) {
+        producten.push({ naam, prijs, eenheid });
+      }
+      i++;
+    } else {
+      i++;
+    }
+  }
+  return producten;
+}
+
+async function verwerkInOneTekst() {
+  const tekst = document.getElementById('inone-tekst').value.trim();
+  if (!tekst) { toast('Plak eerst een InOne tekst'); return; }
+  const leverancier = document.getElementById('inone-leverancier').value;
+  const producten = parseInOneTekst(tekst);
+
+  if (!producten.length) {
+    toast('Geen producten herkend in de tekst');
+    return;
+  }
+
+  const toegevoegd = [];
+  const geupdate = [];
+  const fouten = [];
+
+  for (const product of producten) {
+    try {
+      // Zoek bestaand ingredient op naam (case-insensitive)
+      const bestaandIdx = ingredienten.findIndex(i =>
+        i.naam.toLowerCase().trim() === product.naam.toLowerCase().trim()
+      );
+
+      if (bestaandIdx >= 0) {
+        const bestaand = ingredienten[bestaandIdx];
+        const oudePrijs = bestaand.prijs;
+        if (oudePrijs !== product.prijs) {
+          await savePrijsHistorie(bestaand.id, bestaand.naam, oudePrijs, product.prijs);
+          const bijgewerkt = { ...bestaand, prijs: product.prijs };
+          ingredienten[bestaandIdx] = bijgewerkt;
+          await sbSaveIng(bijgewerkt);
+          geupdate.push({ naam: product.naam, oud: oudePrijs, nieuw: product.prijs });
+        }
+        // Prijs is hetzelfde — niets doen
+      } else {
+        // Nieuw ingredient aanmaken
+        const nieuw = {
+          naam: product.naam,
+          categorie: leverancier,
+          leverancier: leverancier,
+          eenheid: product.eenheid,
+          prijs: product.prijs,
+          sverlies: 0,
+          spieknaam: '',
+          productCategorie: '',
+          id: Date.now() + Math.floor(Math.random() * 1000)
+        };
+        ingredienten.push(nieuw);
+        await sbSaveIng(nieuw);
+        toegevoegd.push(product.naam);
+      }
+    } catch(e) {
+      console.error('Fout bij verwerken product:', product.naam, e);
+      fouten.push(product.naam);
+    }
+  }
+
+  renderIngredienten();
+
+  // Resultaat tonen
+  const resultaat = document.getElementById('inone-resultaat');
+  resultaat.style.display = 'block';
+
+  let html = '';
+
+  if (toegevoegd.length) {
+    html += `<div style="padding:10px 14px;border-bottom:1px solid var(--border);background:#f0faf4">
+      <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#1a7a45;margin-bottom:6px">✅ ${toegevoegd.length} nieuw toegevoegd</div>
+      ${toegevoegd.map(n => `<div style="font-size:13px;padding:3px 0;color:var(--text)">+ ${n}</div>`).join('')}
+    </div>`;
+  }
+
+  if (geupdate.length) {
+    html += `<div style="padding:10px 14px;border-bottom:1px solid var(--border);background:#fff8f0">
+      <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#b06000;margin-bottom:6px">🔄 ${geupdate.length} prijs bijgewerkt</div>
+      ${geupdate.map(g => `<div style="font-size:13px;padding:3px 0;color:var(--text);display:flex;justify-content:space-between"><span>${g.naam}</span><span style="font-family:'Courier Prime',monospace;color:var(--muted)">€ ${g.oud.toFixed(2).replace('.',',')} → <strong style="color:var(--red)">€ ${g.nieuw.toFixed(2).replace('.',',')}</strong></span></div>`).join('')}
+    </div>`;
+  }
+
+  if (!toegevoegd.length && !geupdate.length && !fouten.length) {
+    html += `<div style="padding:14px;text-align:center;color:var(--muted);font-style:italic;font-size:13px">Alle prijzen waren al up-to-date — niets gewijzigd.</div>`;
+  }
+
+  if (fouten.length) {
+    html += `<div style="padding:10px 14px;background:#fff5f5">
+      <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#900;margin-bottom:6px">⚠️ ${fouten.length} mislukt</div>
+      ${fouten.map(n => `<div style="font-size:13px;padding:3px 0;color:var(--danger)">✕ ${n}</div>`).join('')}
+    </div>`;
+  }
+
+  resultaat.innerHTML = html;
+
+  const totaal = toegevoegd.length + geupdate.length;
+  const msg = totaal === 0
+    ? 'Alles was al up-to-date'
+    : `${toegevoegd.length > 0 ? toegevoegd.length + ' toegevoegd' : ''}${toegevoegd.length && geupdate.length ? ', ' : ''}${geupdate.length > 0 ? geupdate.length + ' bijgewerkt' : ''}`;
+  toast('InOne import: ' + msg, false);
+}
+
 // INGREDIËNTEN
 function openIngModal(idx=-1) {
   editIngIdx=idx;
@@ -3184,76 +3385,6 @@ function renderMkOverview() {
 }
 
 // ── Menukaart detail ─────────────────────────────────────────────────────────
-function openMkDetail(idx) {
-  if (idx < 0 || idx >= menukaarten.length) return;
-  openMkDetailIdx = idx;
-  const mk = menukaarten[idx];
-  const rows = mk.gerechten.map(gid => {
-    const ger = gerechten.find(g => g.id == gid);
-    if (!ger) return '';
-    const vp = mk.prijzen?.[gid] || ger.verkoopprijs || 0;
-    const inkoop = vp > 0 ? (ger.kostprijs / vp * 100) : null;
-    const kleur = inkoop === null ? 'var(--muted)' : inkoop <= 35 ? 'var(--green)' : inkoop <= 50 ? '#c4a060' : 'var(--danger)';
-    return `<tr>
-      <td><strong>${ger.naam}</strong></td>
-      <td style="color:var(--muted);font-size:13px">${ger.categorie||'—'}</td>
-      ${kanFinancieelZien() ? `<td class="mono">€ ${ger.kostprijs.toFixed(2).replace('.',',')}</td>
-      <td class="mono">€ ${vp ? vp.toFixed(2).replace('.',',') : '—'}</td>
-      <td class="mono" style="color:${kleur};font-weight:700">${inkoop !== null ? inkoop.toFixed(1)+'%' : '—'}</td>` : ''}
-      <td style="text-align:right">
-        ${!isReadOnly() ? `<button class="btn btn-primary" onclick="openFinModal(gerechten.findIndex(g=>g.id==${gid}),event)" style="padding:4px 10px;font-size:10px;margin-right:4px">💰 Prijs instellen</button>` :
-          kanFinancieelZien() ? `<button class="btn btn-ghost" onclick="openFinView(gerechten.findIndex(g=>g.id==${gid}),event)" style="padding:4px 10px;font-size:10px;margin-right:4px">💰 Prijsoverzicht</button>` : ''}
-        <button class="btn btn-ghost" onclick="openGerDetail(gerechten.findIndex(g=>g.id==${gid}))" style="padding:4px 10px;font-size:10px">Bekijken</button>
-      </td>
-    </tr>`;
-  }).join('');
-
-  // Gerechten toevoegen sectie (alleen admin)
-  const addSection = !isReadOnly() ? `
-    <div class="panel" style="margin-top:18px">
-      <div class="panel-title">Gerechten beheren</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;max-height:300px;overflow-y:auto;padding:4px 0">
-        ${gerechten.map((ger,i) => {
-          const actief = mk.gerechten.includes(ger.id);
-          return `<label style="display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--border);border-radius:2px;cursor:pointer;background:${actief?'#fdf0f0':'var(--surface)'}">
-            <input type="checkbox" ${actief?'checked':''} onchange="toggleGerInMk(${mk.id},${ger.id})">
-            <span style="font-size:13px">${ger.naam}</span>
-          </label>`;
-        }).join('')}
-      </div>
-    </div>` : '';
-
-  document.getElementById('mk-detail-content').innerHTML = `
-    <div class="detail-header" style="margin-bottom:20px">
-      <div>
-        <div class="detail-title">${mk.naam}</div>
-        ${mk.omschrijving ? `<div style="font-size:13px;color:var(--muted);margin-top:4px">${mk.omschrijving}</div>` : ''}
-      </div>
-      ${!isReadOnly() ? `<div style="display:flex;gap:8px">
-        <button class="btn btn-ghost" onclick="openMkModal(${idx})">✎ Bewerken</button>
-        <button class="btn btn-ghost" onclick="openRecepturenModal(${idx})">📋 Recepturen</button>
-        <button class="btn btn-ghost" onclick="openInkooplijstModal(${idx})">🛒 Bestellijst</button>
-      </div>` : `<div style="display:flex;gap:8px">
-        <button class="btn btn-ghost" onclick="openInkooplijstModal(${idx})">🛒 Bestellijst</button>
-      </div>`}
-    </div>
-    <div class="scrollable">
-      <table>
-        <thead><tr>
-          <th>Gerecht</th><th>Categorie</th>
-          ${kanFinancieelZien() ? '<th>Kostprijs</th><th>Verkoopprijs</th><th>Inkoop%</th>' : ''}
-          <th></th>
-        </tr></thead>
-        <tbody>${rows || `<tr><td colspan="6" style="text-align:center;color:var(--muted);font-style:italic;padding:20px">Nog geen gerechten toegevoegd</td></tr>`}</tbody>
-      </table>
-    </div>
-    ${addSection}`;
-
-  document.getElementById('mk-overview').style.display = 'none';
-  document.getElementById('mk-detail').classList.add('open');
-  history.pushState({ page: 'menukaart', detail: 'mk', idx }, '', '#menukaart-detail-'+idx);
-}
-
 // ── Financieel modal ──────────────────────────────────────────────────────────
 let finGerIdx = -1;
 let finSaveTimer = null;
@@ -3304,9 +3435,8 @@ function updateFinVanIncl() {
       document.getElementById('fin-marge-pct').textContent = inkoop.toFixed(1) + '%';
       document.getElementById('fin-marge-pct').style.color = kleur;
       document.getElementById('fin-marge-bar').style.width = Math.min(inkoop,100) + '%';
-      document.getElementById('fin-advies').innerHTML = inkoop <= doelPct
-        ? `<span style="color:var(--green);font-weight:700">✓ Binnen doelstelling</span>`
-        : `<span style="color:var(--danger);font-weight:700">⚠ Boven doelinkooppercentage</span>`;
+      document.getElementById('fin-marge-bar').style.background = inkoop <= doelPct ? 'var(--green)' : inkoop <= doelPct+15 ? '#c4a060' : 'var(--danger)';
+      document.getElementById('fin-advies').innerHTML = '';
     } else {
       document.getElementById('fin-marge-pct').textContent = '—';
       document.getElementById('fin-marge-bar').style.width = '0%';
@@ -3335,37 +3465,109 @@ async function saveFinancieel() {
 function postRenderChef() { if (isReadOnly()) applyChefRestrictions(); }
 
 // ── Menukaart detail ──────────────────────────────────────────────────────────
+const MK_CAT_VOLGORDE = ['Amuse','Voorgerecht','Tussengerecht','Hoofdgerecht','Dessert','Drank','Ontbijt','Lunch','Overig'];
+
+function mkDetailRows(mk) {
+  const categorieMap = {};
+  mk.gerechten.forEach(gid => {
+    const ger = gerechten.find(g => g.id == gid);
+    if (!ger) return;
+    const cat = ger.categorie || 'Overig';
+    if (!categorieMap[cat]) categorieMap[cat] = [];
+    categorieMap[cat].push({ ger, gid });
+  });
+  const gesorteerd = Object.keys(categorieMap).sort((a, b) => {
+    const ia = MK_CAT_VOLGORDE.indexOf(a), ib = MK_CAT_VOLGORDE.indexOf(b);
+    if (ia === -1 && ib === -1) return a.localeCompare(b);
+    if (ia === -1) return 1; if (ib === -1) return -1;
+    return ia - ib;
+  });
+  const isChef = isReadOnly();
+  const colSpan = kanFinancieelZien() ? 5 : 2;
+  return gesorteerd.map(cat => {
+    const items = categorieMap[cat];
+    const gerRows = items.map(({ ger, gid }) => {
+      const vp = ger.verkoopprijs || 0;
+      const vpIncl = vp > 0 ? (vp * (1 + (parseFloat(ger.btw)||9)/100)) : 0;
+      const inkoop = vp > 0 ? (ger.kostprijs / vp * 100) : null;
+      const kleur = inkoop === null ? 'var(--muted)' : inkoop <= 35 ? 'var(--green)' : inkoop <= 50 ? '#c4a060' : 'var(--danger)';
+      const gerIdx = gerechten.indexOf(ger);
+      return `<tr>
+        <td style="padding-left:28px">
+          <strong style="cursor:pointer;color:var(--red);text-decoration:underline;text-underline-offset:2px"
+            onclick="closeDetail('mk');setTimeout(()=>openGerDetail(${gerIdx}),100)">${ger.naam}</strong>
+        </td>
+        ${kanFinancieelZien() ? `
+        <td class="mono" style="color:var(--muted)">€ ${ger.kostprijs.toFixed(2).replace('.',',')}</td>
+        <td class="mono" style="font-weight:700">${vpIncl > 0 ? '€ ' + vpIncl.toFixed(2).replace('.',',') : '<span style="color:var(--muted)">—</span>'}</td>
+        <td class="mono" style="color:${kleur};font-weight:700">${inkoop !== null ? inkoop.toFixed(1)+'%' : '—'}</td>` : ''}
+        <td style="text-align:right">
+          ${!isChef ? `<button class="btn btn-danger" onclick="toggleGerInMk('${mk.id}','${gid}')" style="font-size:11px;padding:3px 8px" title="Verwijderen">✕</button>` : ''}
+        </td>
+      </tr>`;
+    }).join('');
+    return `<tr style="background:#faf7f2">
+      <td colspan="${colSpan}" style="padding:9px 14px;border-top:2px solid var(--border)">
+        <span style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--red)">${cat}</span>
+        <span style="font-size:11px;color:var(--muted);margin-left:8px">${items.length} ${items.length===1?'gerecht':'gerechten'}</span>
+      </td>
+    </tr>${gerRows}`;
+  }).join('');
+}
+
+function mkZoekInput(mkId) {
+  // Render de zoekbalk + dropdown voor gerechten toevoegen
+  setTimeout(() => {
+    const input = document.getElementById('mk-zoek-input');
+    const dropdown = document.getElementById('mk-zoek-dropdown');
+    if (!input || !dropdown) return;
+    const mk = menukaarten.find(m => m.id == mkId);
+    if (!mk) return;
+
+    function toonDropdown(q) {
+      const beschikbaar = gerechten.filter(g =>
+        !mk.gerechten.includes(g.id) &&
+        (!q || g.naam.toLowerCase().includes(q.toLowerCase()))
+      );
+      if (!q && !beschikbaar.length) { dropdown.style.display = 'none'; return; }
+      if (!beschikbaar.length) {
+        dropdown.innerHTML = '<div style="padding:10px 14px;color:var(--muted);font-style:italic;font-size:13px">Geen gerechten gevonden</div>';
+      } else {
+        dropdown.innerHTML = beschikbaar.map(g => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid #ede8df;gap:12px">
+            <div>
+              <span style="font-size:13px;font-weight:600">${g.naam}</span>
+              <span style="font-size:11px;color:var(--muted);margin-left:6px">${g.categorie||''}</span>
+            </div>
+            <button class="btn btn-primary" style="padding:4px 12px;font-size:11px;white-space:nowrap"
+              onclick="mkVoegToe('${mkId}','${g.id}')">+ Toevoegen</button>
+          </div>`).join('');
+      }
+      dropdown.style.display = 'block';
+    }
+
+    input.addEventListener('input', () => toonDropdown(input.value));
+    input.addEventListener('focus', () => { if (input.value) toonDropdown(input.value); });
+    document.addEventListener('click', function handler(e) {
+      if (!e.target.closest('#mk-zoek-wrap')) {
+        dropdown.style.display = 'none';
+        // keep handler for later focus events
+      }
+    }, { passive: true });
+  }, 50);
+}
+
+async function mkVoegToe(mkId, gerId) {
+  // toggleGerInMk roept zelf openMkDetail aan — herrender incl. zoekbalk reset
+  await toggleGerInMk(mkId, gerId);
+}
+
 function openMkDetail(idx) {
   if (idx < 0 || idx >= menukaarten.length) return;
   openMkDetailIdx = idx;
   const mk = menukaarten[idx];
   const isChef = isReadOnly();
-
-  const rows = mk.gerechten.map(gid => {
-    const ger = gerechten.find(g => g.id == gid);
-    if (!ger) return '';
-    const vp = mk.prijzen?.[gid] || ger.verkoopprijs || 0;
-    const inkoop = vp > 0 ? (ger.kostprijs / vp * 100) : null;
-    const kleur = inkoop === null ? 'var(--muted)' : inkoop <= 35 ? 'var(--green)' : inkoop <= 50 ? '#c4a060' : 'var(--danger)';
-    const gerIdx = gerechten.indexOf(ger);
-    return `<tr>
-      <td><strong style="cursor:pointer;color:var(--red);text-decoration:underline;text-underline-offset:2px" onclick="closeDetail('mk');setTimeout(()=>openGerDetail(${gerIdx}),100)">${ger.naam}</strong></td>
-      <td style="color:var(--muted);font-size:13px">${ger.categorie||'—'}</td>
-      ${kanFinancieelZien() ? `<td class="mono">€ ${ger.kostprijs.toFixed(2).replace('.',',')}</td>
-      <td><input type="number" value="${vp||''}" placeholder="0,00" min="0" step="0.50" style="width:90px;height:30px;font-size:13px" onchange="setMkPrijs('${mk.id}','${gid}',this.value)"></td>
-      <td class="mono" style="color:${kleur};font-weight:700" id="mk-marge-${gid}">${inkoop !== null ? inkoop.toFixed(1)+'%' : '—'}</td>` : ''}
-      ${!isChef ? `<td><button class="btn btn-danger" onclick="toggleGerInMk('${mk.id}','${gid}')">✕</button></td>` : '<td></td>'}
-    </tr>`;
-  }).join('');
-
-  // Gerechten die nog niet in de menukaart zitten (alleen admin)
-  const beschikbaar = !isChef ? gerechten.filter(g => !mk.gerechten.includes(g.id)).map((g, i) => {
-    const gIdx = gerechten.indexOf(g);
-    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 12px;border-bottom:1px solid #ede8df">
-      <span style="font-size:13px">${g.naam} <span style="color:var(--muted);font-size:11px">${g.categorie||''}</span></span>
-      <button class="btn btn-ghost" style="font-size:11px;padding:3px 10px" onclick="toggleGerInMk('${mk.id}','${g.id}')">+ Toevoegen</button>
-    </div>`;
-  }).join('') : '';
+  const rows = mkDetailRows(mk);
 
   document.getElementById('mk-detail-content').innerHTML = `
     <div class="detail-header" style="margin-bottom:20px">
@@ -3374,31 +3576,46 @@ function openMkDetail(idx) {
         <div class="detail-title">${mk.naam}</div>
         ${mk.omschrijving ? `<div style="font-size:13px;color:var(--muted);margin-top:6px">${mk.omschrijving}</div>` : ''}
       </div>
-      ${!isChef ? `<div style="display:flex;gap:8px">
-        <button class="btn btn-ghost" onclick="openMkModal(${idx})">✎ Bewerken</button>
+      <div style="display:flex;gap:8px">
+        ${!isChef ? `<button class="btn btn-ghost" onclick="openMkModal(${idx})">✎ Bewerken</button>` : ''}
         <button class="btn btn-ghost" onclick="openRecepturenModal(${idx})">📋 Recepturen</button>
         <button class="btn btn-ghost" onclick="openInkooplijstModal(${idx})">🛒 Bestellijst</button>
-      </div>` : `<div style="display:flex;gap:8px">
-        <button class="btn btn-ghost" onclick="openRecepturenModal(${idx})">📋 Recepturen</button>
-        <button class="btn btn-ghost" onclick="openInkooplijstModal(${idx})">🛒 Bestellijst</button>
-      </div>`}
+      </div>
     </div>
+
+    ${!isChef ? `
+    <div id="mk-zoek-wrap" style="position:relative;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="position:relative;flex:1">
+          <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;pointer-events:none">🔍</span>
+          <input id="mk-zoek-input" type="text" placeholder="Gerecht zoeken om toe te voegen…"
+            style="padding-left:36px;width:100%;height:38px;background:#faf7f2;border:1px solid var(--border);border-radius:2px;font-family:'Source Sans 3',sans-serif;font-size:14px;color:var(--text);outline:none;box-sizing:border-box"
+            onfocus="this.style.borderColor='var(--red)';this.style.boxShadow='0 0 0 2px rgba(156,21,21,0.08)'"
+            onblur="this.style.borderColor='var(--border)';this.style.boxShadow='none'">
+        </div>
+      </div>
+      <div id="mk-zoek-dropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:2px;box-shadow:0 8px 24px rgba(44,31,20,0.12);z-index:200;max-height:260px;overflow-y:auto"></div>
+    </div>` : ''}
+
     <div class="panel">
       <div class="panel-title">Gerechten (${mk.gerechten.length})</div>
       ${mk.gerechten.length ? `<div class="scrollable"><table>
         <thead><tr>
-          <th>Naam</th><th>Categorie</th>
-          ${kanFinancieelZien() ? '<th>Kostprijs</th><th>Menukaartprijs</th><th>Inkoop %</th>' : ''}
+          <th style="padding-left:28px">Gerecht</th>
+          ${kanFinancieelZien() ? '<th>Kostprijs / portie</th><th>Verkoopprijs incl. BTW</th><th>Inkoop %</th>' : ''}
           <th></th>
         </tr></thead>
         <tbody>${rows}</tbody>
-      </table></div>` : '<div style="padding:16px;color:var(--muted);font-style:italic">Nog geen gerechten toegevoegd</div>'}
+      </table></div>` : '<div style="padding:24px;color:var(--muted);font-style:italic;text-align:center">Gebruik de zoekbalk hierboven om gerechten toe te voegen</div>'}
     </div>
-    ${!isChef && beschikbaar ? `<div class="panel" style="margin-top:16px">
-      <div class="panel-title">Gerecht toevoegen</div>
-      <div style="max-height:240px;overflow-y:auto;border:1px solid var(--border);border-radius:2px">${beschikbaar || '<div style="padding:12px;color:var(--muted);font-style:italic;font-size:13px">Alle gerechten staan al in deze menukaart</div>'}</div>
-    </div>` : ''}
   `;
+
+  if (!isChef) mkZoekInput(mk.id);
+
+  document.getElementById('mk-overview').style.display = 'none';
+  document.getElementById('mk-detail').classList.add('open');
+  history.pushState({ page: 'menukaart', detail: 'mk', idx }, '', '#menukaart-detail-' + idx);
+}
 
   document.getElementById('mk-overview').style.display = 'none';
   document.getElementById('mk-detail').classList.add('open');
@@ -3452,13 +3669,45 @@ function updateFinVanIncl() {
   document.getElementById('fin-marge-pct').textContent = inkoop !== null ? inkoop.toFixed(1) + '%' : '—';
   const bar = document.getElementById('fin-marge-bar');
   if (bar) { bar.style.width = Math.min(inkoop || 0, 100) + '%'; bar.style.background = inkoop <= doelInkoop ? 'var(--green)' : inkoop <= doelInkoop + 15 ? '#c4a060' : 'var(--danger)'; }
-  const advies = document.getElementById('fin-advies');
-  if (advies) {
-    if (!vpIncl) { advies.innerHTML = ''; return; }
-    const ok = inkoop !== null && inkoop <= doelInkoop;
-    advies.style.background = ok ? '#d4edda' : '#fff3cd';
-    advies.style.color = ok ? '#155724' : '#856404';
-    advies.innerHTML = ok ? `✅ Inkoop% (${inkoop.toFixed(1)}%) ligt binnen doel (${doelInkoop}%)` : `⚠️ Inkoop% (${inkoop !== null ? inkoop.toFixed(1) : '—'}%) ligt boven doel (${doelInkoop}%). Minimale VP excl. BTW: € ${kp > 0 ? (kp / (doelInkoop / 100)).toFixed(2).replace('.', ',') : '—'}`;
+  // Kleurenbalk bijwerken
+  const balkWrap = document.getElementById('fin-kleurenbalk-wrap');
+  const balkLeeg = document.getElementById('fin-balk-leeg');
+  const marker = document.getElementById('fin-inkoop-marker');
+  const doelStreep = document.getElementById('fin-doel-streep');
+  const adviestekst = document.getElementById('fin-advies-tekst');
+  if (!balkWrap) return;
+  if (!vpIncl || inkoop === null) {
+    balkWrap.style.display = 'none';
+    if (balkLeeg) balkLeeg.style.display = 'block';
+    return;
+  }
+  balkWrap.style.display = 'block';
+  if (balkLeeg) balkLeeg.style.display = 'none';
+  // Positie marker: 0% = links (0%), 100% = rechts (100% inkoop of meer)
+  // We tonen 0–80% bereik op de balk, alles daarboven is helemaal rechts
+  const maxBalk = 80;
+  const markerPct = Math.min(inkoop, maxBalk) / maxBalk * 100;
+  marker.style.left = markerPct + '%';
+  // Doelstreep positie
+  const doelPct = Math.min(doelInkoop, maxBalk) / maxBalk * 100;
+  doelStreep.style.left = doelPct + '%';
+  // Markerkleur op basis van inkoop vs doel
+  const diff = inkoop - doelInkoop;
+  if (diff <= 0) {
+    marker.style.borderColor = '#2e7d32';
+  } else if (diff <= 10) {
+    marker.style.borderColor = '#ef6c00';
+  } else {
+    marker.style.borderColor = '#c62828';
+  }
+  // Advies tekst
+  if (diff <= 0) {
+    adviestekst.style.color = 'var(--green)';
+    adviestekst.textContent = `✅ ${inkoop.toFixed(1)}% — binnen doel (${doelInkoop}%)`;
+  } else {
+    const minVP = kp > 0 ? (kp / (doelInkoop / 100)) : 0;
+    adviestekst.style.color = 'var(--danger)';
+    adviestekst.textContent = `⚠️ ${inkoop.toFixed(1)}% — min. VP excl. € ${minVP.toFixed(2).replace('.', ',')}`;
   }
 }
 
