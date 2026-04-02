@@ -2700,8 +2700,24 @@ function openInOneImportModal() {
 }
 
 async function inoneAiOpschonen() {
+  const statusEl = document.getElementById('inone-ai-status');
   const tekst = document.getElementById('inone-tekst').value.trim();
-  if (!tekst) { toast('Plak eerst een InOne tekst om op te schonen'); return; }
+  if (!tekst) { statusEl.innerHTML = '<span style="color:var(--danger)">✗ Plak eerst InOne tekst</span>'; return; }
+  statusEl.innerHTML = '<span style="color:var(--muted)">⏳ AI verwerkt tekst...</span>';
+  try {
+    const res = await fetch(SUPABASE_URL + '/functions/v1/ai-proxy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY },
+      body: JSON.stringify({ tekst })
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) { statusEl.innerHTML = '<span style="color:var(--danger)">✗ ' + (data.error || 'Fout') + '</span>'; return; }
+    const producten = data.producten;
+    window._inoneAiProducten = producten;
+    document.getElementById('inone-resultaat').innerHTML = '<div style="margin-top:12px">' + producten.map(p => '<div style="padding:6px 10px;border-bottom:1px solid var(--border);font-size:13px;display:flex;justify-content:space-between"><span>' + p.naam + '</span><span style="font-family:monospace;color:var(--red)">€ ' + (p.prijs_per_kg||p.prijs_per_verpakking).toFixed(4).replace('.',',') + '/kg</span></div>').join('') + '</div>';
+    statusEl.innerHTML = '<span style="color:var(--green)">✓ ' + producten.length + ' producten gevonden — klik Importeren</span>';
+  } catch(e) { statusEl.innerHTML = '<span style="color:var(--danger)">✗ ' + e.message + '</span>'; }
+}
 
   const btn = document.getElementById('inone-ai-btn');
   const statusEl = document.getElementById('inone-ai-status');
