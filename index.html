@@ -898,7 +898,7 @@
 <!-- INKOOPLIJST IJZEREN VOORRAAD MODAL -->
 <!-- INKOOPLIJST MODAL -->
 <div class="modal-overlay" id="modal-inkooplijst">
-  <div class="modal" style="width:720px;max-height:90vh;display:flex;flex-direction:column">
+  <div class="modal" style="width:860px;max-height:92vh;display:flex;flex-direction:column">
     <div class="modal-title" id="inkoop-modal-title">🛒 Bestellijst</div>
 
     <!-- ADMIN: overzicht van alle chefs voor deze menukaart -->
@@ -912,17 +912,23 @@
 
     <!-- FORMULIER: invullen van de lijst -->
     <div id="inkoop-formulier" style="display:none;flex:1;min-height:0;flex-direction:column">
-      <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-shrink:0">
+      <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:10px;flex-shrink:0">
         <div id="inkoop-eigenaar-label" style="font-size:12px;color:var(--muted)"></div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span id="inkoop-autosave-label" style="font-size:11px;color:var(--muted)"></span>
+          <button class="btn btn-ghost" onclick="printDigitaleInkooplijst()" id="inkoop-print-inline">🖨️ Printen</button>
+          <button class="btn btn-primary" onclick="slaInkooplijstOp()" id="inkoop-opslaan-inline">💾 Opslaan</button>
+        </div>
       </div>
       <input type="hidden" id="inkoop-naam">
-      <!-- Knoppen binnen het formulier -->
-      <div style="display:flex;gap:8px;margin-bottom:12px;flex-shrink:0;align-items:center">
-        <button class="btn btn-primary" onclick="slaInkooplijstOp()" id="inkoop-opslaan-inline">💾 Opslaan</button>
-        <button class="btn btn-ghost" onclick="printDigitaleInkooplijst()" id="inkoop-print-inline" style="display:none">🖨️ Printen</button>
-        <span id="inkoop-autosave-label" style="font-size:11px;color:var(--muted);margin-left:4px"></span>
+      <!-- Legenda boven de lijst -->
+      <div style="display:grid;grid-template-columns:1fr 110px 80px 34px;gap:6px;align-items:center;padding:5px 12px;background:var(--surface2);border:1px solid var(--border);border-bottom:none;border-radius:2px 2px 0 0;flex-shrink:0">
+        <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)">Ingredient</div>
+        <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);text-align:center">IJzervoorraad</div>
+        <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);text-align:center">Te bestellen</div>
+        <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);text-align:center">✓</div>
       </div>
-      <div style="flex:1;overflow-y:auto;border:1px solid var(--border);border-radius:2px;min-height:0">
+      <div style="flex:1;overflow-y:auto;border:1px solid var(--border);border-radius:0 0 2px 2px;min-height:0">
         <div id="inkoop-items-lijst"></div>
       </div>
     </div>
@@ -4027,12 +4033,9 @@ function openInkoopFormulier(lijst, forUserId, forUserNaam) {
   document.getElementById('inkoop-admin-overzicht').style.display = 'none';
   document.getElementById('inkoop-formulier').style.cssText = 'display:flex;flex:1;min-height:0;flex-direction:column';
   document.getElementById('inkoop-terug-btn').style.display = isAdmin() ? '' : 'none';
-  // Inline knoppen resetten
   const inlineOpslaanBtn = document.getElementById('inkoop-opslaan-inline');
-  const inlinePrintBtn = document.getElementById('inkoop-print-inline');
-  if (inlineOpslaanBtn) inlineOpslaanBtn.textContent = '💾 Opslaan';
-  if (inlinePrintBtn) inlinePrintBtn.style.display = lijst ? '' : 'none';
   const autosaveLabel = document.getElementById('inkoop-autosave-label');
+  if (inlineOpslaanBtn) inlineOpslaanBtn.textContent = '💾 Opslaan';
   if (autosaveLabel) autosaveLabel.textContent = lijst ? 'Eerder opgeslagen' : '';
   document.getElementById('inkoop-id').value = lijst?.id || '';
   document.getElementById('inkoop-for-user-id').value = forUserId || currentUser?.id || '';
@@ -4042,7 +4045,6 @@ function openInkoopFormulier(lijst, forUserId, forUserNaam) {
   const standaardNaam = (mk?.naam || 'Menukaart') + ' - Bestellijst';
   document.getElementById('inkoop-naam').value = lijst?.naam || standaardNaam;
 
-  // Toon eigenaar label (admin ziet voor wie)
   const eigenaarLabel = document.getElementById('inkoop-eigenaar-label');
   if (isAdmin() && forUserNaam) {
     eigenaarLabel.innerHTML = 'Lijst van: <strong style="color:var(--red)">' + forUserNaam + '</strong>';
@@ -4057,10 +4059,6 @@ function laadInkoopItems(mkId, bestaandeItems) {
   const mk = menukaarten.find(m => String(m.id) === String(mkId));
   if (!mk) return;
 
-  const catVolgorde = ['Vlees & Gevogelte','Vis & Zeevruchten','Groenten','Fruit',
-    'Zuivel & Kaas','Aardappels & Granen','Sauzen & Soepen','Bakkerij & Brood',
-    'Kruiden & Specerijen','Borrelhappen & Snacks','Patisserie & Dessert','Overig'];
-
   const ingMap = new Map();
   const inMk = mk.gerechten.map(id => gerechten.find(g => g.id == id)).filter(Boolean);
 
@@ -4073,7 +4071,7 @@ function laadInkoopItems(mkId, bestaandeItems) {
     comps.forEach(cc => {
       if (cc.sourceType === 'ing') {
         const i = ingredienten.find(x => x.id == cc.sourceId);
-        if (i) map.set(String(i.id), i);
+        if (i) ingMap.set(String(i.id), i);
       } else if (cc.sourceType === 'hf') {
         voegIngToeInMap(cc.sourceId, map, bezocht);
       }
@@ -4085,26 +4083,42 @@ function laadInkoopItems(mkId, bestaandeItems) {
     (ger.compHf||[]).forEach(c => voegIngToeInMap(c.sourceId, ingMap));
   });
 
-  const items = [...ingMap.values()].sort((a,b) => {
-    const ca = catVolgorde.indexOf(getProductCategorie(a));
-    const cb = catVolgorde.indexOf(getProductCategorie(b));
-    return ca !== cb ? ca - cb : (a.spieknaam||a.naam).localeCompare(b.spieknaam||b.naam);
+  // Sorteer: VHC eerst, dan rest gesorteerd per leverancier alfab, binnen leverancier op naam
+  const alleItems = [...ingMap.values()];
+  const vhcItems = alleItems.filter(i => (i.leverancier||'Overig') === 'VHC').sort((a,b) => (a.spieknaam||a.naam).localeCompare(b.spieknaam||b.naam));
+  const overigItems = alleItems.filter(i => (i.leverancier||'Overig') !== 'VHC').sort((a,b) => {
+    const levCmp = (a.leverancier||'Overig').localeCompare(b.leverancier||'Overig');
+    return levCmp !== 0 ? levCmp : (a.spieknaam||a.naam).localeCompare(b.spieknaam||b.naam);
   });
+  const gesorteerd = [...vhcItems, ...overigItems];
 
-  let huidigeCat = '';
-  document.getElementById('inkoop-items-lijst').innerHTML = items.map(ing => {
-    const cat = getProductCategorie(ing);
+  let huidigeLev = '';
+  document.getElementById('inkoop-items-lijst').innerHTML = gesorteerd.map(ing => {
+    const lev = ing.leverancier || 'Overig';
     const bestaand = (bestaandeItems||[]).find(b => String(b.id) === String(ing.id)) || {};
-    let catHeader = '';
-    if (cat !== huidigeCat) {
-      huidigeCat = cat;
-      catHeader = `<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--red);background:var(--surface2);padding:6px 14px;border-bottom:1px solid var(--border)">${cat}</div>`;
+    let levHeader = '';
+    if (lev !== huidigeLev) {
+      huidigeLev = lev;
+      const isVhc = lev === 'VHC';
+      levHeader = `<div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+        color:${isVhc ? '#fff' : 'var(--red)'};
+        background:${isVhc ? '#8B1C1C' : 'var(--surface2)'};
+        padding:5px 12px;border-bottom:1px solid var(--border);
+        ${!isVhc ? 'border-top:2px solid var(--border);' : ''}">${lev}</div>`;
     }
-    return catHeader + `<div style="display:grid;grid-template-columns:1fr 160px;gap:8px;align-items:center;padding:5px 14px;border-bottom:1px solid #ede8df">
+    const checked = bestaand.ingevuld ? 'checked' : '';
+    return levHeader + `<div style="display:grid;grid-template-columns:1fr 110px 80px 34px;gap:6px;align-items:center;padding:4px 12px;border-bottom:1px solid #ede8df">
       <div style="font-size:13px;color:#1a1a1a">${ing.spieknaam || ing.naam}</div>
-      <div>
-        <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:2px">IJzervoorraad</div>
-        <input type="text" data-id="${ing.id}" data-field="ijzervoorraad" value="${bestaand.ijzervoorraad||''}" placeholder="bv. 2 kg" style="width:100%;height:28px;font-size:12px" oninput="scheduleInkoopAutosave()">
+      <input type="text" data-id="${ing.id}" data-field="ijzervoorraad" value="${bestaand.ijzervoorraad||''}" placeholder="bv. 2 kg"
+        style="width:100%;height:26px;font-size:12px;text-align:center" oninput="scheduleInkoopAutosave()">
+      <input type="text" data-id="${ing.id}" data-field="te_bestellen" value="${bestaand.te_bestellen||''}" placeholder="—"
+        style="width:100%;height:26px;font-size:12px;text-align:center" oninput="scheduleInkoopAutosave()">
+      <div style="display:flex;justify-content:center">
+        <div data-id="${ing.id}" data-field="ingevuld" data-checked="${bestaand.ingevuld ? '1' : '0'}"
+          onclick="toggleInkoopVinkje(this)"
+          style="width:22px;height:22px;border:2px solid #bbb;border-radius:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;background:#fff;transition:all 0.15s">
+          ${bestaand.ingevuld ? '<span style="color:#2a7a3b">✓</span>' : ''}
+        </div>
       </div>
     </div>`;
   }).join('');
@@ -4124,7 +4138,12 @@ async function slaInkooplijstOp(silent = false) {
     if (!itemsMap[id]) itemsMap[id] = { id };
     itemsMap[id][inp.dataset.field] = inp.value.trim();
   });
-  const items = Object.values(itemsMap).filter(i => i.ijzervoorraad);
+  document.querySelectorAll('#inkoop-items-lijst [data-field="ingevuld"]').forEach(el => {
+    const id = el.dataset.id;
+    if (!itemsMap[id]) itemsMap[id] = { id };
+    itemsMap[id].ingevuld = el.dataset.checked === '1';
+  });
+  const items = Object.values(itemsMap).filter(i => i.ijzervoorraad || i.te_bestellen || i.ingevuld);
 
   const data = {
     naam, menukaart_id: mkId, menukaart_naam: mk?.naam || '',
@@ -4133,7 +4152,6 @@ async function slaInkooplijstOp(silent = false) {
   };
 
   const label = document.getElementById('inkoop-autosave-label');
-  const inlinePrint = document.getElementById('inkoop-print-inline');
   const inlineOpslaan = document.getElementById('inkoop-opslaan-inline');
   const tijd = new Date().toLocaleTimeString('nl-NL', {hour:'2-digit', minute:'2-digit'});
 
@@ -4149,19 +4167,26 @@ async function slaInkooplijstOp(silent = false) {
         document.getElementById('inkoop-id').value = res[0].id;
       }
     }
-    if (inlinePrint) inlinePrint.style.display = '';
     if (inlineOpslaan) inlineOpslaan.textContent = '💾 Opgeslagen ✓';
     if (label) label.textContent = 'Opgeslagen om ' + tijd;
     if (!silent) toast('Bestellijst opgeslagen');
   } catch(e) {
-    // Offline — alleen lokaal opgeslagen
     if (inlineOpslaan) inlineOpslaan.textContent = '💾 Lokaal opgeslagen';
     if (label) label.textContent = '⚠️ Offline — lokaal opgeslagen om ' + tijd;
-    if (!silent) toast('Offline opgeslagen — wordt gesynchroniseerd als je online bent');
+    if (!silent) toast('Offline opgeslagen');
   }
 }
 
-let _inkoopAutosaveTimer = null;
+function toggleInkoopVinkje(el) {
+  const isNuAan = el.dataset.checked === '1';
+  el.dataset.checked = isNuAan ? '0' : '1';
+  el.innerHTML = isNuAan ? '' : '<span style="color:#2a7a3b">✓</span>';
+  el.style.borderColor = isNuAan ? '#bbb' : '#2a7a3b';
+  el.style.background = isNuAan ? '#fff' : '#f0faf3';
+  scheduleInkoopAutosave();
+}
+
+
 
 function scheduleInkoopAutosave() {
   const label = document.getElementById('inkoop-autosave-label');
@@ -4209,7 +4234,12 @@ function printDigitaleInkooplijst() {
     if (!itemsMap[id]) itemsMap[id] = { id };
     itemsMap[id][inp.dataset.field] = inp.value.trim();
   });
-  _printInkooplijstData({ naam, menukaart_naam: mk?.naam || '', user_naam: forUserNaam, datum: new Date().toISOString(), items: Object.values(itemsMap) });
+  document.querySelectorAll('#inkoop-items-lijst [data-field="ingevuld"]').forEach(el => {
+    const id = el.dataset.id;
+    if (!itemsMap[id]) itemsMap[id] = { id };
+    itemsMap[id].ingevuld = el.dataset.checked === '1';
+  });
+  _printInkooplijstData({ naam, menukaart_id: mkId, menukaart_naam: mk?.naam || '', user_naam: forUserNaam, datum: new Date().toISOString(), items: Object.values(itemsMap) });
 }
 
 function _printInkooplijstData(lijst) {
@@ -4217,116 +4247,101 @@ function _printInkooplijstData(lijst) {
   const logoSrc = logoEl ? logoEl.src : '';
   const datum = new Date(lijst.datum).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
 
-  const catVolgorde = ['Vlees & Gevogelte','Vis & Zeevruchten','Groenten','Fruit',
-    'Zuivel & Kaas','Aardappels & Granen','Sauzen & Soepen','Bakkerij & Brood',
-    'Kruiden & Specerijen','Borrelhappen & Snacks','Patisserie & Dessert','Overig'];
-
-  // Verrijk items met ingrediëntinfo — ook zonder ingevulde ijzervoorraad
-  // Haal alle ingrediënten op die bij deze menukaart horen
+  // Verzamel alle ingrediënten van de menukaart
   const alleIngIds = new Set();
-  if (lijst.menukaart_id) {
-    const mk = menukaarten.find(m => m.id == lijst.menukaart_id);
-    if (mk) {
-      function voegIdToe(hfId, bezocht = new Set()) {
-        if (bezocht.has(hfId)) return;
-        bezocht.add(hfId);
-        const hf = recepturen.find(r => r.id == hfId);
-        if (!hf) return;
-        const comps = [...(hf.componenten||[]), ...(hf.compIng||[]), ...(hf.compHf||[])];
-        comps.forEach(cc => {
-          if (cc.sourceType === 'ing') alleIngIds.add(String(cc.sourceId));
-          else if (cc.sourceType === 'hf') voegIdToe(cc.sourceId, bezocht);
-        });
-      }
-      const inMk = mk.gerechten.map(id => gerechten.find(g => g.id == id)).filter(Boolean);
-      inMk.forEach(ger => {
-        (ger.compIng || []).forEach(c => alleIngIds.add(String(c.sourceId)));
-        (ger.compHf || []).forEach(c => voegIdToe(c.sourceId));
+  const mk = menukaarten.find(m => String(m.id) === String(lijst.menukaart_id));
+  if (mk) {
+    function voegIdToe(hfId, bezocht = new Set()) {
+      if (bezocht.has(hfId)) return; bezocht.add(hfId);
+      const hf = recepturen.find(r => r.id == hfId); if (!hf) return;
+      const comps = [...(hf.componenten||[]), ...(hf.compIng||[]), ...(hf.compHf||[])];
+      comps.forEach(cc => {
+        if (cc.sourceType === 'ing') alleIngIds.add(String(cc.sourceId));
+        else if (cc.sourceType === 'hf') voegIdToe(cc.sourceId, bezocht);
       });
     }
+    const inMk = mk.gerechten.map(id => gerechten.find(g => g.id == id)).filter(Boolean);
+    inMk.forEach(ger => {
+      (ger.compIng||[]).forEach(c => alleIngIds.add(String(c.sourceId)));
+      (ger.compHf||[]).forEach(c => voegIdToe(c.sourceId));
+    });
   }
 
-  // Bouw itemsMap: bestaande opgeslagen waarden + ontbrekende ingrediënten zonder waarde
   const itemsMap = new Map((lijst.items || []).map(i => [String(i.id), i]));
   alleIngIds.forEach(id => { if (!itemsMap.has(id)) itemsMap.set(id, { id }); });
 
   const ingevuld = [...itemsMap.values()].map(item => {
     const ing = ingredienten.find(i => String(i.id) === String(item.id));
-    return {
-      ...item,
+    return { ...item,
       naam: ing?.spieknaam || ing?.naam || ('id:' + item.id),
-      eenheid: ing?.eenheid || '',
-      cat: ing ? getProductCategorie(ing) : 'Overig',
       leverancier: ing?.leverancier || 'Overig'
     };
   });
 
   if (!ingevuld.length) { toast('Geen ingrediënten om te printen'); return; }
 
-  // Splits in VHC en de rest
-  const vhcItems = ingevuld
-    .filter(r => r.leverancier === 'VHC')
-    .sort((a, b) => {
-      const ca = catVolgorde.indexOf(a.cat), cb = catVolgorde.indexOf(b.cat);
-      return ca !== cb ? ca - cb : a.naam.localeCompare(b.naam);
-    });
+  const vhcItems = ingevuld.filter(r => r.leverancier === 'VHC').sort((a,b) => a.naam.localeCompare(b.naam));
+  const overigItems = ingevuld.filter(r => r.leverancier !== 'VHC').sort((a,b) => {
+    const lc = a.leverancier.localeCompare(b.leverancier);
+    return lc !== 0 ? lc : a.naam.localeCompare(b.naam);
+  });
 
-  const overigItems = ingevuld
-    .filter(r => r.leverancier !== 'VHC')
-    .sort((a, b) => {
-      const la = a.leverancier.localeCompare(b.leverancier);
-      return la !== 0 ? la : a.naam.localeCompare(b.naam);
-    });
+  function maakRij(item) {
+    const vinkje = item.ingevuld
+      ? '<div class="vakje gevuld">✓</div>'
+      : '<div class="vakje"></div>';
+    return `<div class="rij">
+      <div class="naam">${item.naam}</div>
+      <div class="ijzer">${item.ijzervoorraad || ''}</div>
+      <div class="bestel">${item.te_bestellen || ''}</div>
+      ${vinkje}
+    </div>`;
+  }
 
   function maakPagina(titel, items, toonLeverancier) {
     if (!items.length) return '';
+    // Splits in 2 kolommen (verticaal)
+    const helft = Math.ceil(items.length / 2);
+    const links = items.slice(0, helft);
+    const rechts = items.slice(helft);
 
-    // Verdeel items in 3 kolommen (verticaal gevuld)
-    const perKolom = Math.ceil(items.length / 3);
-    const kolommen = [
-      items.slice(0, perKolom),
-      items.slice(perKolom, perKolom * 2),
-      items.slice(perKolom * 2)
-    ];
-
-    const kolomHtml = kolommen.map(kolomItems => {
-      if (!kolomItems.length) return '<div class="kolom"></div>';
-      let huidigeCat = '';
+    function renderKolom(kolomItems) {
       let huidigeLev = '';
-      const rijen = kolomItems.map(item => {
+      return kolomItems.map(item => {
         let header = '';
-        if (toonLeverancier) {
-          // Niet-VHC: alleen leverancier als header
-          if (item.leverancier !== huidigeLev) {
-            huidigeLev = item.leverancier;
-            header += `<div class="lev-header">${huidigeLev}</div>`;
-          }
-        } else {
-          // VHC: alleen categorie headers
-          if (item.cat !== huidigeCat) {
-            huidigeCat = item.cat;
-            header += `<div class="cat-header">${item.cat}</div>`;
-          }
+        if (toonLeverancier && item.leverancier !== huidigeLev) {
+          huidigeLev = item.leverancier;
+          header = `<div class="lev-header">${huidigeLev}</div>`;
         }
-        return header + `<div class="rij">
-          <div class="ing-naam">${item.naam}</div>
-          <div class="ing-val">${item.ijzervoorraad}</div>
-          <div class="ing-vakje"></div>
-        </div>`;
+        return header + maakRij(item);
       }).join('');
-      return `<div class="kolom">${rijen}</div>`;
-    }).join('');
+    }
 
+    const subtitel = `${items.length} producten${lijst.user_naam ? ' · ' + lijst.user_naam : ''} · ${datum}`;
     return `<div class="pagina">
       <div class="header">
         ${logoSrc ? `<img src="${logoSrc}" class="logo">` : ''}
         <div class="hm">
           <div class="mkn">${lijst.menukaart_naam || ''}</div>
           <div class="catn">${titel}</div>
-          <div class="sub">${items.length} producten${lijst.user_naam ? ' · ' + lijst.user_naam : ''}</div>
+          <div class="sub">${subtitel}</div>
+        </div>
+        <div class="legenda">
+          <div class="leg-item"><span>IJzervoorraad</span><div class="leg-vak"></div></div>
+          <div class="leg-item"><span>Te bestellen</span><div class="leg-vak"></div></div>
+          <div class="leg-item"><span>Ingevoerd</span><div class="leg-vak"></div></div>
         </div>
       </div>
-      <div class="kolommen">${kolomHtml}</div>
+      <div class="kolom-header">
+        <div class="naam">Ingredient</div>
+        <div class="ijzer">IJzer</div>
+        <div class="bestel">Bestellen</div>
+        <div class="vakje-h">✓</div>
+      </div>
+      <div class="grid">
+        <div class="kolom">${renderKolom(links)}</div>
+        <div class="kolom">${renderKolom(rechts)}</div>
+      </div>
     </div>`;
   }
 
@@ -4338,32 +4353,51 @@ function _printInkooplijstData(lijst) {
   if (!paginas) { toast('Geen data om te printen'); return; }
 
   const html = `<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8">
-<title>Bestellijst — ${lijst.naam}</title>
+<title>Bestellijst — ${lijst.naam || lijst.menukaart_naam}</title>
 <style>
-@page{size:A4 portrait;margin:8mm;}
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:Arial,sans-serif;color:#1a1a1a;font-size:10px;}
-.pagina{width:100%;min-height:281mm;page-break-after:always;display:flex;flex-direction:column;}
-.pagina:last-child{page-break-after:avoid;}
-.header{display:grid;grid-template-columns:38px 1fr auto;align-items:center;gap:10px;border-bottom:2.5px solid #8B1C1C;padding-bottom:6px;margin-bottom:8px;flex-shrink:0;}
-.logo{width:34px;height:34px;object-fit:contain;}
-.mkn{font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#8B1C1C;margin-bottom:1px;}
-.catn{font-size:16px;font-weight:700;line-height:1;}
-.sub{font-size:9px;color:#888;margin-top:2px;}
-.legenda{display:flex;flex-direction:column;gap:3px;align-items:flex-end;}
-.leg-item{display:flex;align-items:center;gap:5px;font-size:9px;color:#888;}
-.leg-vakje{width:28px;height:13px;border:1px solid #999;border-radius:2px;flex-shrink:0;}
-.kolommen{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:0 8px;align-items:start;}
-.kolom{}
-.lev-header{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:white;background:#1a1a1a;padding:3px 5px;margin-top:5px;}
-.lev-header:first-child{margin-top:0;}
-.cat-header{font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#8B1C1C;background:#f0ebe3;padding:3px 5px;border-bottom:1px solid #ddd;}
-.rij{display:grid;grid-template-columns:1fr auto auto;gap:0;align-items:center;border-bottom:1px solid #ede8df;min-height:17px;}
-.ing-naam{padding:2px 4px 2px 5px;font-size:10px;color:#1a1a1a;line-height:1.2;}
-.ing-eenh{font-size:8px;color:#999;}
-.ing-val{padding:2px 4px;font-size:10px;font-weight:700;color:#1a1a1a;white-space:nowrap;min-width:28px;text-align:right;}
-.ing-vakje{width:24px;height:13px;border:1px solid #bbb;border-radius:2px;margin:2px 2px 2px 3px;flex-shrink:0;}
-@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
+@page { size: A4 portrait; margin: 8mm 10mm; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: Arial, sans-serif; color: #1a1a1a; font-size: 9.5px; background: #fff; }
+.pagina { width:100%; min-height:279mm; page-break-after:always; display:flex; flex-direction:column; }
+.pagina:last-child { page-break-after:avoid; }
+
+/* Header */
+.header { display:grid; grid-template-columns:36px 1fr auto; align-items:center; gap:10px; border-bottom:2.5px solid #8B1C1C; padding-bottom:6px; margin-bottom:6px; flex-shrink:0; }
+.logo { width:32px; height:32px; object-fit:contain; }
+.mkn { font-size:7px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#8B1C1C; margin-bottom:1px; }
+.catn { font-size:15px; font-weight:700; line-height:1.1; }
+.sub { font-size:8px; color:#888; margin-top:2px; }
+.legenda { display:flex; flex-direction:column; gap:3px; align-items:flex-end; }
+.leg-item { display:flex; align-items:center; gap:5px; font-size:8px; color:#666; }
+.leg-vak { width:26px; height:12px; border:1px solid #999; border-radius:2px; }
+
+/* Kolom header */
+.kolom-header { display:grid; grid-template-columns:1fr 42px 52px 22px; gap:4px; align-items:center;
+  padding:3px 5px; background:#f0ebe3; border-bottom:1px solid #ddd; font-size:7.5px; font-weight:700;
+  letter-spacing:0.8px; text-transform:uppercase; color:#888; flex-shrink:0; }
+.kolom-header .naam { }
+.kolom-header .ijzer, .kolom-header .bestel { text-align:center; }
+.kolom-header .vakje-h { text-align:center; }
+
+/* Grid 2 kolommen */
+.grid { flex:1; display:grid; grid-template-columns:1fr 1fr; gap:0 6px; align-items:start; }
+.kolom { }
+
+/* Leverancier header */
+.lev-header { font-size:8px; font-weight:700; letter-spacing:1px; text-transform:uppercase;
+  color:#fff; background:#2a2a2a; padding:3px 5px; margin-top:4px; }
+.lev-header:first-child { margin-top:0; }
+
+/* Rij */
+.rij { display:grid; grid-template-columns:1fr 42px 52px 22px; gap:4px; align-items:center;
+  border-bottom:1px solid #ede8df; min-height:16px; padding:1.5px 5px; }
+.naam { font-size:9px; color:#1a1a1a; line-height:1.2; }
+.ijzer { font-size:8.5px; font-weight:700; text-align:center; color:#333; }
+.bestel { width:100%; height:11px; border:1px solid #ccc; border-radius:2px; background:#fff; }
+.vakje { width:16px; height:16px; border:1.5px solid #bbb; border-radius:2px; margin:0 auto; display:flex; align-items:center; justify-content:center; font-size:10px; }
+.vakje.gevuld { border-color:#2a7a3b; color:#2a7a3b; background:#f0faf3; }
+
+@media print { body { -webkit-print-color-adjust:exact; print-color-adjust:exact; } }
 </style></head><body>
 ${paginas}
 <script>window.onload=function(){setTimeout(function(){window.print();},300);};<\/script>
