@@ -3565,7 +3565,8 @@ function openFinModal(idx, e) {
   if (idx < 0 || idx >= gerechten.length) return;
   finGerIdx = idx;
   const ger = gerechten[idx];
-  document.getElementById('fin-modal-title').textContent = 'Prijs instellen — ' + ger.naam;
+  const readonly = isReadOnly();
+  document.getElementById('fin-modal-title').textContent = (readonly ? 'Prijsoverzicht — ' : 'Prijs instellen — ') + ger.naam;
   document.getElementById('fin-kostprijs').textContent = '€ ' + ger.kostprijs.toFixed(2).replace('.',',');
   document.getElementById('fin-waste-pct').value = ger.waste || 0;
   document.getElementById('fin-doelmarge').value = ger.doelmarge || 30;
@@ -3574,15 +3575,18 @@ function openFinModal(idx, e) {
   const vpIncl = ger.verkoopprijs ? ger.verkoopprijs * (1 + (parseFloat(ger.btw)||9)/100) : '';
   document.getElementById('fin-vp-incl-input').value = vpIncl ? vpIncl.toFixed(2) : '';
   document.getElementById('fin-vp').value = ger.verkoopprijs || '';
+  // Readonly voor chef
+  ['fin-waste-pct','fin-doelmarge','fin-vp-incl-input','fin-btw'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = readonly;
+  });
+  document.querySelector('#modal-fin .btn-primary').style.display = readonly ? 'none' : '';
   updateFinVanIncl();
   openModal('modal-fin');
 }
 
 function openFinView(idx, e) {
-  if (e) e.stopPropagation();
-  // Chef mag alleen bekijken — open als read-only (zelfde modal, knop opslaan verbergen)
   openFinModal(idx, e);
-  document.getElementById('fin-modal-title').textContent = 'Prijsoverzicht — ' + gerechten[idx]?.naam;
 }
 
 function updateFinVanIncl() {
