@@ -678,11 +678,11 @@
         <span style="font-family:'Courier Prime',monospace;font-size:20px;font-weight:700" id="fin-marge-pct">—</span>
       </div>
       <div id="fin-kleurenbalk-wrap" style="display:none">
-        <div style="position:relative;height:32px;border-radius:6px;overflow:visible;margin-bottom:8px;background:linear-gradient(to right, #2e7d32 0%, #66bb6a 25%, #ffca28 45%, #ef6c00 65%, #c62828 100%);">
+        <div style="position:relative;height:10px;border-radius:5px;overflow:visible;margin-bottom:8px;background:linear-gradient(to right, #2e7d32 0%, #66bb6a 25%, #ffca28 45%, #ef6c00 65%, #c62828 100%);">
           <!-- Doelstreep -->
-          <div id="fin-doel-streep" style="position:absolute;top:-5px;bottom:-5px;width:3px;background:rgba(255,255,255,0.95);border-radius:2px;box-shadow:0 0 5px rgba(0,0,0,0.35)"></div>
+          <div id="fin-doel-streep" style="position:absolute;top:-3px;bottom:-3px;width:2px;background:rgba(255,255,255,0.9);border-radius:1px;box-shadow:0 0 3px rgba(0,0,0,0.3)"></div>
           <!-- Huidige inkoop marker -->
-          <div id="fin-inkoop-marker" style="position:absolute;top:50%;transform:translate(-50%,-50%);width:22px;height:22px;border-radius:50%;background:white;border:3px solid #333;box-shadow:0 2px 8px rgba(0,0,0,0.3);transition:left 0.3s ease"></div>
+          <div id="fin-inkoop-marker" style="position:absolute;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;background:white;border:2px solid #333;box-shadow:0 1px 4px rgba(0,0,0,0.25);transition:left 0.3s ease"></div>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
           <span style="font-size:10px;font-weight:700;color:var(--green)">✓ Goed</span>
@@ -1610,7 +1610,7 @@ async function doLogin() {
       // ✅ Inloggen gelukt via server
       const user = data.user;
       currentUser = user;
-      localStorage.setItem('eendracht_session', JSON.stringify({ username: user.username, role: user.role }));
+      sessionStorage.setItem('eendracht_session', JSON.stringify({ username: user.username, role: user.role }));
       document.getElementById('auth-overlay').classList.remove('open');
       applyRole(user.role);
       updateNavUser(user);
@@ -1657,7 +1657,7 @@ async function doLogin() {
 
   // ✅ Lokaal inloggen gelukt
   currentUser = localUser;
-  localStorage.setItem('eendracht_session', JSON.stringify({ username: localUser.username, role: localUser.role }));
+  sessionStorage.setItem('eendracht_session', JSON.stringify({ username: localUser.username, role: localUser.role }));
   document.getElementById('auth-overlay').classList.remove('open');
   applyRole(localUser.role);
   updateNavUser(localUser);
@@ -1668,7 +1668,7 @@ async function doLogin() {
 
 function doLogout() {
   currentUser = null;
-  localStorage.removeItem('eendracht_session');
+  sessionStorage.removeItem('eendracht_session');
   document.getElementById('auth-username').value = '';
   document.getElementById('auth-password').value = '';
   document.getElementById('auth-overlay').classList.add('open');
@@ -1931,7 +1931,7 @@ async function saveCredentials() {
     u.password = '••••••'; // nooit plaintext lokaal opslaan
     const isEigenAccount = currentUser?.username === u.username;
     if (isEigenAccount) {
-      localStorage.setItem('eendracht_session', JSON.stringify({ username: u.username, role: u.role }));
+      sessionStorage.setItem('eendracht_session', JSON.stringify({ username: u.username, role: u.role }));
       currentUser = u;
       updateNavUser(u);
     }
@@ -2069,12 +2069,14 @@ function openUsersModal() {
 }
 
 function checkSession() {
+  // Verwijder eventuele oude localStorage sessie (migratie naar sessionStorage)
+  localStorage.removeItem('eendracht_session');
   let session = null;
   try {
-    const raw = localStorage.getItem('eendracht_session');
+    const raw = sessionStorage.getItem('eendracht_session');
     if (raw) session = JSON.parse(raw);
   } catch(e) {
-    localStorage.removeItem('eendracht_session');
+    sessionStorage.removeItem('eendracht_session');
   }
 
   if (session && session.username) {
