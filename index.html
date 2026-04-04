@@ -3809,7 +3809,7 @@ function doPrintSpiekbriefjes() {
   if (!geselecteerd.length) { toast('Selecteer minimaal één categorie'); return; }
   const logoEl = document.querySelector('.logo-wrap img');
   const logoSrc = logoEl ? logoEl.src : '';
-  const briefjes = geselecteerd.map(cat => {
+  const paginas = geselecteerd.map(cat => {
     const items = mk.gerechten.map(gid => gerechten.find(g => g.id == gid)).filter(g => g && (g.categorie||'Overig') === cat);
     const rijen = items.map(ger => {
       const naam = ger.spieknaam || ger.naam;
@@ -3819,10 +3819,10 @@ function doPrintSpiekbriefjes() {
       const beschr = ger.beschrijving ? `<div class="beschr">${ger.beschrijving}</div>` : '';
       return `<div class="item"><div class="item-top"><div class="item-naam">${naam}</div><div class="item-prijs">${prijs}</div></div>${beschr}</div>`;
     }).join('');
-    return `<div class="briefje">
-      <div class="briefje-header">
+    return `<div class="pagina">
+      <div class="pagina-header">
         ${logoSrc ? `<img src="${logoSrc}" class="logo">` : ''}
-        <div class="briefje-titel"><div class="mk-naam">${mk.naam}</div><div class="cat-naam">${cat}</div></div>
+        <div><div class="mk-naam">${mk.naam}</div><div class="cat-naam">${cat}</div></div>
       </div>
       <div class="items">${rijen}</div>
     </div>`;
@@ -3832,25 +3832,25 @@ function doPrintSpiekbriefjes() {
   if (!win) { toast('Pop-up geblokkeerd — sta pop-ups toe voor deze site'); return; }
   win.document.write(`<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8"><title>Spiekbriefjes — ${mk.naam}</title>
 <style>
-@page{size:A4 portrait;margin:10mm 12mm;}
+@page{size:A4 portrait;margin:14mm 16mm;}
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:Arial,sans-serif;color:#1a1a1a;font-size:11px;background:#fff;}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10mm;}
-.briefje{border:1.5px solid #8B1C1C;border-radius:3px;overflow:hidden;break-inside:avoid;}
-.briefje-header{display:flex;align-items:center;gap:8px;background:#8B1C1C;color:#fff;padding:7px 10px;}
-.logo{width:28px;height:28px;object-fit:contain;filter:brightness(0) invert(1);flex-shrink:0;}
-.briefje-titel{display:flex;flex-direction:column;}
-.mk-naam{font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;opacity:0.8;}
-.cat-naam{font-size:15px;font-weight:700;line-height:1.1;}
-.item{padding:6px 10px;border-bottom:1px solid #ede8df;}
+body{font-family:Arial,sans-serif;color:#1a1a1a;background:#fff;}
+.pagina{page-break-after:always;min-height:267mm;display:flex;flex-direction:column;}
+.pagina:last-child{page-break-after:avoid;}
+.pagina-header{display:flex;align-items:center;gap:12px;background:#8B1C1C;color:#fff;padding:12px 16px;border-radius:3px 3px 0 0;}
+.logo{width:36px;height:36px;object-fit:contain;filter:brightness(0) invert(1);flex-shrink:0;}
+.mk-naam{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;opacity:0.75;margin-bottom:2px;}
+.cat-naam{font-size:22px;font-weight:700;line-height:1.1;}
+.items{border:1.5px solid #8B1C1C;border-top:none;border-radius:0 0 3px 3px;flex:1;}
+.item{padding:10px 16px;border-bottom:1px solid #ede8df;}
 .item:last-child{border-bottom:none;}
-.item-top{display:flex;justify-content:space-between;align-items:baseline;gap:6px;}
-.item-naam{font-size:11px;font-weight:700;color:#1a1a1a;line-height:1.3;}
-.item-prijs{font-size:12px;font-weight:700;color:#8B1C1C;white-space:nowrap;font-family:'Courier New',monospace;}
-.beschr{font-size:9px;color:#666;margin-top:2px;line-height:1.4;font-style:italic;}
+.item-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;}
+.item-naam{font-size:14px;font-weight:700;color:#1a1a1a;line-height:1.3;}
+.item-prijs{font-size:16px;font-weight:700;color:#8B1C1C;white-space:nowrap;font-family:'Courier New',monospace;}
+.beschr{font-size:11px;color:#666;margin-top:3px;line-height:1.5;font-style:italic;}
 @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
 </style></head><body>
-<div class="grid">${briefjes}</div>
+${paginas}
 <script>window.onload=function(){setTimeout(function(){window.print();},300);};<\/script>
 </body></html>`);
   win.document.close();
