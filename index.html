@@ -838,6 +838,7 @@
           <select id="edit-cred-rol" style="width:100%">
             <option value="medewerker">Medewerker — alleen inzien</option>
             <option value="chef">Chef — inzien + accounts aanmaken</option>
+            <option value="overhead">Overhead — alles beheren</option>
             <option value="admin">Admin — alles beheren</option>
           </select>
         </div>
@@ -1621,10 +1622,19 @@ async function doLogin() {
       return;
     }
 
-    // Server bereikbaar maar login mislukt — toon de server-foutmelding
+    // Server bereikbaar maar login mislukt
     if (data && data.error) {
-      showError(data.error);
-      return;
+      // Alleen stoppen bij echte auth-fouten, niet bij server/DB-fouten
+      const isAuthFout = res.status === 401 || res.status === 403 ||
+        data.error.toLowerCase().includes('wachtwoord') ||
+        data.error.toLowerCase().includes('password') ||
+        data.error.toLowerCase().includes('niet gevonden') ||
+        data.error.toLowerCase().includes('not found');
+      if (isAuthFout) {
+        showError(data.error);
+        return;
+      }
+      // Server-fout (500 etc.) — val terug op lokale fallback
     }
 
     // Server gaf een foutcode terug zonder body — val terug op lokaal
@@ -1682,11 +1692,10 @@ function updateNavUser(user) {
   if (loginVer) loginVer.textContent = APP_VERSION;
   document.getElementById('nav-username').textContent = user.naam || user.username;
   const badge = document.getElementById('nav-role-badge');
-  const labels = { admin: 'Admin', chef: 'Chef', medewerker: 'Medewerker' };
+  const labels = { admin: 'Admin', overhead: 'Overhead', chef: 'Chef', medewerker: 'Medewerker' };
   badge.textContent = labels[user.role] || user.role;
-  badge.className = 'nav-role-badge ' + (user.role === 'admin' ? 'role-admin' : 'role-chef');
-  // Chef en admin mogen gebruikersbeheer zien; medewerker niet
-  document.getElementById('nav-users-btn').style.display = (user.role === 'admin' || user.role === 'chef') ? '' : 'none';
+  badge.className = 'nav-role-badge ' + (user.role === 'admin' || user.role === 'overhead' ? 'role-admin' : 'role-chef');
+  document.getElementById('nav-users-btn').style.display = (user.role === 'admin' || user.role === 'overhead' || user.role === 'chef') ? '' : 'none';
 }
 
 function applyRole(role) {
@@ -1698,6 +1707,7 @@ function applyRole(role) {
     if (impBtn2) impBtn2.style.display = 'none';
     applyChefRestrictions();
   } else {
+    // admin en overhead krijgen volledige toegang
     document.body.setAttribute('data-role', 'admin');
     if (ingTab) ingTab.style.display = '';
     const impBtn = document.getElementById('ing-import-btn');
@@ -1715,12 +1725,12 @@ async function hashWachtwoord(wachtwoord) {
   return 'sha256:' + hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-function isAdmin() { return currentUser?.role === 'admin'; }
+function isAdmin() { return currentUser?.role === 'admin' || currentUser?.role === 'overhead'; }
 function isReadOnly(role) {
   const r = role || currentUser?.role;
   return r === 'chef' || r === 'medewerker';
 }
-function canCreateMedewerker() { return currentUser?.role === 'chef' || currentUser?.role === 'admin'; }
+function canCreateMedewerker() { return currentUser?.role === 'chef' || currentUser?.role === 'admin' || currentUser?.role === 'overhead'; }
 function isMedewerker() { return currentUser?.role === 'medewerker'; }
 function kanFinancieelZien() { return currentUser?.role !== 'medewerker'; }
 
@@ -1777,17 +1787,17 @@ function renderUsers(filter='', sort='username') {
     visible.map((u) => {
       const i = _sbUsers.indexOf(u);
       const isZelf = currentUser?.username === u.username;
-      const rolLabel = u.role === 'admin' ? 'Admin' : u.role === 'chef' ? 'Chef' : 'Medewerker';
-      const rolBadge = u.role === 'admin' ? 'badge-red' : u.role === 'chef' ? 'badge-brown' : 'badge-gray';
+      const rolLabel = u.role === 'admin' ? 'Admin' : u.role === 'overhead' ? 'Overhead' : u.role === 'chef' ? 'Chef' : 'Medewerker';
+      const rolBadge = u.role === 'admin' || u.role === 'overhead' ? 'badge-red' : u.role === 'chef' ? 'badge-brown' : 'badge-gray';
       const locatie = getUserLocatie(u);
-      const kanVerwijderen = currentUser?.role === 'admin' && u.username !== 'admin' && !isZelf;
+      const kanVerwijderen = (currentUser?.role === 'admin' || currentUser?.role === 'overhead') && u.username !== 'admin' && !isZelf;
       return `<div style="display:grid;grid-template-columns:1fr 90px 80px 80px 32px;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid #ede8df">
         <div>
           <div style="font-weight:600;color:#1a1a1a">${u.username}${isZelf ? ' <span style="font-size:10px;color:var(--muted)">(jij)</span>' : ''}</div>
         </div>
         <span><span class="badge ${rolBadge}">${rolLabel}</span></span>
         <span style="font-size:12px;color:var(--muted);font-weight:600">${locatie || '—'}</span>
-        ${currentUser?.role === 'admin' ? `<button class="btn btn-ghost" onclick="openEditCredentials(${i})" style="padding:4px 8px;font-size:10px">✎ Wijzig</button>` : '<span></span>'}
+        ${(currentUser?.role === 'admin' || currentUser?.role === 'overhead') ? `<button class="btn btn-ghost" onclick="openEditCredentials(${i})" style="padding:4px 8px;font-size:10px">✎ Wijzig</button>` : '<span></span>'}
         <span>${kanVerwijderen ? `<button class="btn btn-danger" onclick="deleteUser(${i})" style="border:1px solid var(--border)">✕</button>` : ''}</span>
       </div>`;
     }).join('')}`;
@@ -1795,10 +1805,11 @@ function renderUsers(filter='', sort='username') {
   // Pas rol-opties aan op basis van wie is ingelogd
   const rolSelect = document.getElementById('new-role');
   if (rolSelect) {
-    if (currentUser?.role === 'admin') {
+    if (currentUser?.role === 'admin' || currentUser?.role === 'overhead') {
       rolSelect.innerHTML = `
         <option value="medewerker">Medewerker — alleen inzien</option>
         <option value="chef">Chef — inzien + accounts aanmaken</option>
+        <option value="overhead">Overhead — alles beheren</option>
         <option value="admin">Admin — alles beheren</option>`;
     } else if (currentUser?.role === 'chef') {
       rolSelect.innerHTML = `<option value="medewerker">Medewerker — alleen inzien</option>`;
@@ -1834,10 +1845,10 @@ function openEditCredentials(idx) {
   const u = _sbUsers[idx];
   if (!u) return;
   const isZelf = currentUser?.username === u.username;
-  const isAdmin = currentUser?.role === 'admin';
+  const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'overhead';
   if (!isAdmin && !isZelf) { toast('Je kunt alleen je eigen gegevens bewerken'); return; }
 
-  const rolLabel = u.role === 'admin' ? 'Admin' : u.role === 'chef' ? 'Chef' : 'Medewerker';
+  const rolLabel = u.role === 'admin' ? 'Admin' : u.role === 'overhead' ? 'Overhead' : u.role === 'chef' ? 'Chef' : 'Medewerker';
   document.getElementById('edit-cred-title').textContent = isZelf ? '👤 Mijn account' : '👤 Account — ' + u.username;
   document.getElementById('edit-cred-naam').textContent = u.username;
   document.getElementById('edit-cred-naam').textContent = u.username;
