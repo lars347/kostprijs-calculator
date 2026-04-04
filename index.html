@@ -2352,6 +2352,7 @@ async function flushGer() {
 
 async function flushFin() {
   if (finGerIdx < 0) return;
+  if (isReadOnly()) return; // chef mag niet opslaan
   gerechten[finGerIdx].verkoopprijs = parseFloat(document.getElementById('fin-vp').value) || 0;
   gerechten[finGerIdx].btw          = document.getElementById('fin-btw')?.value || '9';
   gerechten[finGerIdx].doelmarge    = parseFloat(document.getElementById('fin-doelmarge')?.value) || 30;
@@ -3621,11 +3622,14 @@ function updateFinVanIncl() {
 }
 
 function autoSaveFin() {
+  if (isReadOnly()) return; // chef mag niet opslaan
   clearTimeout(finSaveTimer);
-  finSaveTimer = setTimeout(async () => { await flushFin(); }, 1200);
+  finSaveTimer = setTimeout(async () => { await flushFin(); }, 500);
+}
 }
 
 async function saveFinancieel() {
+  if (isReadOnly()) { closeModal('modal-fin'); return; }
   clearTimeout(finSaveTimer);
   await flushFin();
   renderGerCards();
