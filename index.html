@@ -885,7 +885,7 @@
 
 <!-- RECEPTUREN MODAL -->
 <div class="modal-overlay" id="modal-recepturen">
-  <div class="modal" style="width:660px;max-height:85vh;display:flex;flex-direction:column">
+  <div class="modal" style="width:820px;max-height:90vh;display:flex;flex-direction:column">
     <div class="modal-title" id="recepturen-modal-title">📋 Recepturen in menukaart</div>
     <div id="recepturen-lijst" style="flex:1;overflow-y:auto;margin-bottom:16px"></div>
     <div class="modal-actions">
@@ -3912,23 +3912,86 @@ function filterGerechten() {
 
 let _recepturenMkIdx = -1;
 
+function _buildReceptuurBlokken(mk) {
+  const gerBlokken = [];
+  const hfIds = new Set();
+
+  mk.gerechten.forEach(gid => {
+    const ger = gerechten.find(g => g.id == gid); if (!ger) return;
+    (ger.compHf||[]).forEach(c => hfIds.add(c.sourceId));
+    gerBlokken.push({ type:'ger', naam: ger.naam, porties: ger.porties,
+      rijen: [
+        ...(ger.compIng||[]).map(c => { const src=ingredienten.find(x=>x.id==c.sourceId); return { naam: src?.naam||'—', hoeveelheid: c.hoeveelheid, eenheid: c.eenheid, isRec: false }; }),
+        ...(ger.compHf||[]).map(c  => { const src=recepturen.find(x=>x.id==c.sourceId);   return { naam: src?.naam||'—', hoeveelheid: c.hoeveelheid, eenheid: c.eenheid, isRec: true  }; }),
+      ]
+    });
+  });
+
+  // Verzamel ook geneste recepturen recursief
+  function voegHfToe(hfId, bezocht = new Set()) {
+    if (bezocht.has(hfId)) return; bezocht.add(hfId);
+    const hf = recepturen.find(x=>x.id==hfId); if (!hf) return;
+    hfIds.add(hfId);
+    (hf.compHf||[]).forEach(c => voegHfToe(c.sourceId, bezocht));
+  }
+  [...hfIds].forEach(id => voegHfToe(id));
+
+  const hfBlokken = [];
+  hfIds.forEach(hid => {
+    const hf = recepturen.find(x=>x.id==hid); if (!hf) return;
+    hfBlokken.push({ type:'hf', naam: hf.naam, porties: hf.porties||null,
+      rijen: [
+        ...(hf.compIng||[]).map(c => { const src=ingredienten.find(x=>x.id==c.sourceId); return { naam: src?.naam||'—', hoeveelheid: c.hoeveelheid, eenheid: c.eenheid, isRec: false }; }),
+        ...(hf.compHf||[]).map(c  => { const src=recepturen.find(x=>x.id==c.sourceId);   return { naam: src?.naam||'—', hoeveelheid: c.hoeveelheid, eenheid: c.eenheid, isRec: true  }; }),
+      ]
+    });
+  });
+
+  return { gerBlokken, hfBlokken };
+}
+
 function openRecepturenModal(mkIdx) {
   _recepturenMkIdx = mkIdx;
   const mk = menukaarten[mkIdx];
   document.getElementById('recepturen-modal-title').textContent = '📋 Recepturen — ' + mk.naam;
   const lijst = document.getElementById('recepturen-lijst');
-  if (!mk.gerechten.length) { lijst.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-style:italic">Geen gerechten in deze menukaart</div>'; }
-  else {
-    lijst.innerHTML = mk.gerechten.map(gid => {
-      const ger = gerechten.find(g => g.id == gid); if (!ger) return '';
-      const compIng = (ger.compIng||[]).map(c => { const src = ingredienten.find(x=>x.id==c.sourceId); return `<tr><td style="padding:4px 8px;font-size:12px">${src?.naam||'—'}</td><td style="padding:4px 8px;font-size:12px;font-family:monospace">${c.hoeveelheid} ${c.eenheid}</td></tr>`; }).join('');
-      const compHf = (ger.compHf||[]).map(c => { const src = recepturen.find(x=>x.id==c.sourceId); return `<tr><td style="padding:4px 8px;font-size:12px"><em style="color:var(--red)">${src?.naam||'—'}</em> <span style="font-size:10px;color:var(--muted)">(REC)</span></td><td style="padding:4px 8px;font-size:12px;font-family:monospace">${c.hoeveelheid} ${c.eenheid}</td></tr>`; }).join('');
-      return `<div style="margin-bottom:20px;border:1px solid var(--border);border-radius:2px;overflow:hidden">
-        <div style="background:var(--surface2);padding:10px 14px;font-weight:700;font-family:'Libre Baskerville',serif">${ger.naam} <span style="font-size:11px;color:var(--muted);font-family:'Source Sans 3',sans-serif;font-weight:400">${ger.porties} portie${ger.porties>1?'s':''}</span></div>
-        <table style="width:100%;border-collapse:collapse"><thead><tr><th style="padding:6px 8px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);text-align:left">Ingrediënt/Receptuur</th><th style="padding:6px 8px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);text-align:left">Hoeveelheid</th></tr></thead><tbody>${compIng}${compHf}</tbody></table>
-      </div>`;
-    }).join('');
+  if (!mk.gerechten.length) {
+    lijst.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-style:italic">Geen gerechten in deze menukaart</div>';
+    openModal('modal-recepturen'); return;
   }
+
+  const { gerBlokken, hfBlokken } = _buildReceptuurBlokken(mk);
+
+  function renderBlok(blok) {
+    const badge = blok.type === 'hf'
+      ? `<span style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:#9C1515;color:#fff;border-radius:2px;padding:1px 5px;margin-left:6px;vertical-align:middle">RECEPTUUR</span>`
+      : '';
+    const portieLabel = blok.porties ? `<span style="font-size:11px;color:var(--muted);font-family:'Source Sans 3',sans-serif;font-weight:400;margin-left:6px">${blok.porties} portie${blok.porties>1?'s':''}</span>` : '';
+    const rijen = blok.rijen.map(r =>
+      `<tr>
+        <td style="padding:3px 8px;font-size:12px;border-bottom:1px solid #f0ece4">${r.isRec ? `<em style="color:#9C1515">${r.naam}</em>` : r.naam}</td>
+        <td style="padding:3px 8px;font-size:12px;font-family:monospace;text-align:right;border-bottom:1px solid #f0ece4;white-space:nowrap">${r.hoeveelheid} ${r.eenheid}</td>
+      </tr>`).join('');
+    return `<div style="break-inside:avoid;border:1px solid var(--border);border-radius:2px;overflow:hidden;margin-bottom:10px">
+      <div style="background:#f5f1ea;padding:7px 10px;display:flex;align-items:center">
+        <span style="font-weight:700;font-family:'Libre Baskerville',serif;font-size:13px">${blok.naam}</span>${portieLabel}${badge}
+      </div>
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr>
+          <th style="padding:4px 8px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#999;border-bottom:1px solid #e8e0d4;text-align:left">Ingrediënt / Receptuur</th>
+          <th style="padding:4px 8px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#999;border-bottom:1px solid #e8e0d4;text-align:right">Hoeveelheid</th>
+        </tr></thead>
+        <tbody>${rijen}</tbody>
+      </table>
+    </div>`;
+  }
+
+  const gerHtml = gerBlokken.map(renderBlok).join('');
+  const hfHtml = hfBlokken.length
+    ? `<div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#9C1515;margin:16px 0 8px;padding-top:12px;border-top:2px solid var(--border)">Gebruikte recepturen</div>${hfBlokken.map(renderBlok).join('')}`
+    : '';
+
+  lijst.innerHTML = `<div style="columns:2;column-gap:14px">${gerHtml}${hfHtml}</div>`;
   openModal('modal-recepturen');
 }
 
@@ -3936,13 +3999,50 @@ function printRecepturen() {
   const mkIdx = _recepturenMkIdx;
   if (mkIdx < 0) return;
   const mk = menukaarten[mkIdx];
+  const { gerBlokken, hfBlokken } = _buildReceptuurBlokken(mk);
+
+  function printBlok(blok) {
+    const badge = blok.type === 'hf' ? ' <span class="rec-badge">RECEPTUUR</span>' : '';
+    const portie = blok.porties ? ` <span class="portie">${blok.porties} portie${blok.porties>1?'s':''}</span>` : '';
+    const rijen = blok.rijen.map(r =>
+      `<tr><td>${r.isRec ? `<em>${r.naam}</em>` : r.naam}</td><td>${r.hoeveelheid} ${r.eenheid}</td></tr>`
+    ).join('');
+    return `<div class="blok">
+      <div class="blok-header">${blok.naam}${portie}${badge}</div>
+      <table><thead><tr><th>Ingrediënt / Receptuur</th><th>Hoeveelheid</th></tr></thead><tbody>${rijen}</tbody></table>
+    </div>`;
+  }
+
+  const hfSectie = hfBlokken.length
+    ? `<div class="sectie-label">Gebruikte recepturen</div>${hfBlokken.map(printBlok).join('')}`
+    : '';
+
   const win = window.open('', '_recepturen_print');
-  const body = mk.gerechten.map(gid => {
-    const ger = gerechten.find(g => g.id == gid); if (!ger) return '';
-    const rows = [...(ger.compIng||[]).map(c => { const src=ingredienten.find(x=>x.id==c.sourceId); return `<tr><td>${src?.naam||'—'}</td><td>${c.hoeveelheid} ${c.eenheid}</td></tr>`; }), ...(ger.compHf||[]).map(c => { const src=recepturen.find(x=>x.id==c.sourceId); return `<tr><td><em>${src?.naam||'—'}</em> (rec)</td><td>${c.hoeveelheid} ${c.eenheid}</td></tr>`; })].join('');
-    return `<h2>${ger.naam} <small>${ger.porties} portie${ger.porties>1?'s':''}</small></h2><table><tr><th>Ingrediënt</th><th>Hoeveelheid</th></tr>${rows}</table>`;
-  }).join('');
-  win.document.write(`<!DOCTYPE html><html><head><title>Recepturen ${mk.naam}</title><style>body{font-family:Arial,sans-serif;padding:20px;font-size:12px}h1{font-size:15px;margin-bottom:16px}h2{font-size:13px;margin:14px 0 4px;border-bottom:1px solid #ccc;padding-bottom:4px}small{font-size:11px;color:#666;font-weight:400}table{width:100%;border-collapse:collapse;margin-bottom:8px}th{text-align:left;font-size:10px;text-transform:uppercase;color:#888;padding:3px 6px;border-bottom:1px solid #ddd}td{padding:3px 6px;border-bottom:1px solid #f0f0f0}</style></head><body><h1>📋 Recepturen — ${mk.naam}</h1>${body}</body></html>`);
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Recepturen — ${mk.naam}</title>
+<style>
+  @page { size: A4 portrait; margin: 12mm 14mm; }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, sans-serif; font-size: 10px; color: #1a1a1a; background: #fff; margin:0; padding:0; }
+  h1 { font-size: 14px; font-weight: 700; margin: 0 0 10px; padding-bottom: 6px; border-bottom: 2px solid #9C1515; color: #9C1515; }
+  .grid { columns: 2; column-gap: 10px; }
+  .blok { break-inside: avoid; border: 1px solid #ddd; border-radius: 2px; overflow: hidden; margin-bottom: 7px; }
+  .blok-header { background: #f3ede4; padding: 4px 7px; font-weight: 700; font-size: 10.5px; display: flex; align-items: center; gap: 5px; border-bottom: 1px solid #ddd; }
+  .portie { font-size: 9px; color: #777; font-weight: 400; }
+  .rec-badge { font-size: 7.5px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; background: #9C1515; color: #fff; border-radius: 2px; padding: 1px 4px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { font-size: 8px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: #999; padding: 3px 7px; border-bottom: 1px solid #e8e0d4; text-align: left; }
+  th:last-child { text-align: right; }
+  td { font-size: 9.5px; padding: 2.5px 7px; border-bottom: 1px solid #f2ede6; }
+  td:last-child { text-align: right; font-family: monospace; font-size: 9px; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  em { color: #9C1515; font-style: italic; }
+  .sectie-label { font-size: 8px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #9C1515; margin: 10px 0 5px; padding-top: 8px; border-top: 1.5px solid #ddd; column-span: all; }
+  @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+</style>
+</head><body>
+<h1>📋 Recepturen — ${mk.naam}</h1>
+<div class="grid">${gerBlokken.map(printBlok).join('')}${hfSectie}</div>
+</body></html>`);
   win.document.close();
   setTimeout(() => win.print(), 400);
 }
