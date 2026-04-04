@@ -4479,14 +4479,13 @@ function _printInkooplijstData(lijst) {
   });
 
   function maakRij(item) {
-    const vinkje = item.ingevuld
-      ? '<div class="vakje gevuld">✓</div>'
-      : '<div class="vakje"></div>';
+    const ijzer = item.ijzervoorraad || '';
+    const bestel = item.te_bestellen || '';
     return `<div class="rij">
       <div class="naam">${item.naam}</div>
-      <div class="ijzer">${item.ijzervoorraad || ''}</div>
-      <div class="bestel">${item.te_bestellen || ''}</div>
-      ${vinkje}
+      <div class="ijzer-cel"><span class="ijzer-val">${ijzer}</span></div>
+      <div class="vakje-cel"><div class="vakje-open">${bestel}</div></div>
+      <div class="vakje-cel"><div class="vakje-open"></div></div>
     </div>`;
   }
 
@@ -4525,10 +4524,10 @@ function _printInkooplijstData(lijst) {
         </div>
       </div>
       <div class="kolom-header">
-        <div class="naam">Ingredient</div>
-        <div class="ijzer">IJzer</div>
-        <div class="bestel">Bestellen</div>
-        <div class="vakje-h">✓</div>
+        <div class="kh-naam">Ingredient</div>
+        <div class="kh-mid">IJzervoorraad</div>
+        <div class="kh-mid">Te bestellen</div>
+        <div class="kh-mid">✓</div>
       </div>
       <div class="grid">
         <div class="kolom">${renderKolom(links)}</div>
@@ -4564,30 +4563,38 @@ body { font-family: Arial, sans-serif; color: #1a1a1a; font-size: 9.5px; backgro
 .leg-vak { width:26px; height:12px; border:1px solid #999; border-radius:2px; }
 
 /* Kolom header */
-.kolom-header { display:grid; grid-template-columns:1fr 42px 52px 22px; gap:4px; align-items:center;
-  padding:3px 5px; background:#f0ebe3; border-bottom:1px solid #ddd; font-size:7.5px; font-weight:700;
+.kolom-header { display:grid; grid-template-columns:1fr 52px 52px 28px; gap:0; align-items:center;
+  padding:3px 4px 3px 5px; background:#f0ebe3; border-bottom:1.5px solid #c8c0b4; font-size:7px; font-weight:700;
   letter-spacing:0.8px; text-transform:uppercase; color:#888; flex-shrink:0; }
-.kolom-header .naam { }
-.kolom-header .ijzer, .kolom-header .bestel { text-align:center; }
-.kolom-header .vakje-h { text-align:center; }
+.kh-naam {}
+.kh-mid { text-align:center; }
 
 /* Grid 2 kolommen */
-.grid { flex:1; display:grid; grid-template-columns:1fr 1fr; gap:0 6px; align-items:start; }
-.kolom { }
+.grid { flex:1; display:grid; grid-template-columns:1fr 1fr; gap:0 8px; align-items:start; }
+.kolom {}
 
 /* Leverancier header */
 .lev-header { font-size:8px; font-weight:700; letter-spacing:1px; text-transform:uppercase;
   color:#fff; background:#2a2a2a; padding:3px 5px; margin-top:4px; }
 .lev-header:first-child { margin-top:0; }
 
-/* Rij */
-.rij { display:grid; grid-template-columns:1fr 42px 52px 22px; gap:4px; align-items:center;
-  border-bottom:1px solid #ede8df; min-height:16px; padding:1.5px 5px; }
-.naam { font-size:9px; color:#1a1a1a; line-height:1.2; }
-.ijzer { font-size:8.5px; font-weight:700; text-align:center; color:#333; }
-.bestel { width:100%; height:11px; border:1px solid #ccc; border-radius:2px; background:#fff; }
-.vakje { width:16px; height:16px; border:1.5px solid #bbb; border-radius:2px; margin:0 auto; display:flex; align-items:center; justify-content:center; font-size:10px; }
-.vakje.gevuld { border-color:#2a7a3b; color:#2a7a3b; background:#f0faf3; }
+/* Rij: naam | ijzervoorraad | te bestellen vakje | vinkje vakje */
+.rij { display:grid; grid-template-columns:1fr 52px 52px 28px; gap:0; align-items:center;
+  border-bottom:1px solid #ede8df; min-height:17px; padding:1px 4px 1px 5px; }
+.naam { font-size:9px; color:#1a1a1a; line-height:1.2; padding-right:4px; }
+
+/* IJzervoorraad: gecentreerd in licht kader */
+.ijzer-cel { display:flex; justify-content:center; align-items:center; padding:1px 2px; }
+.ijzer-val { font-size:8.5px; font-weight:700; color:#1a1a1a; text-align:center;
+  min-width:36px; padding:1px 4px; background:#f5f1ea; border:1px solid #d8d0c4;
+  border-radius:2px; text-align:center; display:inline-block; }
+
+/* Open vakjes voor pen-invulling */
+.vakje-cel { display:flex; justify-content:center; align-items:center; padding:1px 2px; }
+.vakje-open { width:36px; height:14px; border:1px solid #aaa; border-radius:2px; background:#fff;
+  font-size:8px; color:#1a1a1a; display:flex; align-items:center; justify-content:center; }
+
+@media print { body { -webkit-print-color-adjust:exact; print-color-adjust:exact; } }
 
 @media print { body { -webkit-print-color-adjust:exact; print-color-adjust:exact; } }
 </style></head><body>
