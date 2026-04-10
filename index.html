@@ -1621,15 +1621,15 @@ async function doLogin() {
       return;
     }
 
-    // Alleen stoppen bij echte auth-fouten (verkeerd wachtwoord / gebruiker niet gevonden)
-    if ((res.status === 401 || res.status === 403) && data && data.error) {
+    // Server bereikbaar maar login mislukt — toon de server-foutmelding
+    if (data && data.error) {
       showError(data.error);
       return;
     }
 
-    // Bij elke andere fout (500, timeout, etc.) → val terug op lokaal
+    // Server gaf een foutcode terug zonder body — val terug op lokaal
   } catch(networkErr) {
-    // Geen verbinding → val terug op lokaal
+    // Geen verbinding — val terug op lokaal
   }
 
   // ── Stap 2: lokale fallback (als server niet bereikbaar is) ───────────────
@@ -3626,7 +3626,6 @@ function autoSaveFin() {
   clearTimeout(finSaveTimer);
   finSaveTimer = setTimeout(async () => { await flushFin(); }, 500);
 }
-}
 
 async function saveFinancieel() {
   if (isReadOnly()) { closeModal('modal-fin'); return; }
@@ -5456,17 +5455,17 @@ async function getPrijsHistorie(ingId) {
     if (Array.isArray(geladen) && geladen.length > 0) {
       _sbUsers = geladen;
       serverBereikbaar = true;
-    } else if (Array.isArray(geladen)) {
-      // Lege array van server — toch bereikbaar maar geen gebruikers, gebruik defaults
+    } else if (geladen !== null) {
+      // Lege array is ook geldig (geen gebruikers aangemaakt)
+      _sbUsers = geladen || [];
       serverBereikbaar = true;
-      _sbUsers = DEFAULT_USERS.map((u, i) => ({ ...u, id: i + 1 }));
     }
   } catch(e) {
     console.warn('Gebruikers laden mislukt (server onbereikbaar):', e);
   }
 
-  // Als server niet bereikbaar was, altijd default gebruikers laden
-  if (_sbUsers.length === 0) {
+  // Als server niet bereikbaar was, zorg dat default gebruikers altijd beschikbaar zijn
+  if (!serverBereikbaar && _sbUsers.length === 0) {
     _sbUsers = DEFAULT_USERS.map((u, i) => ({ ...u, id: i + 1 }));
   }
 
