@@ -2402,16 +2402,20 @@ function closeDetail(type) {
 
 // PRICE HELPERS
 function pricePerGram(ing) {
+  // Geeft prijs per gram (of ml) terug, na aftrek van sverlies
+  // Inkoopeenheden: kg = prijs/kg, g = prijs/100g, liter = prijs/L, ml = prijs/100ml, stuk = prijs/stuk
   const p = (parseFloat(ing.prijs)||0) / (1-(parseFloat(ing.sverlies)||0)/100);
   switch(ing.eenheid) {
-    case 'kg': return p/1000; case 'g': return p;
-    case 'liter': return p/1000; case 'ml': return p;
-    default: return p;
+    case 'kg':    return p/1000;  // €/kg  → €/g
+    case 'g':     return p/100;   // €/100g → €/g
+    case 'liter': return p/1000;  // €/L   → €/ml
+    case 'ml':    return p/100;   // €/100ml → €/ml
+    default:      return p;
   }
 }
 function pricePerHundred(ing) {
   if (ing.eenheid==='stuk') return parseFloat(ing.prijs)||0;
-  return pricePerGram(ing)*100;
+  return pricePerGram(ing)*100; // €/g × 100 = €/100g (of €/ml × 100 = €/100ml)
 }
 function costForRow(sourceType, sourceId, hoeveelheid, eenheid) {
   if (!sourceId || !hoeveelheid) return 0;
@@ -2999,9 +3003,10 @@ function renderIngredienten() {
   document.getElementById('ing-empty').style.display=ingredienten.length?'none':'';
   ingredienten.forEach((ing,idx)=>{
     const p100=pricePerHundred(ing);
-    const unit=ing.eenheid==='stuk'?'st':ing.eenheid==='kg'||ing.eenheid==='g'?'g':'ml';
+    const inkLabel = ing.eenheid==='g' ? '100g' : ing.eenheid==='ml' ? '100ml' : ing.eenheid;
+    const kostLabel = ing.eenheid==='stuk' ? 'stuk' : (ing.eenheid==='kg'||ing.eenheid==='g') ? '100g' : '100ml';
     const tr=document.createElement('tr'); tr.className='ing-row';
-    tr.innerHTML=`<td><strong style="color:#1a1a1a">${ing.naam}</strong></td><td><span class="badge badge-brown">${ing.leverancier||ing.categorie}</span></td><td class="mono">${ing.eenheid}</td><td class="mono">€ ${ing.prijs.toFixed(2).replace('.',',')} / ${ing.eenheid}</td><td class="mono" style="color:var(--red)">€ ${p100.toFixed(4).replace('.',',')} / 100${unit}</td><td class="ing-action-cell"></td>`;
+    tr.innerHTML=`<td><strong style="color:#1a1a1a">${ing.naam}</strong></td><td><span class="badge badge-brown">${ing.leverancier||ing.categorie}</span></td><td class="mono">${ing.eenheid}</td><td class="mono">€ ${ing.prijs.toFixed(2).replace('.',',')} / ${inkLabel}</td><td class="mono" style="color:var(--red);font-weight:600">€ ${p100.toFixed(4).replace('.',',')} / ${kostLabel}</td><td class="ing-action-cell"></td>`;
     // Add action buttons only for admin
     const actionCell = tr.querySelector('.ing-action-cell');
     if (actionCell && !isReadOnly()) {
@@ -3625,6 +3630,7 @@ function autoSaveFin() {
   if (isReadOnly()) return; // chef mag niet opslaan
   clearTimeout(finSaveTimer);
   finSaveTimer = setTimeout(async () => { await flushFin(); }, 500);
+}
 }
 
 async function saveFinancieel() {
