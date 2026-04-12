@@ -302,8 +302,6 @@
       </div>
     </div>
     <div style="display:flex;gap:8px">
-      <button class="btn btn-ghost" id="ing-import-btn" onclick="openIngImportModal()" style="display:none">📥 VHC Importeren</button>
-      <button class="btn btn-ghost" onclick="openInOneImportModal()">📋 InOne importeren</button>
       <button class="btn btn-primary" onclick="openIngModal()">+ Toevoegen</button>
     </div>
   </div>
@@ -970,9 +968,7 @@
     <div style="margin-bottom:12px;flex:1;display:flex;flex-direction:column">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-light)">InOne tekst plakken</div>
-        <button id="inone-ai-btn" class="btn btn-ghost" onclick="inoneAiOpschonen()" style="font-size:10px;padding:4px 10px;display:flex;align-items:center;gap:5px">
-          ✨ AI opschonen
-        </button>
+
       </div>
       <textarea id="inone-tekst" placeholder="Plak hier de InOne tekst…&#10;&#10;Voorbeeld:&#10;Boter neutraal rol dun 700 gr.&#10;€ 8,42 per Stuks&#10;22202&#10;Aantal&#10;Stuks&#10;&#10;Achterham lindenhoff dik gesn.250gr&#10;€ 9,15 per Stuks&#10;19405&#10;Aantal&#10;Stuks"
         style="flex:1;min-height:200px;background:#faf7f2;border:1px solid var(--border);border-radius:2px;color:var(--text);font-family:'Source Sans 3',sans-serif;font-size:13px;padding:10px 12px;outline:none;resize:vertical;line-height:1.6;transition:border-color 0.2s"
@@ -1694,14 +1690,10 @@ function applyRole(role) {
   if (role === 'medewerker' || role === 'chef') {
     document.body.setAttribute('data-role', role);
     if (ingTab) ingTab.style.display = 'none';
-    const impBtn2 = document.getElementById('ing-import-btn');
-    if (impBtn2) impBtn2.style.display = 'none';
     applyChefRestrictions();
   } else {
     document.body.setAttribute('data-role', 'admin');
     if (ingTab) ingTab.style.display = '';
-    const impBtn = document.getElementById('ing-import-btn');
-    if (impBtn) impBtn.style.display = '';
   }
 }
 
@@ -2718,88 +2710,8 @@ function recalcModal(containerId) {
 }
 
 // INONE IMPORT
-function openInOneImportModal() {
-  document.getElementById('inone-tekst').value = '';
-  document.getElementById('inone-resultaat').style.display = 'none';
-  document.getElementById('inone-resultaat').innerHTML = '';
-  const statusEl = document.getElementById('inone-ai-status');
-  if (statusEl) { statusEl.style.display = 'none'; statusEl.textContent = ''; }
-  const btn = document.getElementById('inone-ai-btn');
-  if (btn) { btn.disabled = false; btn.textContent = '✨ AI opschonen'; }
-  document.getElementById('modal-inone-import').classList.add('open');
-}
 
-async function inoneAiOpschonen() {
-  const tekst = document.getElementById('inone-tekst').value.trim();
-  if (!tekst) { toast('Plak eerst een InOne tekst om op te schonen'); return; }
 
-  const btn = document.getElementById('inone-ai-btn');
-  const statusEl = document.getElementById('inone-ai-status');
-
-  btn.disabled = true;
-  btn.textContent = '⏳ Bezig…';
-  statusEl.style.display = 'block';
-  statusEl.textContent = 'AI verwerkt de tekst…';
-
-  const systeemPrompt = `Je bent een data-opschoner voor een horeca kostprijscalculator.
-Je krijgt ruwe gekopieerde tekst uit het InOne bestelplatform.
-Zet dit om naar een schone lijst van producten, elk blok in dit exacte formaat:
-
-Naam product
-€ X,XX per Eenheid
-SKU
-Aantal
-Eenheid
-
-Regels:
-- Naam: alleen de productnaam, geen SKU of extra codes
-- Prijs: altijd formaat "€ X,XX per Stuks" (of per Kg, per Liter, per 100g, etc.)
-- SKU: alleen het getal
-- Vierde regel is altijd letterlijk "Aantal"
-- Vijfde regel is de eenheid (Stuks, Kg, Liter, etc.)
-- Lege regels tussen producten zijn OK
-- Verwijder alle andere tekst zoals headers, totalen, knoppen, navigatie etc.
-- Geef ALLEEN de opgeschoonde lijst terug, geen uitleg of commentaar`;
-
-  try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 4000,
-        system: systeemPrompt,
-        messages: [{ role: 'user', content: tekst }]
-      })
-    });
-
-    const data = await response.json();
-
-    if (!response.ok || !data.content || !data.content[0]) {
-      throw new Error(data.error?.message || 'AI gaf geen geldig antwoord');
-    }
-
-    const opgeschoond = data.content
-      .filter(b => b.type === 'text')
-      .map(b => b.text)
-      .join('\n')
-      .trim();
-
-    document.getElementById('inone-tekst').value = opgeschoond;
-    statusEl.style.display = 'block';
-    statusEl.style.color = 'var(--green)';
-    statusEl.textContent = '✅ Tekst opgeschoond door AI — controleer en klik op Importeren.';
-    btn.disabled = false;
-    btn.textContent = '✨ Opnieuw';
-
-  } catch(e) {
-    statusEl.style.display = 'block';
-    statusEl.style.color = 'var(--danger)';
-    statusEl.textContent = '❌ AI fout: ' + e.message;
-    btn.disabled = false;
-    btn.textContent = '✨ AI opschonen';
-  }
-}
 
 function parseInOneTekst(tekst) {
   // Elke product-blok heeft het patroon:
@@ -4733,24 +4645,6 @@ let _iimXlsxData = [];   // [{sku, naam, salesUnit, eenheid}]
 let _iimVhcPrijzen = {}; // {sku: prijs}
 let _iimAnalyse = null;  // resultaat van analyse
 
-function openIngImportModal() {
-  _iimXlsxData = [];
-  _iimVhcPrijzen = {};
-  _iimAnalyse = null;
-  iimNaarStap1();
-  // Reset velden
-  const lbl = document.getElementById('iim-upload-label');
-  if (lbl) lbl.textContent = 'Klik of sleep VHC XLSX hier';
-  const zone = document.getElementById('iim-upload-zone');
-  if (zone) zone.style.borderColor = 'var(--border)';
-  const st = document.getElementById('iim-xlsx-status');
-  if (st) { st.style.display = 'none'; st.textContent = ''; }
-  const ta = document.getElementById('iim-vhc-tekst');
-  if (ta) ta.value = '';
-  const vs = document.getElementById('iim-vhc-status');
-  if (vs) { vs.style.display = 'none'; vs.textContent = ''; }
-  openModal('modal-ing-import');
-}
 
 function iimNaarStap1() {
   document.getElementById('iim-stap-1').style.display = '';
