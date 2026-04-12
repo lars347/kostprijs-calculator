@@ -4671,13 +4671,13 @@ function parseerSalesUnit(salesUnit) {
     return { eenheid: 'kg', factor: hoeveelheid / 1000, omschrijving: hoeveelheid + ' g → kg' };
   }
   if (eenheidRaw === 'liter' || eenheidRaw === 'l') {
-    return { eenheid: 'kg', factor: hoeveelheid, omschrijving: hoeveelheid + ' l → kg' };
+    return { eenheid: 'liter', factor: hoeveelheid, omschrijving: hoeveelheid + ' l' };
   }
   if (eenheidRaw === 'centiliter' || eenheidRaw === 'cl') {
-    return { eenheid: 'kg', factor: hoeveelheid / 100, omschrijving: hoeveelheid + ' cl → kg' };
+    return { eenheid: 'liter', factor: hoeveelheid / 100, omschrijving: hoeveelheid + ' cl → l' };
   }
   if (eenheidRaw === 'milliliter' || eenheidRaw === 'ml') {
-    return { eenheid: 'kg', factor: hoeveelheid / 1000, omschrijving: hoeveelheid + ' ml → kg' };
+    return { eenheid: 'liter', factor: hoeveelheid / 1000, omschrijving: hoeveelheid + ' ml → l' };
   }
   if (eenheidRaw === 'stuks' || eenheidRaw === 'stuk') {
     return { eenheid: 'stuk', factor: hoeveelheid, omschrijving: hoeveelheid + ' stuks' };
