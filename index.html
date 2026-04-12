@@ -3631,7 +3631,6 @@ function autoSaveFin() {
   clearTimeout(finSaveTimer);
   finSaveTimer = setTimeout(async () => { await flushFin(); }, 500);
 }
-}
 
 async function saveFinancieel() {
   if (isReadOnly()) { closeModal('modal-fin'); return; }
