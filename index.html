@@ -64,7 +64,9 @@
   .scrollable { overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 2px; }
   table { width: 100%; border-collapse: collapse; }
   th { font-family: 'Source Sans 3', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light); text-align: left; padding: 12px 16px; border-bottom: 2px solid var(--border); background: #faf7f2; }
-  td { padding: 10px 16px; border-bottom: 1px solid #ede8df; font-size: 14px; }
+  td { padding: 10px 16px; border-bottom: 1px solid #ede8df; font-size: 14px; white-space: nowrap; }
+  td:first-child { white-space: normal; }
+  .ing-action-cell { white-space: nowrap; text-align: right; }
   tr:last-child td { border-bottom: none; }
   tr:hover td { background: #faf7f2; }
   .mono { font-family: 'Courier Prime', monospace; }
@@ -96,7 +98,7 @@
   .card-meta-value { font-family: 'Courier Prime', monospace; font-size: 13px; font-weight: 700; color: var(--text); }
 
   /* BADGE */
-  .badge { display: inline-block; padding: 2px 9px; font-family: 'Source Sans 3', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; border-radius: 2px; }
+  .badge { display: inline-block; padding: 2px 9px; font-family: 'Source Sans 3', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; border-radius: 2px; white-space: nowrap; }
   .badge-green { background: rgba(46,92,46,0.1); color: var(--green); }
   .badge-red { background: rgba(139,32,32,0.1); color: var(--danger); }
   .badge-brown { background: rgba(156,21,21,0.08); color: var(--red); }
