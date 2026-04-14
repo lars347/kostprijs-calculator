@@ -321,7 +321,7 @@
   </div>
   <div class="scrollable">
     <table>
-      <thead><tr><th>Naam</th><th>Categorie</th><th>Eenheid</th><th>Prijs / eenheid</th><th>Prijs / 100g·ml</th><th></th></tr></thead>
+      <thead><tr><th>Naam</th><th>Categorie</th><th>Eenheid</th><th>Prijs / eenheid</th><th>Prijs / 100g · ml</th><th></th></tr></thead>
       <tbody id="ing-tbody">
         <tr id="ing-empty"><td colspan="6"><div class="empty-state"><div class="empty-icon">🥬</div><p>Nog geen ingrediënten toegevoegd</p></div></td></tr>
       </tbody>
@@ -2919,12 +2919,18 @@ function renderIngredienten() {
   tbody.querySelectorAll('tr.ing-row').forEach(r=>r.remove());
   document.getElementById('ing-empty').style.display=ingredienten.length?'none':'';
   ingredienten.forEach((ing,idx)=>{
-    const p100=pricePerHundred(ing);
     const eU = (ing.eenheid||'').toLowerCase();
+    const isStuk = eU === 'stuk';
     const inkLabel = eU==='g' ? '100g' : eU==='ml' ? '100ml' : ing.eenheid;
-    const kostLabel = ing.eenheid==='stuk' ? 'stuk' : (eU==='kg'||eU==='g') ? '100g' : '100ml';
+    const p100Cell = isStuk
+      ? `<td class="mono" style="color:var(--muted);font-style:italic">— / stuk</td>`
+      : (()=>{
+          const p100 = pricePerHundred(ing);
+          const kostLabel = (eU==='kg'||eU==='g') ? '100g' : '100ml';
+          return `<td class="mono" style="color:var(--red);font-weight:600">€ ${p100.toFixed(4).replace('.',',')} / ${kostLabel}</td>`;
+        })();
     const tr=document.createElement('tr'); tr.className='ing-row';
-    tr.innerHTML=`<td><strong style="color:#1a1a1a">${ing.naam}</strong></td><td><span class="badge badge-brown">${ing.leverancier||ing.categorie}</span></td><td class="mono">${ing.eenheid}</td><td class="mono">€ ${ing.prijs.toFixed(2).replace('.',',')} / ${inkLabel}</td><td class="mono" style="color:var(--red);font-weight:600">€ ${p100.toFixed(4).replace('.',',')} / ${kostLabel}</td><td class="ing-action-cell"></td>`;
+    tr.innerHTML=`<td><strong style="color:#1a1a1a">${ing.naam}</strong></td><td><span class="badge badge-brown">${ing.leverancier||ing.categorie}</span></td><td class="mono">${ing.eenheid}</td><td class="mono">€ ${ing.prijs.toFixed(2).replace('.',',')} / ${inkLabel}</td>${p100Cell}<td class="ing-action-cell"></td>`;
     // Add action buttons only for admin
     const actionCell = tr.querySelector('.ing-action-cell');
     if (actionCell && !isReadOnly()) {
