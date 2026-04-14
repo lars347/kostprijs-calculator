@@ -1159,6 +1159,17 @@
 
 
 <!-- SPIEKBRIEFJES SELECTIE MODAL -->
+<!-- PRIJSHISTORIE MODAL -->
+<div class="modal-overlay" id="modal-prijshistorie">
+  <div class="modal" style="width:520px;max-height:88vh;display:flex;flex-direction:column">
+    <div class="modal-title" id="ph-titel">Prijshistorie</div>
+    <div id="ph-content" style="flex:1;overflow-y:auto;min-height:0"></div>
+    <div style="display:flex;justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-ghost" onclick="closeModal('modal-prijshistorie')">Sluiten</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-spiek">
   <div class="modal" style="width:440px">
     <div class="modal-title">🖨️ Spiekbriefjes printen</div>
@@ -5353,6 +5364,66 @@ async function getPrijsHistorie(ingId) {
   } catch(e) {
     try { return JSON.parse(localStorage.getItem('prijshist_' + ingId) || '[]'); } catch(e2) { return []; }
   }
+}
+
+async function openPrijsHistorie(idx) {
+  const ing = ingredienten[idx];
+  if (!ing) return;
+  document.getElementById('ph-titel').textContent = '📈 Prijshistorie — ' + ing.naam;
+  const content = document.getElementById('ph-content');
+  content.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:16px 0">Laden…</div>';
+  document.getElementById('modal-prijshistorie').classList.add('open');
+
+  const historie = await getPrijsHistorie(ing.id);
+
+  if (!historie || historie.length === 0) {
+    content.innerHTML = `<div style="text-align:center;padding:32px 0;color:var(--muted)">
+      <div style="font-size:28px;margin-bottom:8px">📭</div>
+      <div style="font-size:13px">Nog geen prijswijzigingen geregistreerd</div>
+      <div style="font-size:11px;margin-top:4px">Huidige prijs: <strong>€ ${(ing.prijs||0).toFixed(2).replace('.',',')} / ${ing.eenheid}</strong></div>
+    </div>`;
+    return;
+  }
+
+  const fmt = (p) => '€\u00a0' + (parseFloat(p)||0).toFixed(2).replace('.',',');
+  const fmtDatum = (d) => {
+    if (!d) return '—';
+    const dt = new Date(d);
+    return dt.toLocaleDateString('nl-NL', { day:'2-digit', month:'short', year:'numeric' })
+      + ' ' + dt.toLocaleTimeString('nl-NL', { hour:'2-digit', minute:'2-digit' });
+  };
+
+  let html = `<table style="width:100%;border-collapse:collapse">
+    <thead>
+      <tr>
+        <th style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 12px;border-bottom:2px solid var(--border)">Datum</th>
+        <th style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);text-align:right;padding:8px 12px;border-bottom:2px solid var(--border)">Oude prijs</th>
+        <th style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);text-align:right;padding:8px 12px;border-bottom:2px solid var(--border)">Nieuwe prijs</th>
+        <th style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);text-align:right;padding:8px 12px;border-bottom:2px solid var(--border)">Verschil</th>
+      </tr>
+    </thead><tbody>`;
+
+  historie.forEach((r, i) => {
+    const oud = parseFloat(r.oud) || 0;
+    const nieuw = parseFloat(r.nieuw) || 0;
+    const diff = nieuw - oud;
+    const pct = oud > 0 ? ((diff / oud) * 100).toFixed(1) : null;
+    const stijging = diff > 0;
+    const kleur = diff === 0 ? 'var(--muted)' : stijging ? 'var(--danger)' : '#1a7a45';
+    const pijl = diff === 0 ? '—' : stijging ? '▲' : '▼';
+    const diffTxt = diff === 0 ? '—'
+      : `${pijl} ${fmt(Math.abs(diff))}${pct ? ' (' + pct + '%)' : ''}`;
+    const bg = i % 2 === 0 ? 'transparent' : '#faf7f2';
+    html += `<tr style="background:${bg}">
+      <td style="padding:9px 12px;font-size:13px;color:var(--text-light);border-bottom:1px solid var(--border)">${fmtDatum(r.datum)}</td>
+      <td style="padding:9px 12px;font-size:13px;font-family:'Courier Prime',monospace;text-align:right;border-bottom:1px solid var(--border);color:var(--muted)">${fmt(oud)} / ${ing.eenheid}</td>
+      <td style="padding:9px 12px;font-size:13px;font-family:'Courier Prime',monospace;text-align:right;border-bottom:1px solid var(--border);font-weight:600">${fmt(nieuw)} / ${ing.eenheid}</td>
+      <td style="padding:9px 12px;font-size:13px;font-family:'Courier Prime',monospace;text-align:right;border-bottom:1px solid var(--border);color:${kleur};font-weight:600">${diffTxt}</td>
+    </tr>`;
+  });
+
+  html += '</tbody></table>';
+  content.innerHTML = html;
 }
 
 // ── App initialisatie ─────────────────────────────────────────────────────────
