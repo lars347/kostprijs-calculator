@@ -349,14 +349,6 @@
         <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px">🔍</span>
         <input type="text" id="hf-search" placeholder="Zoek op naam…" oninput="filterRecepturen()" style="padding-left:36px;width:100%;height:38px">
       </div>
-      <select id="hf-cat-filter" onchange="filterRecepturen()" style="width:180px;height:38px">
-        <option value="">Alle categorieën</option>
-        <option>Sauzen & Fonds</option>
-        <option>Purees & Crèmes</option>
-        <option>Marineringen</option>
-        <option>Deeg & Beslag</option>
-        <option>Overig</option>
-      </select>
     </div>
     <div class="card-grid" id="hf-cards">
       <div class="empty-state" id="hf-empty" style="grid-column:1/-1"><div class="empty-icon">🍲</div><p>Nog geen recepturen aangemaakt</p></div>
@@ -499,9 +491,6 @@
   <div class="modal" style="width:620px">
     <div class="modal-title" id="hf-modal-title">Nieuw receptuur</div>
     <div class="input-group"><label>Naam</label><input type="text" id="hf-naam" placeholder="bijv. Fond de veau" oninput="scheduleAutoSaveHf()"></div>
-    <div class="input-group"><label>Categorie</label>
-      <select id="hf-cat" onchange="scheduleAutoSaveHf()"><option>Sauzen & Fonds</option><option>Purees & Crèmes</option><option>Marineringen</option><option>Deeg & Beslag</option><option>Overig</option></select>
-    </div>
     <div class="input-group"><label>Opbrengst (g/ml)</label><input type="number" id="hf-opbrengst" placeholder="bijv. 1000" min="1" oninput="scheduleAutoSaveHf()"></div>
     <div style="margin-top:16px">
       <div class="comp-section-label">Ingrediënten</div>
@@ -1306,6 +1295,8 @@ async function loadAllData() {
 
     ingredienten = (ing || []).map(r => ({
       ...r,
+      leverancier: normLeverancier(r.leverancier || r.categorie),
+      categorie:   normLeverancier(r.leverancier || r.categorie),
       productCategorie: r.productCategorie || r.productcategorie || '',
       spieknaam: r.spieknaam || '',
       sku: r.sku || ''
@@ -2335,7 +2326,7 @@ async function flushHf() {
   const compHfF  = getCompRowsFast('hf-comps-hf');
   const componenten = [...compIngF, ...compHfF];
   const totalCost = componenten.reduce((s,r) => s + costForRow(r.sourceType, r.sourceId, r.hoeveelheid, r.eenheid), 0);
-  const hf = {naam, categorie: document.getElementById('hf-cat')?.value || 'Overig', opbrengst, componenten, kostprijs: (totalCost/opbrengst)*100, id: editHfIdx>=0 ? recepturen[editHfIdx]?.id : Date.now()};
+  const hf = {naam, opbrengst, componenten, kostprijs: (totalCost/opbrengst)*100, id: editHfIdx>=0 ? recepturen[editHfIdx]?.id : Date.now()};
   if (editHfIdx>=0) recepturen[editHfIdx] = hf;
   else { recepturen.push(hf); editHfIdx = recepturen.length-1; }
   await sbSaveHf(hf);
@@ -2421,6 +2412,11 @@ function pricePerGram(ing) {
   }
 }
 function isStukEenheid(e) { return ['stuk','stuks','stucks','piece','st'].includes((e||'').toLowerCase()); }
+function normLeverancier(lev) {
+  const l = (lev||'').trim().toUpperCase();
+  if (l.startsWith('VHC')) return 'VHC';
+  return lev||'Overig';
+}
 function pricePerHundred(ing) {
   if (isStukEenheid(ing.eenheid)) return parseFloat(ing.prijs)||0;
   return pricePerGram(ing)*100; // €/g × 100 = €/100g (of €/ml × 100 = €/100ml)
@@ -3057,7 +3053,6 @@ function openHfModal(idx=-1) {
       if (!hf) { toast('Receptuur niet gevonden'); return; }
       document.getElementById('hf-modal-title').textContent='Receptuur bewerken';
       document.getElementById('hf-naam').value=hf.naam;
-      document.getElementById('hf-cat').value=hf.categorie||'Sauzen & Fonds';
       document.getElementById('hf-opbrengst').value=hf.opbrengst||'';
       (hf.compIng||hf.componenten||[]).forEach(c=>addCompRow('hf-comps-ing','ing',c));
       (hf.compHf||[]).forEach(c=>addCompRow('hf-comps-hf','hf',c));
@@ -3083,7 +3078,7 @@ async function saveHf(silent=false) {
   const compHf  = silent ? getCompRowsFast('hf-comps-hf')  : getCompRows('hf-comps-hf');
   const componenten = [...compIng, ...compHf];
   const totalCost = componenten.reduce((s,r) => s+costForRow(r.sourceType,r.sourceId,r.hoeveelheid,r.eenheid), 0);
-  const hf = {naam, categorie: document.getElementById('hf-cat').value, opbrengst, componenten, compIng, compHf, kostprijs:(totalCost/opbrengst)*100, id: editHfIdx>=0 ? recepturen[editHfIdx].id : Date.now()};
+  const hf = {naam, opbrengst, componenten, compIng, compHf, kostprijs:(totalCost/opbrengst)*100, id: editHfIdx>=0 ? recepturen[editHfIdx].id : Date.now()};
   if (!silent) snapshot(editHfIdx>=0 ? 'Receptuur bewerkt' : 'Receptuur toegevoegd');
   if (editHfIdx>=0) { recepturen[editHfIdx]=hf; }
   else { recepturen.push(hf); editHfIdx=recepturen.length-1; }
@@ -3106,7 +3101,7 @@ function renderHfCards() {
   document.getElementById('hf-empty').style.display=recepturen.length?'none':'';
   recepturen.forEach((hf,idx)=>{
     const card=document.createElement('div'); card.className='card hf-card'; card.onclick=()=>openHfDetail(idx);
-    card.innerHTML=`<div class="card-label">${hf.categorie}</div><div class="card-name">${hf.naam}</div><div class="card-sub">${hf.componenten.length} componenten · opbrengst ${hf.opbrengst}g/ml</div>${kanFinancieelZien() ? `<div class="card-meta"><div class="card-meta-item"><div class="card-meta-label">Kostprijs / 100g</div><div class="card-meta-value" style="color:var(--red)">€ ${hf.kostprijs.toFixed(4).replace('.',',')}</div></div><div class="card-meta-item"><div class="card-meta-label">Per kg</div><div class="card-meta-value">€ ${(hf.kostprijs*10).toFixed(2).replace('.',',')}</div></div></div>` : ''}`;
+    card.innerHTML=`<div class="card-name">${hf.naam}</div><div class="card-sub">${hf.componenten.length} componenten · opbrengst ${hf.opbrengst}g/ml</div>${kanFinancieelZien() ? `<div class="card-meta"><div class="card-meta-item"><div class="card-meta-label">Kostprijs / 100g</div><div class="card-meta-value" style="color:var(--red)">€ ${hf.kostprijs.toFixed(4).replace('.',',')}</div></div><div class="card-meta-item"><div class="card-meta-label">Per kg</div><div class="card-meta-value">€ ${(hf.kostprijs*10).toFixed(2).replace('.',',')}</div></div></div>` : ''}`;
     container.appendChild(card);
   });
   document.getElementById('s-hf-count').textContent=recepturen.length;
@@ -3138,7 +3133,7 @@ function openHfDetail(idx) {
   document.getElementById('hf-detail-content').innerHTML=`
     ${hf.foto ? `<img src="${hf.foto}" class="detail-foto" alt="${hf.naam}">` : ''}
     <div class="detail-header">
-      <div><div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:6px">${hf.categorie}</div><div class="detail-title">${hf.naam}</div><div style="font-size:13px;color:var(--muted);margin-top:6px">Opbrengst: ${hf.opbrengst}g/ml</div></div>
+      <div><div class="detail-title">${hf.naam}</div><div style="font-size:13px;color:var(--muted);margin-top:6px">Opbrengst: ${hf.opbrengst}g/ml</div></div>
       ${!isReadOnly() ? `<div style="display:flex;gap:8px"><button class="btn btn-ghost" onclick="openHfModal(${idx})">✎ Bewerken</button><button class="btn btn-danger" onclick="deleteHf(${idx});closeDetail('hf')" style="border:1px solid var(--border)">Verwijderen</button></div>` : ''}
     </div>
     <div class="detail-grid">
@@ -3949,14 +3944,10 @@ async function saveFinancieel() {
 }
 
 function filterRecepturen() {
-  const q   = (document.getElementById('hf-search')?.value || '').toLowerCase();
-  const cat = document.getElementById('hf-cat-filter')?.value || '';
+  const q = (document.getElementById('hf-search')?.value || '').toLowerCase();
   document.querySelectorAll('#hf-cards .hf-card').forEach(card => {
     const naam = card.querySelector('.card-name')?.textContent.toLowerCase() || '';
-    const cardCat = card.querySelector('.card-label')?.textContent || '';
-    const matchQ   = !q   || naam.includes(q);
-    const matchCat = !cat || cardCat === cat;
-    card.style.display = (matchQ && matchCat) ? '' : 'none';
+    card.style.display = (!q || naam.includes(q)) ? '' : 'none';
   });
 }
 
@@ -4242,8 +4233,8 @@ function laadInkoopItems(mkId, bestaandeItems) {
 
   // Sorteer: VHC eerst, dan rest gesorteerd per leverancier alfab, binnen leverancier op naam
   const alleItems = [...ingMap.values()];
-  const vhcItems = alleItems.filter(i => (i.leverancier||'Overig') === 'VHC').sort((a,b) => (a.spieknaam||a.naam).localeCompare(b.spieknaam||b.naam));
-  const overigItems = alleItems.filter(i => (i.leverancier||'Overig') !== 'VHC').sort((a,b) => {
+  const vhcItems = alleItems.filter(i => normLeverancier(i.leverancier||'Overig') === 'VHC').sort((a,b) => (a.spieknaam||a.naam).localeCompare(b.spieknaam||b.naam));
+  const overigItems = alleItems.filter(i => normLeverancier(i.leverancier||'Overig') !== 'VHC').sort((a,b) => {
     const levCmp = (a.leverancier||'Overig').localeCompare(b.leverancier||'Overig');
     return levCmp !== 0 ? levCmp : (a.spieknaam||a.naam).localeCompare(b.spieknaam||b.naam);
   });
@@ -4256,7 +4247,7 @@ function laadInkoopItems(mkId, bestaandeItems) {
     let levHeader = '';
     if (lev !== huidigeLev) {
       huidigeLev = lev;
-      const isVhc = lev === 'VHC';
+      const isVhc = normLeverancier(lev) === 'VHC';
       levHeader = `<div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
         color:${isVhc ? '#fff' : 'var(--red)'};
         background:${isVhc ? '#8B1C1C' : 'var(--surface2)'};
@@ -4437,8 +4428,8 @@ function _printInkooplijstData(lijst) {
 
   if (!ingevuld.length) { toast('Geen ingrediënten om te printen'); return; }
 
-  const vhcItems = ingevuld.filter(r => r.leverancier === 'VHC').sort((a,b) => a.naam.localeCompare(b.naam));
-  const overigItems = ingevuld.filter(r => r.leverancier !== 'VHC').sort((a,b) => {
+  const vhcItems = ingevuld.filter(r => normLeverancier(r.leverancier) === 'VHC').sort((a,b) => a.naam.localeCompare(b.naam));
+  const overigItems = ingevuld.filter(r => normLeverancier(r.leverancier) !== 'VHC').sort((a,b) => {
     const lc = a.leverancier.localeCompare(b.leverancier);
     return lc !== 0 ? lc : a.naam.localeCompare(b.naam);
   });
@@ -5260,7 +5251,7 @@ async function vhcVerwerken() {
 
   const xlsxNamen = new Set(_vhcXlsxData.map(p => normNaam(p.naam)));
   ingredienten.forEach(ing => {
-    if ((ing.leverancier||'').toLowerCase() !== 'vhc') return;
+    if (normLeverancier(ing.leverancier) !== 'VHC') return;
     if (!xlsxNamen.has(normNaam(ing.naam))) rapport.wegUitLijst.push({ ingNaam: ing.naam });
   });
 
