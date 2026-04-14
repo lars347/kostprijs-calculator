@@ -2407,9 +2407,9 @@ function pricePerGram(ing) {
     default:      return p;
   }
 }
+function isStukEenheid(e) { return ['stuk','stuks','stucks','piece','st'].includes((e||'').toLowerCase()); }
 function pricePerHundred(ing) {
-  const e = (ing.eenheid||'').toLowerCase();
-  if (e==='stuk') return parseFloat(ing.prijs)||0;
+  if (isStukEenheid(ing.eenheid)) return parseFloat(ing.prijs)||0;
   return pricePerGram(ing)*100; // €/g × 100 = €/100g (of €/ml × 100 = €/100ml)
 }
 function costForRow(sourceType, sourceId, hoeveelheid, eenheid) {
@@ -2418,7 +2418,7 @@ function costForRow(sourceType, sourceId, hoeveelheid, eenheid) {
   if (sourceType==='ing') {
     const ing = ingredienten.find(x=>x.id==sourceId); if (!ing) return 0;
     const ingE = (ing.eenheid||'').toLowerCase();
-    if (ingE==='stuk' || eenh==='stuk') return pricePerGram(ing)*hoeveelheid;
+    if (isStukEenheid(ingE) || isStukEenheid(eenh)) return (parseFloat(ing.prijs)||0)*hoeveelheid;
     const ppg = pricePerGram(ing);
     return (eenh==='kg'||eenh==='l'||eenh==='liter') ? ppg*hoeveelheid*1000 : ppg*hoeveelheid;
   }
@@ -2920,7 +2920,7 @@ function renderIngredienten() {
   document.getElementById('ing-empty').style.display=ingredienten.length?'none':'';
   ingredienten.forEach((ing,idx)=>{
     const eU = (ing.eenheid||'').toLowerCase();
-    const isStuk = eU === 'stuk';
+    const isStuk = isStukEenheid(eU);
     const inkLabel = eU==='g' ? '100g' : eU==='ml' ? '100ml' : ing.eenheid;
     const p100Cell = isStuk
       ? `<td class="mono" style="color:var(--muted);font-style:italic">— / stuk</td>`
