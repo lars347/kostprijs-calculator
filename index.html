@@ -3659,8 +3659,10 @@ function mkDetailRows(mk) {
     const gerRows = items.map(({ ger, gid }) => {
       const vp = ger.verkoopprijs || 0;
       const vpIncl = vp > 0 ? (vp * (1 + (parseFloat(ger.btw)||9)/100)) : 0;
-      const inkoop = vp > 0 ? (ger.kostprijs / vp * 100) : null;
-      const kleur = inkoop === null ? 'var(--muted)' : inkoop <= 35 ? 'var(--green)' : inkoop <= 50 ? '#c4a060' : 'var(--danger)';
+      const kpMetWaste = ger.kostprijs * (1 + (parseFloat(ger.waste)||0) / 100);
+      const inkoop = vp > 0 ? (kpMetWaste / vp * 100) : null;
+      const doel = parseFloat(ger.doelmarge) || 30;
+      const kleur = inkoop === null ? 'var(--muted)' : inkoop <= doel ? 'var(--green)' : inkoop <= doel + 15 ? '#c4a060' : 'var(--danger)';
       const gerIdx = gerechten.indexOf(ger);
       return `<tr>
         <td style="padding-left:28px">
