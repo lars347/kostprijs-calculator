@@ -2207,15 +2207,15 @@ async function sbSaveHf(hf) {
 }
 
 async function sbSaveGer(ger) {
-  try {
-    const {id, ...data} = ger;
-    if (id && String(id).length < 13) {
-      await sbFetch('gerechten', 'PATCH', data, `?id=eq.${id}`);
-    } else {
-      const res = await sbFetch('gerechten', 'POST', data);
-      if (res && res[0]) ger.id = res[0].id;
-    }
-  } catch(e) { console.error('Opslaan gerecht mislukt:', e); toast('Fout bij opslaan'); }
+  const {id, ...data} = ger;
+  console.log('[sbSaveGer] verzenden →', id && String(id).length < 13 ? 'PATCH' : 'POST', JSON.stringify(data));
+  if (id && String(id).length < 13) {
+    await sbFetch('gerechten', 'PATCH', data, `?id=eq.${id}`);
+  } else {
+    const res = await sbFetch('gerechten', 'POST', data);
+    console.log('[sbSaveGer] Supabase respons →', JSON.stringify(res));
+    if (res && res[0]) ger.id = res[0].id;
+  }
 }
 
 async function sbSaveMk(mk) {
@@ -3201,7 +3201,14 @@ async function saveGer(silent=false) {
   if (!silent) snapshot(editGerIdx>=0 ? 'Gerecht bewerkt' : 'Gerecht toegevoegd');
   if (editGerIdx>=0) { gerechten[editGerIdx]=ger; }
   else { gerechten.push(ger); editGerIdx=gerechten.length-1; }
-  await sbSaveGer(ger);
+
+  try {
+    await sbSaveGer(ger);
+  } catch(e) {
+    console.error('[saveGer] Supabase fout:', e.message);
+    toast('❌ Opslaan mislukt: ' + e.message);
+    return;
+  }
 
   // Als nieuw gerecht: vervang tijdelijk timestamp ID door echt Supabase ID in alle menukaarten
   if (isNieuw && ger.id !== tijdelijkId) {
