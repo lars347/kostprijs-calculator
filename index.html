@@ -2206,15 +2206,63 @@ async function sbSaveHf(hf) {
   } catch(e) { console.error('Opslaan receptuur mislukt:', e); toast('Fout bij opslaan'); }
 }
 
+// Kolommen die BESTAAN in de Supabase gerechten tabel.
+// Voeg hier een veld toe zodra je de kolom ook in Supabase aanmaakt:
+//   beschrijving  text        default ''
+//   spieknaam     text        default ''
+//   foto          text        default null
+//   verkoopprijs  numeric     default 0
+//   btw           text        default '9'
+//   doelmarge     numeric     default 30
+//   waste         numeric     default 0
+const GER_DB_COLS = ['naam','categorie','porties','compIng','compHf','kostprijs',
+                     'beschrijving','spieknaam','foto','verkoopprijs','btw','doelmarge','waste'];
+
 async function sbSaveGer(ger) {
-  const {id, ...data} = ger;
-  console.log('[sbSaveGer] verzenden →', id && String(id).length < 13 ? 'PATCH' : 'POST', JSON.stringify(data));
-  if (id && String(id).length < 13) {
-    await sbFetch('gerechten', 'PATCH', data, `?id=eq.${id}`);
-  } else {
-    const res = await sbFetch('gerechten', 'POST', data);
-    console.log('[sbSaveGer] Supabase respons →', JSON.stringify(res));
-    if (res && res[0]) ger.id = res[0].id;
+  const {id} = ger;
+  // Bouw data op — sla velden over die de DB nog niet kent (PGRST204 vangnet)
+  const kandidaat = {
+    naam:         ger.naam,
+    categorie:    ger.categorie,
+    porties:      ger.porties,
+    compIng:      ger.compIng     || [],
+    compHf:       ger.compHf      || [],
+    kostprijs:    ger.kostprijs,
+    beschrijving: ger.beschrijving || '',
+    spieknaam:    ger.spieknaam   || '',
+    foto:         ger.foto        || null,
+    verkoopprijs: ger.verkoopprijs || 0,
+    btw:          ger.btw         || '9',
+    doelmarge:    ger.doelmarge   || 30,
+    waste:        ger.waste       || 0,
+  };
+
+  // Probeer met alle velden; bij ontbrekende kolom opnieuw met alleen kernvelden
+  const kernData = {naam: kandidaat.naam, categorie: kandidaat.categorie,
+                    porties: kandidaat.porties, compIng: kandidaat.compIng,
+                    compHf: kandidaat.compHf, kostprijs: kandidaat.kostprijs};
+
+  const verzend = async (data) => {
+    if (id && String(id).length < 13) {
+      return sbFetch('gerechten', 'PATCH', data, `?id=eq.${id}`);
+    } else {
+      const res = await sbFetch('gerechten', 'POST', data);
+      if (res && res[0]) ger.id = res[0].id;
+      return res;
+    }
+  };
+
+  try {
+    await verzend(kandidaat);
+  } catch(e) {
+    if (e.message && e.message.includes('PGRST204')) {
+      // Eén of meer kolommen bestaan nog niet — sla op met kernvelden
+      console.warn('[sbSaveGer] Ontbrekende kolom(men), opslaan met kernvelden. Voeg ontbrekende kolommen toe in Supabase:', e.message);
+      await verzend(kernData);
+      toast('⚠️ Gedeeltelijk opgeslagen — voeg ontbrekende kolommen toe in Supabase');
+    } else {
+      throw e;
+    }
   }
 }
 
