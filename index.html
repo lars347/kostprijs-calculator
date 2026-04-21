@@ -314,10 +314,6 @@
     </div>
     <select id="ing-cat-filter" onchange="filterIngredienten()" style="width:200px;height:38px">
       <option value="">Alle leveranciers</option>
-      <option>Bokall</option><option>VHC</option><option>Lindenhoff</option>
-      <option>Kroket en Co</option><option>Dynamite Cookies</option>
-      <option>Bawykov</option><option>Van Driessenfood</option>
-      <option>Femke Patissier</option><option>Schmidt Zeevis</option><option>Overig</option>
     </select>
     <span id="ing-count-label" style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);white-space:nowrap"></span>
   </div>
@@ -452,10 +448,6 @@
     <div class="input-group"><label>Spiekbrief naam</label><input type="text" id="ing-spieknaam" placeholder="Korte naam voor spiekbriefje (optioneel)" oninput="autoSaveIng()"></div>
     <div class="input-group"><label>Leverancier</label>
       <select id="ing-leverancier">
-        <option>Bokall</option><option>VHC</option><option>Lindenhoff</option>
-        <option>Kroket en Co</option><option>Dynamite Cookies</option>
-        <option>Bawykov</option><option>Van Driessenfood</option>
-        <option>Femke Patissier</option><option>Schmidt Zeevis</option><option>Overig</option>
       </select>
     </div>
     <div class="input-group"><label>Productcategorie</label>
@@ -948,10 +940,6 @@
     <div class="input-group" style="margin-bottom:16px">
       <label>Leverancier</label>
       <select id="inone-leverancier" style="height:38px">
-        <option>Bokall</option><option>VHC</option><option>Lindenhoff</option>
-        <option>Kroket en Co</option><option>Dynamite Cookies</option>
-        <option>Bawykov</option><option>Van Driessenfood</option>
-        <option>Femke Patissier</option><option>Schmidt Zeevis</option><option>Overig</option>
       </select>
     </div>
 
@@ -2971,6 +2959,41 @@ async function deleteIng(idx) {
   renderIngredienten(); toast('Verwijderd');
 }
 
+function updateLeveranciersDropdowns() {
+  // Verzamel alle unieke leveranciers uit de geladen ingrediënten
+  const vanDB = [...new Set(ingredienten.map(i => (i.leverancier || i.categorie || 'Overig').trim()))].filter(Boolean).sort();
+
+  // Dropdown IDs en of ze een "Alle leveranciers" eerste optie hebben
+  const configs = [
+    { id: 'ing-cat-filter',    allOption: true  },
+    { id: 'ing-leverancier',   allOption: false },
+    { id: 'inone-leverancier', allOption: false },
+  ];
+
+  configs.forEach(({ id, allOption }) => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    const huidig = sel.value; // bewaar huidige selectie
+    sel.innerHTML = '';
+    if (allOption) {
+      const opt = document.createElement('option');
+      opt.value = '';
+      opt.textContent = 'Alle leveranciers';
+      sel.appendChild(opt);
+    }
+    vanDB.forEach(lev => {
+      const opt = document.createElement('option');
+      opt.value = lev;
+      opt.textContent = lev;
+      sel.appendChild(opt);
+    });
+    // Herstel selectie als de waarde nog bestaat
+    if (huidig && [...sel.options].some(o => o.value === huidig)) {
+      sel.value = huidig;
+    }
+  });
+}
+
 function renderIngredienten() {
   const tbody=document.getElementById('ing-tbody');
   tbody.querySelectorAll('tr.ing-row').forEach(r=>r.remove());
@@ -2999,6 +3022,7 @@ function renderIngredienten() {
   document.getElementById('s-ing-cats').textContent=new Set(ingredienten.map(i=>i.leverancier||i.categorie)).size;
   const lbl = document.getElementById('ing-count-label');
   if (lbl) lbl.textContent = `${ingredienten.length} van ${ingredienten.length}`;
+  updateLeveranciersDropdowns();
   filterIngredienten();
   if (isReadOnly()) applyChefRestrictions();
 }
